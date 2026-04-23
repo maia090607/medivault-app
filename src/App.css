@@ -79,13 +79,28 @@ body {
   text-decoration: none; font-weight: 600; cursor: pointer;
   background: transparent; border: none; text-align: left; width: 100%;
 }
-.nav-link.active { background: rgba(14, 165, 233, 0.1); color: var(--accent); }
-.nav-link.active.farmacia { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.nav-link.active { 
+  background: rgba(14, 165, 233, 0.1); 
+  color: var(--accent); 
+}
 
-.sidebar-footer { padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-link.active.farmacia { 
+  background: rgba(16, 185, 129, 0.1); 
+  color: var(--success); 
+}
 
-.profile-box { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
-.avatar-small {
+.sidebar-footer { 
+  padding-top: 2rem; 
+  border-top: 1px solid var(--border); 
+}
+
+.profile-box { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  margin-bottom: 1rem; }
+
+  .avatar-small {
   width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center; font-weight: 800;
 }

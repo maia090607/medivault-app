@@ -23,7 +23,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, setRecet
       medicoNombre: user.nombre
     };
 
-    // ACTUALIZACIÓN DEL ESTADO GLOBAL (App.jsx)
+
     setRecetasEmitidas([nuevaReceta, ...recetasEmitidas]);
     
     alert(`✅ Token Generado: ${tokenGenerado}\nEntréguelo al paciente.`);

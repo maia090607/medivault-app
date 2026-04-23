@@ -1,26 +1,40 @@
 # MediVault - Sistema de Gestión Farmacéutica
 
-Este es un prototipo navegable para la gestión de recetas digitales y control de inventario.
+Este es un prototipo navegable para la gestión de recetas digitales y control de inventario desarrollado con **React**. El sistema resuelve la problemática de la falsificación de recetas y el descontrol de inventario mediante el uso de tokens de seguridad de un solo uso.
 
-## Requisitos Previos
+## 📋 Requisitos Previos
 * Node.js instalado (versión 16 o superior).
+* Gestor de paquetes **npm** (viene incluido con Node.js).
 
-## Instalación
-1. Clonar el repositorio.
-2. Abrir una terminal en la carpeta del proyecto.
-3. Ejecutar el comando para instalar dependencias:
+## ⚙️ Instalación
+Siga estos pasos para configurar el proyecto en su entorno local:
+
+1. Clonar el repositorio:
    ```bash
-   npm install
+   git clone [https://github.com/maia090607/medivault-app.git](https://github.com/maia090607/medivault-app.git)
 
+2. Entrar al directorio del proyecto
+    cd medivault-app
 
-para ejecutar:
-     npm run dev
+3. Instalar las dependencias
+    npm install
 
-### Credenciales de Acceso
- -  Médico: medico@medivault.com (Contraseña: cualquiera)
+4. Credenciales de Acceso (Roles)
+El sistema implementa una gestión de roles para separar las funciones médicas de las farmacéuticas:
+Rol Médico:
+    Usuario: medico@medivault.com
+    Contraseña: 123 (o cualquier texto)
+    Funciones: Emisión de recetas y consulta de historial.
 
- - Farmacia: farmacia@medivault.com (Contraseña: cualquiera)
+Rol Farmacia:
+    Usuario: farmacia@medivault.com
+    Contraseña: 123 (o cualquier texto)
+    Funciones: Validación de tokens y control de inventario.
 
- ### Verificación de Roles y Navegabilidad
-El código proporcionado en `App.jsx` gestiona los roles de forma automática. Al ingresar con el correo de médico, el sistema solo muestra las opciones de "Nueva Receta" e "Historial". Al ingresar como farmacéutico, se habilitan "Entrega" e "Inventario".
-
+5. Pantallas del Prototipo
+Para cumplir con los requisitos del proyecto, el sistema incluye las siguientes 5 pantallas navegables:
+    Login: Interfaz de autenticación segura.
+    Emisión de Receta (Médico): Formulario para generar órdenes con selección de medicamentos en stock.
+    Historial de Recetas (Médico): Registro de pacientes atendidos y tokens generados.
+    Validación de Token (Farmacia): Buscador de órdenes mediante código de seguridad.
+    Inventario (Farmacia): Visualización y descuento automático de stock tras la entrega.
