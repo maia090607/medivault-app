@@ -38,6 +38,9 @@ El sistema implementa una validación estricta de credenciales para garantizar l
     Contraseña: farmacia
     Funciones: Validación de tokens en tiempo real y despacho de medicamentos.
 
+3. PIN DEL MEDICO ( CREAR UNA FORMULA ):
+    PIN: 1234
+
 ## Estructura del Proyecto (src/)
 1.  views/: Componentes principales (Landing, Login, DashboardMedico, DashboardFarmacia).
 
