@@ -1,60 +1,46 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# MediVault - Sistema de Gestión Sanitaria Digital
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+MediVault es una plataforma integral diseñada para optimizar el ciclo de prescripción médica y el control de inventario farmacológico. El sistema resuelve la problemática de la falsificación de recetas mediante el uso de tokens de seguridad de un solo uso y centraliza la información clínica en un Historial Clínico Digital accesible en tiempo real.
 
 
+## 🚀 Tecnologías y Herramientas
+* **Frontend**: React.js (Biblioteca para interfaces de usuario dinámicas).
+* **Construcción**: Vite (Entorno de desarrollo de alto rendimiento).
+* **Backend-as-a-Service (BaaS)**: Firebase (Firestore para base de datos NoSQL).
+* **Diseño**: CSS-in-JS con enfoque en accesibilidad y alto contraste.
 
+---
 
-# MediVault - Sistema de Gestión Farmacéutica
-
-Este es un prototipo navegable para la gestión de recetas digitales y control de inventario desarrollado con **React**. El sistema resuelve la problemática de la falsificación de recetas y el descontrol de inventario mediante el uso de tokens de seguridad de un solo uso.
-
-## 📋 Requisitos Previos
-* Node.js instalado (versión 16 o superior).
-* Gestor de paquetes **npm** (viene incluido con Node.js).
-
-## ⚙️ Instalación
-Siga estos pasos para configurar el proyecto en su entorno local:
-
-1. Clonar el repositorio:
+## ⚙️ Instalación y Configuración
+1. **Clonar el repositorio**:
    ```bash
-   git clone [https://github.com/maia090607/medivault-app.git](https://github.com/maia090607/medivault-app.git)
+   git clone (https://github.com/maia090607/medivault-app.git)
 
-2. Entrar al directorio del proyecto
-    cd medivault-app
-
-3. Instalar las dependencias
+2. Instalar dependencias 
     npm install
 
-4. Credenciales de Acceso (Roles)
-El sistema implementa una gestión de roles para separar las funciones médicas de las farmacéuticas:
-Rol Médico:
+3. Lanzar el entorno de desarrollo:
+    npm run dev
+
+## Gestión de Roles y Accesos
+El sistema implementa una validación estricta de credenciales para garantizar la seguridad:
+
+1. Portal Médico:
+
     Usuario: medico@medivault.com
-    Contraseña: 123 (o cualquier texto)
-    Funciones: Emisión de recetas y consulta de historial.
+    Contraseña: medico
+    Funciones: Emisión de recetas con token de 6 dígitos, consulta de historial clínico y firma con PIN (1234).
 
-Rol Farmacia:
+2. Portal Farmacia:
+
     Usuario: farmacia@medivault.com
-    Contraseña: 123 (o cualquier texto)
-    Funciones: Validación de tokens y control de inventario.
+    Contraseña: farmacia
+    Funciones: Validación de tokens en tiempo real y despacho de medicamentos.
 
-5. Pantallas del Prototipo
-Para cumplir con los requisitos del proyecto, el sistema incluye las siguientes 5 pantallas navegables:
-    Login: Interfaz de autenticación segura.
-    Emisión de Receta (Médico): Formulario para generar órdenes con selección de medicamentos en stock.
-    Historial de Recetas (Médico): Registro de pacientes atendidos y tokens generados.
-    Validación de Token (Farmacia): Buscador de órdenes mediante código de seguridad.
-    Inventario (Farmacia): Visualización y descuento automático de stock tras la entrega.
+## Estructura del Proyecto (src/)
+1.  views/: Componentes principales (Landing, Login, DashboardMedico, DashboardFarmacia).
+
+2. firebase.js: Configuración de la conexión con Google Cloud Firestore.
+
+3. App.jsx: Enrutamiento y gestión de estados globales.

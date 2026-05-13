@@ -1,71 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from './firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import Landing from './views/Landing';
 import Login from './views/Login';
 import DashboardMedico from './views/DashboardMedico';
 import DashboardFarmacia from './views/DashboardFarmacia';
-import './App.css';
 
 function App() {
-  // 1. ESTADO DE AUTENTICACIÓN
+  const [paso, setPaso] = useState('landing'); 
+  const [rolSeleccionado, setRolSeleccionado] = useState(null);
   const [user, setUser] = useState(null);
 
-  // 2. ESTADO GLOBAL DE INVENTARIO (Compartido entre roles)
-  const [inventario, setInventario] = useState([
-    { id: 1, nombre: "Insulina", stock: 45 },
-    { id: 2, nombre: "Metformina", stock: 120 },
-    { id: 3, nombre: "Ibuprofeno", stock: 80 },
-    { id: 4, nombre: "Paracetamol", stock: 15 },
-    { id: 5, nombre: "Amoxicilina", stock: 60 }
-  ]);
+  const [inventario, setInventario] = useState([]);
+  const [recetas, setRecetas] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
+  const [historiales, setHistoriales] = useState([]);
 
-  // 3. ESTADO GLOBAL DE RECETAS (Para validación de Token en tiempo real)
-  const [recetasEmitidas, setRecetasEmitidas] = useState([]);
+  useEffect(() => {
+    // Escucha de colecciones en tiempo real
+    const unsubInv = onSnapshot(collection(db, "inventario"), (snap) => {
+      setInventario(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    const unsubRec = onSnapshot(collection(db, "recetas"), (snap) => {
+      setRecetas(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    const unsubPac = onSnapshot(collection(db, "pacientes"), (snap) => {
+      setPacientes(snap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        dni: d.data().dni ? String(d.data().dni).trim() : "" 
+      })));
+    });
+    const unsubHist = onSnapshot(collection(db, "historiales"), (snap) => {
+      setHistoriales(snap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        dniPaciente: d.data().dniPaciente ? String(d.data().dniPaciente).trim() : "" 
+      })));
+    });
 
-  // Lógica de Login Corregida: Ahora utiliza la variable 'password'
-  const handleLogin = (email, password) => {
-    // Verificación básica de campos vacíos
-    if (!email || !password) {
-      alert("Por favor, complete todos los campos para ingresar.");
-      return;
-    }
+    return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); };
+  }, []);
 
-    // Validación de credenciales y asignación de roles
-    // Puedes usar cualquier contraseña para este prototipo
-    if (email === "medico@medivault.com" && password !== "") {
-      setUser({ id: 'M01', nombre: "Dr. Casas", rol: "medico" });
-    } else if (email === "farmacia@medivault.com" && password !== "") {
-      setUser({ id: 'F01', nombre: "Farm. Ana", rol: "farmacia" });
-    } else {
-      alert("Credenciales incorrectas. Intente con medico@medivault.com o farmacia@medivault.com");
-    }
+  const irALogin = (rol) => {
+    setRolSeleccionado(rol);
+    setPaso('login');
   };
 
-  const handleLogout = () => {
-    setUser(null);
-  };
+  if (paso === 'landing') return <Landing alIniciar={() => setPaso('seleccion')} />;
 
-  // RENDERIZADO CONDICIONAL: Garantiza que el prototipo sea navegable por roles
+  if (paso === 'seleccion') {
+    return (
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
+        <h2 style={{ fontSize: '2.2rem', color: '#0f172a', marginBottom: '40px', fontWeight: '900' }}>¿Cómo desea ingresar a <span style={{color: '#2563eb'}}>MediVault</span>?</h2>
+        <div style={{ display: 'flex', gap: '30px' }}>
+          <div onClick={() => irALogin('medico')} style={{ padding: '40px', background: 'white', borderRadius: '24px', border: '2px solid #e2e8f0', cursor: 'pointer', textAlign: 'center', width: '220px', transition: '0.3s' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '15px' }}>👨‍⚕️</div>
+            <h3 style={{ fontWeight: '800', color: '#1e293b' }}>Soy Médico</h3>
+          </div>
+          <div onClick={() => irALogin('farmacia')} style={{ padding: '40px', background: 'white', borderRadius: '24px', border: '2px solid #e2e8f0', cursor: 'pointer', textAlign: 'center', width: '220px', transition: '0.3s' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '15px' }}>💊</div>
+            <h3 style={{ fontWeight: '800', color: '#1e293b' }}>Soy Farmacéutico</h3>
+          </div>
+        </div>
+        <button onClick={() => setPaso('landing')} style={{ marginTop: '40px', background: 'none', border: 'none', color: '#64748b', fontWeight: 'bold', cursor: 'pointer' }}>← Volver al inicio</button>
+      </div>
+    );
+  }
+
+  if (paso === 'login') return <Login rol={rolSeleccionado} onLogin={(u) => { setUser(u); setPaso('app'); }} />;
+
   return (
-    <div className="app-container">
-      {!user ? (
-        <Login onLogin={handleLogin} />
-      ) : user.rol === "medico" ? (
-        /* Vista de Médico: Nueva Receta e Historial */
+    <div>
+      {user.role === 'medico' ? (
         <DashboardMedico 
           user={user} 
-          onLogout={handleLogout} 
-          inventario={inventario}
-          recetasEmitidas={recetasEmitidas}
-          setRecetasEmitidas={setRecetasEmitidas} 
+          onLogout={() => setPaso('landing')} 
+          inventario={inventario} 
+          recetasEmitidas={recetas} 
+          pacientesDB={pacientes} 
+          historialesDB={historiales} 
         />
       ) : (
-        /* Vista de Farmacia: Validación de Token e Inventario */
         <DashboardFarmacia 
           user={user} 
-          onLogout={handleLogout} 
-          inventario={inventario}
-          setInventario={setInventario}
-          recetasEmitidas={recetasEmitidas}
-          setRecetasEmitidas={setRecetasEmitidas}
+          onLogout={() => setPaso('landing')} 
+          recetasEmitidas={recetas} 
+          inventario={inventario} 
         />
       )}
     </div>

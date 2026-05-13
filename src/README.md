@@ -1,40 +1,46 @@
-# MediVault - Sistema de Gestión Farmacéutica
 
-Este es un prototipo navegable para la gestión de recetas digitales y control de inventario desarrollado con **React**. El sistema resuelve la problemática de la falsificación de recetas y el descontrol de inventario mediante el uso de tokens de seguridad de un solo uso.
+# MediVault - Sistema de Gestión Sanitaria Digital
 
-## 📋 Requisitos Previos
-* Node.js instalado (versión 16 o superior).
-* Gestor de paquetes **npm** (viene incluido con Node.js).
+MediVault es una plataforma integral diseñada para optimizar el ciclo de prescripción médica y el control de inventario farmacológico. El sistema resuelve la problemática de la falsificación de recetas mediante el uso de tokens de seguridad de un solo uso y centraliza la información clínica en un Historial Clínico Digital accesible en tiempo real.
 
-## ⚙️ Instalación
-Siga estos pasos para configurar el proyecto en su entorno local:
 
-1. Clonar el repositorio:
+## 🚀 Tecnologías y Herramientas
+* **Frontend**: React.js (Biblioteca para interfaces de usuario dinámicas).
+* **Construcción**: Vite (Entorno de desarrollo de alto rendimiento).
+* **Backend-as-a-Service (BaaS)**: Firebase (Firestore para base de datos NoSQL).
+* **Diseño**: CSS-in-JS con enfoque en accesibilidad y alto contraste.
+
+---
+
+## ⚙️ Instalación y Configuración
+1. **Clonar el repositorio**:
    ```bash
-   git clone [https://github.com/maia090607/medivault-app.git](https://github.com/maia090607/medivault-app.git)
+   git clone (https://github.com/maia090607/medivault-app.git)
 
-2. Entrar al directorio del proyecto
-    cd medivault-app
-
-3. Instalar las dependencias
+2. Instalar dependencias 
     npm install
 
-4. Credenciales de Acceso (Roles)
-El sistema implementa una gestión de roles para separar las funciones médicas de las farmacéuticas:
-Rol Médico:
+3. Lanzar el entorno de desarrollo:
+    npm run dev
+
+## Gestión de Roles y Accesos
+El sistema implementa una validación estricta de credenciales para garantizar la seguridad:
+
+1. Portal Médico:
+
     Usuario: medico@medivault.com
-    Contraseña: 123 (o cualquier texto)
-    Funciones: Emisión de recetas y consulta de historial.
+    Contraseña: medico
+    Funciones: Emisión de recetas con token de 6 dígitos, consulta de historial clínico y firma con PIN (1234).
 
-Rol Farmacia:
+2. Portal Farmacia:
+
     Usuario: farmacia@medivault.com
-    Contraseña: 123 (o cualquier texto)
-    Funciones: Validación de tokens y control de inventario.
+    Contraseña: farmacia
+    Funciones: Validación de tokens en tiempo real y despacho de medicamentos.
 
-5. Pantallas del Prototipo
-Para cumplir con los requisitos del proyecto, el sistema incluye las siguientes 5 pantallas navegables:
-    Login: Interfaz de autenticación segura.
-    Emisión de Receta (Médico): Formulario para generar órdenes con selección de medicamentos en stock.
-    Historial de Recetas (Médico): Registro de pacientes atendidos y tokens generados.
-    Validación de Token (Farmacia): Buscador de órdenes mediante código de seguridad.
-    Inventario (Farmacia): Visualización y descuento automático de stock tras la entrega.
+## Estructura del Proyecto (src/)
+1.  views/: Componentes principales (Landing, Login, DashboardMedico, DashboardFarmacia).
+
+2. firebase.js: Configuración de la conexión con Google Cloud Firestore.
+
+3. App.jsx: Enrutamiento y gestión de estados globales.
