@@ -17,7 +17,6 @@ function App() {
   const [historiales, setHistoriales] = useState([]);
 
   useEffect(() => {
-    // Escucha de colecciones en tiempo real
     const unsubInv = onSnapshot(collection(db, "inventario"), (snap) => {
       setInventario(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
@@ -68,14 +67,14 @@ function App() {
     );
   }
 
-  if (paso === 'login') return <Login rol={rolSeleccionado} onLogin={(u) => { setUser(u); setPaso('app'); }} />;
+  if (paso === 'login') return <Login rol={rolSeleccionado} onLogin={(u) => { setUser(u); setPaso('app'); }} onVolver={() => setPaso('seleccion')} />;
 
   return (
     <div>
-      {user.role === 'medico' ? (
+      {user?.role === 'medico' ? (
         <DashboardMedico 
           user={user} 
-          onLogout={() => setPaso('landing')} 
+          onLogout={() => { setUser(null); setPaso('landing'); }} 
           inventario={inventario} 
           recetasEmitidas={recetas} 
           pacientesDB={pacientes} 
@@ -84,7 +83,7 @@ function App() {
       ) : (
         <DashboardFarmacia 
           user={user} 
-          onLogout={() => setPaso('landing')} 
+          onLogout={() => { setUser(null); setPaso('landing'); }} 
           recetasEmitidas={recetas} 
           inventario={inventario} 
         />

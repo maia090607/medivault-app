@@ -4,146 +4,204 @@ function Landing({ alIniciar }) {
   const [showTour, setShowTour] = useState(false);
 
   const s = {
-    container: { minHeight: '100vh', fontFamily: '"Inter", sans-serif', backgroundColor: '#ffffff', color: '#1e293b', overflowX: 'hidden' },
-    nav: { padding: '25px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'fixed', top: 0, width: '100%', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', zIndex: 100, boxSizing: 'border-box', borderBottom: '1px solid #f1f5f9' },
-    hero: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '240px 20px 160px', textAlign: 'center', background: 'radial-gradient(circle at 50% 0%, #eff6ff 0%, #ffffff 70%)' },
-    title: { fontSize: '5.2rem', fontWeight: '950', color: '#0f172a', margin: 0, lineHeight: '0.95', letterSpacing: '-4px', maxWidth: '1000px' },
-    btnMain: { padding: '20px 48px', background: '#2563eb', color: '#ffffff', borderRadius: '16px', fontWeight: '700', border: 'none', cursor: 'pointer', fontSize: '1.05rem', transition: '0.3s ease', boxShadow: '0 12px 24px -6px rgba(37, 99, 235, 0.4)' },
+    container: { 
+      minHeight: '100vh', 
+      fontFamily: '"Inter", sans-serif', 
+      backgroundColor: '#ffffff', 
+      color: '#1e293b', // Gris carbón para máxima legibilidad
+      overflowX: 'hidden' 
+    },
+    nav: { 
+      padding: '0 60px', 
+      height: '80px', 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      position: 'fixed', 
+      top: 0, 
+      width: '100%', 
+      background: 'rgba(255,255,255,0.95)', 
+      backdropFilter: 'blur(20px)', 
+      zIndex: 100, 
+      boxSizing: 'border-box', 
+      borderBottom: '1px solid #f1f5f9' 
+    },
+    // HERO: Espaciado equilibrado y fondo con luz sutil
+    heroSection: { 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      padding: '180px 20px 100px', 
+      textAlign: 'center', 
+      background: 'radial-gradient(circle at 50% 0%, #eff6ff 0%, #ffffff 60%)',
+      boxSizing: 'border-box'
+    },
+    title: { 
+      fontSize: '5rem', 
+      fontWeight: '950', 
+      color: '#0f172a', // Azul casi negro para títulos
+      margin: '0 auto 30px', 
+      lineHeight: '1', 
+      letterSpacing: '-4px', 
+      maxWidth: '900px' 
+    },
+    btnMain: { 
+      padding: '18px 42px', 
+      background: '#2563eb', // Azul vibrante
+      color: '#ffffff', 
+      borderRadius: '14px', 
+      fontWeight: '700', 
+      border: 'none', 
+      cursor: 'pointer', 
+      fontSize: '1rem', 
+      transition: '0.3s ease', 
+      boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)' 
+    },
+    // STATS: Bloque limpio con contrastes claros
+    statsSection: { 
+      maxWidth: '1100px', 
+      margin: '0 auto', 
+      padding: '40px 20px' 
+    },
+    statsGrid: { 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(3, 1fr)', 
+      background: '#f8fafc', // Fondo gris muy suave
+      padding: '60px 20px', 
+      borderRadius: '40px', 
+      border: '1px solid #e2e8f0' 
+    },
+    statBlock: { 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      borderRight: '1px solid #cbd5e1' 
+    },
+    statNumber: { fontSize: '3.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-3px', lineHeight: '1' },
+    statLabel: { fontSize: '0.8rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '10px' },
     
-    // STATS: Proporciones corregidas para legibilidad total
-    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', margin: '0 60px 120px', background: '#f8fafc', padding: '100px 40px', borderRadius: '60px', border: '1px solid #f1f5f9' },
-    statBlock: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
-    statNumber: { fontSize: '4.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-5px', lineHeight: '0.8', marginBottom: '25px' },
-    statLabel: { fontSize: '0.85rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '2px' },
+    // FEATURES: Tarjetas blancas con sombras suaves
+    featureSection: { 
+      padding: '100px 60px 140px', 
+      maxWidth: '1200px', 
+      margin: '0 auto' 
+    },
+    featureGrid: { 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(3, 1fr)', 
+      gap: '25px', 
+      marginTop: '60px' 
+    },
+    featureCard: { 
+      padding: '50px 40px', 
+      borderRadius: '32px', 
+      background: '#ffffff', 
+      border: '1px solid #f1f5f9', 
+      boxShadow: '0 4px 20px rgba(0,0,0,0.03)' 
+    },
 
-    // FEATURES: Espaciado premium
-    section: { padding: '140px 60px', maxWidth: '1400px', margin: '0 auto' },
-    featureGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px', marginTop: '80px' },
-    featureCard: { padding: '70px 50px', borderRadius: '48px', background: '#ffffff', border: '1px solid #f1f5f9', textAlign: 'left', minHeight: '380px', transition: '0.3s', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' },
-    
-    // TOUR: Ajuste de colores para que sea luminoso
-    tourOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: '#ffffff', zIndex: 1000, overflowY: 'auto' },
-    tourImageSide: { flex: 1.2, background: '#f1f5f9', borderRadius: '40px', height: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', color: '#94a3b8', fontWeight: '800', fontSize: '1.2rem' }
+    // TOUR OVERLAY
+    tourOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: '#ffffff', zIndex: 1000, overflowY: 'auto' }
   };
+
+  const tourSteps = [
+    { badge: "Portal Médico", title: "Prescripción Segura", desc: "Interfaz intuitiva para la emisión de recetas digitales.", img: "https://images.pexels.com/photos/7579831/pexels-photo-7579831.jpeg?auto=compress&w=1200" },
+    { badge: "Portal Farmacia", title: "Validación Instantánea", desc: "Sincronización en tiempo real para el despacho seguro.", img: "https://images.pexels.com/photos/5910956/pexels-photo-5910956.jpeg?auto=compress&w=1200" },
+    { badge: "Logística", title: "Inventario en Tiempo Real", desc: "Control de stock automatizado para optimizar suministros.", img: "https://images.pexels.com/photos/4481258/pexels-photo-4481258.jpeg?auto=compress&w=1200" },
+    { badge: "Data Clínica", title: "Historial de Usuario", desc: "Línea de tiempo unificada con diagnósticos previos.", img: "https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&w=1200" }
+  ];
 
   return (
     <div style={s.container}>
       
-      {/* TOUR PRODUCTO */}
+      {/* VISTA DEL TOUR (OVERLAY) */}
       {showTour && (
         <div style={s.tourOverlay}>
-          <div style={{ padding: '25px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
-            <div style={{ fontSize: '1.6rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-2px' }}>MODO EXPLORACIÓN</div>
-            <button style={{ ...s.btnMain, padding: '12px 25px', fontSize: '0.85rem', background: '#f1f5f9', color: '#0f172a', boxShadow: 'none' }} onClick={() => setShowTour(false)}>CERRAR</button>
+          <div style={{ padding: '20px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', position: 'sticky', top: 0, background: 'white', zIndex: 1100 }}>
+            <span style={{ fontWeight: '950', color: '#2563eb', fontSize: '1.2rem' }}>TOUR MEDIVAULT</span>
+            <button style={{ ...s.btnMain, padding: '10px 20px', fontSize: '0.8rem', background: '#0f172a' }} onClick={() => setShowTour(false)}>CERRAR</button>
           </div>
-          <div style={{ padding: '120px 60px', maxWidth: '1200px', margin: '0 auto' }}>
-             <div style={{ display: 'flex', gap: '80px', alignItems: 'center', marginBottom: '140px' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ background: '#dbeafe', color: '#2563eb', padding: '6px 14px', borderRadius: '10px', display: 'inline-block', fontWeight: '800', fontSize: '0.75rem', marginBottom: '25px' }}>ECOSISTEMA MÉDICO</div>
-                  <h3 style={{ fontSize: '3rem', fontWeight: '900', color: '#0f172a', letterSpacing: '-2px', marginBottom: '25px' }}>Prescripción Inteligente.</h3>
-                  <p style={{ fontSize: '1.25rem', color: '#475569', lineHeight: '1.7' }}>Dashboard intuitivo para la emisión de recetas digitales con validación automática de protocolos médicos.</p>
+          <div style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
+            {tourSteps.map((step, i) => (
+              <div key={i} style={{ marginBottom: '80px', textAlign: 'center', background: '#f8fafc', padding: '50px', borderRadius: '40px', border: '1px solid #e2e8f0' }}>
+                <div style={{ background: '#dbeafe', color: '#2563eb', padding: '8px 16px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '900', marginBottom: '20px', display: 'inline-block' }}>{step.badge}</div>
+                <h3 style={{ fontSize: '2.5rem', fontWeight: '950', marginBottom: '20px', color: '#0f172a' }}>{step.title}</h3>
+                <p style={{ color: '#475569', fontSize: '1.1rem', marginBottom: '40px', lineHeight: '1.6' }}>{step.desc}</p>
+                <div style={{ height: '400px', borderRadius: '24px', overflow: 'hidden', border: '1px solid #cbd5e1', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                  <img src={step.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={step.title} />
                 </div>
-                <div style={s.tourImageSide}>[DASHBOARD_DOCTOR_PREVIEW]</div>
-             </div>
-             <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexDirection: 'row-reverse' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ background: '#dbeafe', color: '#2563eb', padding: '6px 14px', borderRadius: '10px', display: 'inline-block', fontWeight: '800', fontSize: '0.75rem', marginBottom: '25px' }}>ECOSISTEMA FARMACIA</div>
-                  <h3 style={{ fontSize: '3rem', fontWeight: '900', color: '#0f172a', letterSpacing: '-2px', marginBottom: '25px' }}>Dispensación Segura.</h3>
-                  <p style={{ fontSize: '1.25rem', color: '#475569', lineHeight: '1.7' }}>Validación de tokens en tiempo real que garantiza la entrega del medicamento correcto al paciente correcto.</p>
-                </div>
-                <div style={s.tourImageSide}>[PHARMACY_VERIFICATION_PREVIEW]</div>
-             </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* LANDING PAGE */}
+      {/* NAVEGACIÓN */}
       <nav style={s.nav}>
-        <div style={{ fontSize: '1.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-2.5px' }}>MEDIVAULT</div>
-        <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
-          <span style={{ fontWeight: '700', color: '#64748b', cursor: 'pointer', fontSize: '0.85rem' }}>PRODUCTO</span>
-          <span style={{ fontWeight: '700', color: '#64748b', cursor: 'pointer', fontSize: '0.85rem' }}>SEGURIDAD</span>
-          <button style={{ ...s.btnMain, padding: '12px 28px', fontSize: '0.85rem', boxShadow: 'none' }} onClick={alIniciar}>ACCESO</button>
+        <div style={{ fontSize: '1.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-2px' }}>MEDIVAULT</div>
+        <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+          <span style={{ fontWeight: '700', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer' }}>PRODUCTO</span>
+          <button style={{ ...s.btnMain, padding: '10px 25px', fontSize: '0.85rem', boxShadow: 'none' }} onClick={alIniciar}>LOGIN</button>
         </div>
       </nav>
 
-      <section style={s.hero}>
-        <div style={{ background: '#dbeafe', color: '#2563eb', padding: '8px 20px', borderRadius: '30px', fontWeight: '800', fontSize: '0.75rem', marginBottom: '30px', letterSpacing: '2px' }}>INFRAESTRUCTURA SANITARIA 2.0</div>
-        <h1 style={s.title}>Tecnología que</h1>
-        <h1 style={{ ...s.title, color: '#2563eb' }}>redefine el cuidado.</h1>
-        <p style={{ fontSize: '1.4rem', color: '#475569', maxWidth: '680px', margin: '45px 0 60px', lineHeight: '1.6' }}>
-          Elevamos el estándar de la receta electrónica. Una plataforma robusta diseñada para la precisión clínica y la seguridad inalterable del paciente.
+      {/* SECCIÓN HERO */}
+      <section style={s.heroSection}>
+        <div style={{ background: '#dbeafe', color: '#2563eb', padding: '8px 18px', borderRadius: '20px', fontWeight: '900', fontSize: '0.7rem', marginBottom: '30px', letterSpacing: '1.5px' }}>MODERNO • SEGURO • RÁPIDO</div>
+        <h1 style={s.title}>Tecnología que <br/><span style={{color: '#2563eb'}}>redefine el cuidado.</span></h1>
+        <p style={{ fontSize: '1.35rem', color: '#475569', maxWidth: '650px', margin: '0 auto 45px', lineHeight: '1.6' }}>
+          Elevamos el estándar de la receta electrónica con seguridad inalterable y precisión clínica de alto nivel.
         </p>
         <button style={s.btnMain} onClick={() => setShowTour(true)}>EXPLORAR PLATAFORMA</button>
       </section>
 
-      {/* STATS */}
-      <section style={s.statsGrid}>
-        <div style={s.statBlock}>
-          <div style={s.statNumber}>99.9%</div>
-          <div style={s.statLabel}>Uptime Sistema</div>
-        </div>
-        <div style={s.statBlock}>
-          <div style={s.statNumber}>10ms</div>
-          <div style={s.statLabel}>Validación</div>
-        </div>
-        <div style={s.statBlock}>
-          <div style={s.statNumber}>0</div>
-          <div style={s.statLabel}>Falsificaciones</div>
+      {/* SECCIÓN ESTADÍSTICAS */}
+      <section style={s.statsSection}>
+        <div style={s.statsGrid}>
+          <div style={s.statBlock}>
+            <div style={s.statNumber}>99.9%</div>
+            <div style={s.statLabel}>Disponibilidad</div>
+          </div>
+          <div style={s.statBlock}>
+            <div style={s.statNumber}>10ms</div>
+            <div style={s.statLabel}>Validación</div>
+          </div>
+          <div style={{ ...s.statBlock, borderRight: 'none' }}>
+            <div style={s.statNumber}>0</div>
+            <div style={s.statLabel}>Fraudes</div>
+          </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section style={s.section}>
-        <div style={{ textAlign: 'left', maxWidth: '800px', marginBottom: '80px' }}>
-          <h2 style={{ fontSize: '3.8rem', fontWeight: '950', letterSpacing: '-4px', color: '#0f172a', lineHeight: '1', marginBottom: '30px' }}>Innovación en cada proceso.</h2>
-          <p style={{ fontSize: '1.4rem', color: '#64748b', lineHeight: '1.6', maxWidth: '600px' }}>Herramientas de alto rendimiento diseñadas específicamente para el flujo de trabajo médico moderno.</p>
+      {/* SECCIÓN CARACTERÍSTICAS */}
+      <section style={s.featureSection}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h2 style={{ fontSize: '3.5rem', fontWeight: '950', letterSpacing: '-3px', color: '#0f172a' }}>Innovación operativa.</h2>
+          <p style={{ fontSize: '1.2rem', color: '#64748b', marginTop: '10px' }}>Un ecosistema robusto diseñado para la medicina actual.</p>
         </div>
-        
         <div style={s.featureGrid}>
           <div style={s.featureCard}>
-            <span style={{ fontSize: '2.5rem', color: '#2563eb', display: 'block', marginBottom: '30px' }}>✦</span>
-            <h3 style={{ fontWeight: '900', fontSize: '1.8rem', color: '#0f172a', letterSpacing: '-1.5px', marginBottom: '20px' }}>Arquitectura Cifrada</h3>
-            <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Tokens de validación efímeros para proteger la integridad de cada diagnóstico emitido.</p>
+            <div style={{ color: '#2563eb', fontSize: '2.2rem', marginBottom: '25px' }}>✦</div>
+            <h3 style={{ fontWeight: '900', fontSize: '1.6rem', marginBottom: '15px', color: '#0f172a' }}>Arquitectura Cifrada</h3>
+            <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.7' }}>Tokens inalterables para blindar la integridad absoluta de cada diagnóstico emitido.</p>
           </div>
           <div style={s.featureCard}>
-            <span style={{ fontSize: '2.5rem', color: '#2563eb', display: 'block', marginBottom: '30px' }}>✦</span>
-            <h3 style={{ fontWeight: '900', fontSize: '1.8rem', color: '#0f172a', letterSpacing: '-1.5px', marginBottom: '20px' }}>Doble Autenticación</h3>
-            <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Control total de acceso mediante firmas digitales personales y protocolos de seguridad.</p>
+            <div style={{ color: '#2563eb', fontSize: '2.2rem', marginBottom: '25px' }}>✦</div>
+            <h3 style={{ fontWeight: '900', fontSize: '1.6rem', marginBottom: '15px', color: '#0f172a' }}>Doble Autenticación</h3>
+            <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.7' }}>Firmas digitales personales y protocolos de seguridad para un control de acceso total.</p>
           </div>
           <div style={s.featureCard}>
-            <span style={{ fontSize: '2.5rem', color: '#2563eb', display: 'block', marginBottom: '30px' }}>✦</span>
-            <h3 style={{ fontWeight: '900', fontSize: '1.8rem', color: '#0f172a', letterSpacing: '-1.5px', marginBottom: '20px' }}>Interoperabilidad</h3>
-            <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Historiales clínicos que fluyen instantáneamente entre especialistas y farmacias autorizadas.</p>
+            <div style={{ color: '#2563eb', fontSize: '2.2rem', marginBottom: '25px' }}>✦</div>
+            <h3 style={{ fontWeight: '900', fontSize: '1.6rem', marginBottom: '15px', color: '#0f172a' }}>Interoperabilidad</h3>
+            <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.7' }}>Conectividad instantánea y fluida entre especialistas, centros médicos y farmacias.</p>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={s.footer}>
-        <div style={s.footerGrid}>
-          <div>
-            <div style={{ fontSize: '1.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-2px', marginBottom: '25px' }}>MEDIVAULT</div>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.6' }}>Redefiniendo la gestión médica con excelencia técnica.</p>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: '900', color: '#0f172a', letterSpacing: '1px', marginBottom: '25px' }}>PRODUCTO</h4>
-            <span style={{ display: 'block', color: '#64748b', marginBottom: '12px', fontSize: '0.9rem' }}>Receta Digital</span>
-            <span style={{ display: 'block', color: '#64748b', marginBottom: '12px', fontSize: '0.9rem' }}>Seguridad</span>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: '900', color: '#0f172a', letterSpacing: '1px', marginBottom: '25px' }}>LEGAL</h4>
-            <span style={{ display: 'block', color: '#64748b', marginBottom: '12px', fontSize: '0.9rem' }}>Privacidad</span>
-            <span style={{ display: 'block', color: '#64748b', marginBottom: '12px', fontSize: '0.9rem' }}>Términos</span>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: '900', color: '#0f172a', letterSpacing: '1px', marginBottom: '25px' }}>UBICACIÓN</h4>
-            <span style={{ display: 'block', color: '#0f172a', fontWeight: '800', fontSize: '0.9rem' }}>VALLEDUPAR / COL</span>
-          </div>
-        </div>
-        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '40px', textAlign: 'center' }}>
-          <p style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: '600' }}>© 2026 MEDIVAULT. TODOS LOS DERECHOS RESERVADOS.</p>
-        </div>
+      <footer style={{ padding: '60px 20px', textAlign: 'center', borderTop: '1px solid #f1f5f9', background: '#fcfdfe' }}>
+        <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#2563eb', marginBottom: '15px' }}>MEDIVAULT</div>
+        <p style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: '600' }}>© 2026 VALLEDUPAR, COLOMBIA • TECNOLOGÍA SANITARIA</p>
       </footer>
     </div>
   );
