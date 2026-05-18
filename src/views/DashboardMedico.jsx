@@ -34,7 +34,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
   const [nuevasAlergiasPac, setNuevasAlergiasPac] = useState('');
   const [nuevaClinicaPac, setNuevaClinicaPac] = useState('');
 
-  // FILTRADO EXCLUSIVO POR DOCTOR (PRIVACIDAD)
+  // FILTRADO EXCLUSIVO POR DOCTOR (PRIVACIDAD) [cite: 10]
   const misRecetasFiltradas = recetasEmitidas.filter(r => 
     r.medicoId === user?.uid || r.medico === user?.nombre
   );
@@ -240,6 +240,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
     } catch (error) { console.error(error); }
   };
 
+  // HOJA DE ESTILOS ESTÁTICA ADAPTABLE DIRECTAMENTE CON VALUE-TERNAL
   const st = {
     wrapper: { background: darkMode ? '#0f172a' : '#f8fafc', minHeight: '100vh', width: '100%', padding: '30px 40px', boxSizing: 'border-box', fontFamily: '"Inter", sans-serif', color: darkMode ? '#f1f5f9' : '#0f172a', overflowX: 'hidden', transition: 'all 0.3s ease' },
     card: { background: darkMode ? '#1e293b' : '#ffffff', borderRadius: '24px', padding: '35px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.01)', marginBottom: '35px', width: '100%', boxSizing: 'border-box', transition: 'all 0.3s ease' },
@@ -250,13 +251,6 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
     tabsWrapper: { display: 'flex', gap: '12px', alignItems: 'center' },
     btnLogout: { padding: '12px 18px', background: '#fff1f2', color: '#991b1b', border: '1px solid #fecdd3', borderRadius: '10px', fontWeight: '900', cursor: 'pointer', fontSize: '0.88rem', whiteSpace: 'nowrap' },
     btnAction: { background: '#2563eb', color: 'white', border: 'none', padding: '16px 28px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: 'auto', gap: '8px', lineHeight: '1.2' },
-    btnSuccess: { background: 'transparent', color: '#2563eb', border: '2px solid #2563eb', padding: '16px 28px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: 'auto', gap: '8px', lineHeight: '1.2', transition: 'all 0.2s' },
-    headerContainer: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: '160px' },
-    
-    // EL ARREGLO VISUAL: El logo mantiene su azul MediVault corporativo nítido en modo claro y oscuro
-    headerTitle: { fontSize: '2.2rem', fontWeight: '900', color: '#2563eb', margin: 0, letterSpacing: '-1px', lineHeight: '1' },
-    
-    headerSubtitle: { color: darkMode ? '#cbd5e1' : '#334155', fontWeight: '800', fontSize: '1rem', marginTop: '6px', lineHeight: '1.2' },
     
     modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(20px)', animation: 'fadeIn 0.2s ease-out' },
     modalContent: { background: darkMode ? '#1e293b' : '#ffffff', padding: '40px', borderRadius: '32px', width: '540px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', boxShadow: darkMode ? '0 25px 50px rgba(0,0,0,0.4)' : '0 25px 60px -15px rgba(15, 23, 42, 0.12)', boxSizing: 'border-box', maxHeight: '92vh', overflowY: 'auto', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' },
@@ -367,7 +361,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
                   <div style={{ border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '12px', marginTop: '-5px', background: darkMode ? '#1e293b' : 'white', boxShadow: '0 10px 15px rgba(0,0,0,0.05)', position: 'relative', zIndex: 10 }}>
                     {sugerenciasPac.map(p => (
                       <div key={p.id} onClick={() => { setPacienteSel(p); setBusquedaPac(p.nombre); }} style={{ padding: '14px 16px', cursor: 'pointer', borderBottom: darkMode ? '1px solid #334155' : '1px solid #f1f5f9', fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>
-                        👤 {p.nombre} ({p.dni})
+                        👤 {p.nombre} (DNI: {p.dni})
                       </div>
                     ))}
                   </div>
@@ -453,7 +447,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
           </div>
         )}
 
-        {/* PESTAÑA ARCHIVO DE RECETAS - PRIVADA: SÓLO DOCTOR DE LA SESIÓN */}
+        {/* PESTAÑA ARCHIVO DE RECETAS - FILTRADO EXCLUSIVO POR DOCTOR LOGUEADO */}
         {vista === 'historial' && (
           <div style={{ width: '100%' }} className="no-print">
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap' }}>
@@ -519,7 +513,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
           </div>
         )}
 
-        {/* VISTA PACIENTES */}
+        {/* VISTA PACIENTES INTERACTIVA EXPEDIENTES */}
         {vista === 'clinico' && (
           <div style={{ width: '100%' }} className="no-print">
             <div style={{ ...st.card, display: 'flex', gap: '20px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
@@ -553,6 +547,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
                     </div>
                   </div>
 
+                  {/* Panel Signos Vitales Clínicos Adaptados */}
                   <div style={st.vitalsGrid}>
                     <div style={st.vitalCard}>
                       <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>💓 PRESION ARTERIAL</span>
@@ -626,7 +621,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
                 )}
 
                 <div style={{ ...st.card, padding: '25px 15px' }}>
-                  <h4 style={{ color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '900', marginBottom: '20px', fontSize: '1.3rem' }}>Historial de Tratamientos</h4>
+                  <h4 style={{ color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '900', marginBottom: '20px', fontSize: '1.3rem' }}>Historial de Tratamientos Farmacéuticos</h4>
                   <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                     <thead>
                       <tr style={{ borderBottom: darkMode ? '2px solid #334155' : '2px solid #f1f5f9', textAlign: 'left', color: '#334155', fontSize: '0.8rem', fontWeight: '900' }}>
@@ -666,7 +661,7 @@ function DashboardMedico({ user, onLogout, inventario, recetasEmitidas, paciente
 
       </div>
 
-      {/* MODAL PACIENTES */}
+      {/* MODAL REGISTRO DE PACIENTES - GLASSMORPHISM CON INPUTS PREMIUM RESALTADOS */}
       {showModalPaciente && (
         <div style={st.modalOverlay} className="no-print" onClick={() => setShowModalPaciente(false)}>
           <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
