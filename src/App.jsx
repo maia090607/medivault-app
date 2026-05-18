@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import Landing from './views/Landing';
-import Login from './views/Login';
 import DashboardMedico from './views/DashboardMedico';
 import DashboardFarmacia from './views/DashboardFarmacia';
 
 function App() {
   const [paso, setPaso] = useState('landing'); 
-  const [rolSeleccionado, setRolSeleccionado] = useState(null);
   const [user, setUser] = useState(null);
 
   const [inventario, setInventario] = useState([]);
   const [recetas, setRecetas] = useState([]);
   const [pacientes, setPacientes] = useState([]);
   const [historiales, setHistoriales] = useState([]);
+  const [usuariosDB, setUsuariosDB] = useState([]);
 
   useEffect(() => {
     const unsubInv = onSnapshot(collection(db, "inventario"), (snap) => {
@@ -37,37 +36,87 @@ function App() {
         dniPaciente: d.data().dniPaciente ? String(d.data().dniPaciente).trim() : "" 
       })));
     });
+    const unsubUser = onSnapshot(collection(db, "usuarios"), (snap) => {
+      setUsuariosDB(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
 
-    return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); };
+    return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); unsubUser(); };
   }, []);
 
-  const irALogin = (rol) => {
-    setRolSeleccionado(rol);
-    setPaso('login');
+  const manejarLoginDirecto = (credenciales) => {
+    const { email, password, rol } = credenciales;
+    
+    if (!usuariosDB || usuariosDB.length === 0) {
+      alert("⚠️ Conectando con la base de datos... Intente de nuevo en un segundo.");
+      return;
+    }
+
+    const usuarioEncontrado = usuariosDB.find(u => {
+      const correoFirestore = u.correo || u.email || "";
+      const emailMatch = correoFirestore.toLowerCase().trim() === email.toLowerCase().trim();
+      const passwordMatch = u.password && String(u.password).trim() === String(password).trim();
+      const roleMatch = u.role && u.role.toLowerCase().trim() === rol.toLowerCase().trim();
+      
+      return emailMatch && passwordMatch && roleMatch;
+    });
+
+    if (usuarioEncontrado) {
+      setUser({
+        email: usuarioEncontrado.correo || usuarioEncontrado.email,
+        nombre: usuarioEncontrado.nombre || (rol === 'medico' ? "Dr. Especialista" : "Operador Farmacia"),
+        role: usuarioEncontrado.role,
+        pin: usuarioEncontrado.pin || "1234"
+      });
+      setPaso('app'); 
+    } else {
+      alert(`❌ Error de acceso.\n\nNo se encontró ninguna cuenta que coincida con:\n• Correo: ${email}\n• Rol: ${rol}\n\nVerifique sus datos o regístrese.`);
+    }
   };
 
-  if (paso === 'landing') return <Landing alIniciar={() => setPaso('seleccion')} />;
+  const manejarRegistroDirecto = async (nuevoUsuario) => {
+    try {
+      const emailLimpio = nuevoUsuario.email ? nuevoUsuario.email.toLowerCase().trim() : "";
+      const rolFiltrado = (nuevoUsuario.rol || nuevoUsuario.role || 'medico').toLowerCase().trim();
 
-  if (paso === 'seleccion') {
+      const existe = usuariosDB.some(u => {
+        const correoF = u.correo || u.email || "";
+        return correoF.toLowerCase().trim() === emailLimpio;
+      });
+      
+      if (existe) {
+        alert("⚠️ Este correo electrónico ya está registrado.");
+        return false;
+      }
+
+      await addDoc(collection(db, "usuarios"), {
+        nombre: (nuevoUsuario.nombre || "Usuario").trim(),
+        correo: emailLimpio,
+        password: String(nuevoUsuario.password || "").trim(),
+        role: rolFiltrado,
+        especialidad: rolFiltrado === 'medico' ? "general" : "",
+        pin: rolFiltrado === 'medico' ? "4567" : "",
+        uid: "uid_" + Math.random().toString(36).substr(2, 9)
+      });
+
+      alert("🎉 ¡Registro guardado exitosamente en Firestore! Ahora puede iniciar sesión.");
+      return true;
+    } catch (error) {
+      console.error("Error al escribir en la colección 'usuarios':", error);
+      alert(`❌ Error en Firebase: ${error.message}`);
+      return false;
+    }
+  };
+
+  if (paso === 'landing') {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
-        <h2 style={{ fontSize: '2.2rem', color: '#0f172a', marginBottom: '40px', fontWeight: '900' }}>¿Cómo desea ingresar a <span style={{color: '#2563eb'}}>MediVault</span>?</h2>
-        <div style={{ display: 'flex', gap: '30px' }}>
-          <div onClick={() => irALogin('medico')} style={{ padding: '40px', background: 'white', borderRadius: '24px', border: '2px solid #e2e8f0', cursor: 'pointer', textAlign: 'center', width: '220px', transition: '0.3s' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '15px' }}>👨‍⚕️</div>
-            <h3 style={{ fontWeight: '800', color: '#1e293b' }}>Soy Médico</h3>
-          </div>
-          <div onClick={() => irALogin('farmacia')} style={{ padding: '40px', background: 'white', borderRadius: '24px', border: '2px solid #e2e8f0', cursor: 'pointer', textAlign: 'center', width: '220px', transition: '0.3s' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '15px' }}>💊</div>
-            <h3 style={{ fontWeight: '800', color: '#1e293b' }}>Soy Farmacéutico</h3>
-          </div>
-        </div>
-        <button onClick={() => setPaso('landing')} style={{ marginTop: '40px', background: 'none', border: 'none', color: '#64748b', fontWeight: 'bold', cursor: 'pointer' }}>← Volver al inicio</button>
-      </div>
+      <Landing 
+        alIniciar={manejarLoginDirecto} 
+        alRegistrar={manejarRegistroDirecto}
+        recetasEmitidas={recetas} 
+        inventario={inventario} 
+      />
     );
   }
-
-  if (paso === 'login') return <Login rol={rolSeleccionado} onLogin={(u) => { setUser(u); setPaso('app'); }} onVolver={() => setPaso('seleccion')} />;
 
   return (
     <div>
