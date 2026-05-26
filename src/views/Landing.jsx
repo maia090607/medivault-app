@@ -1,335 +1,1113 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function Landing({ alIniciar, alRegistrar, recetasEmitidas = [], inventario = [] }) {
-  const [hoverFeature, setHoverFeature] = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginStep, setLoginStep] = useState('seleccion'); 
-  const [rolSeleccionado, setRolSeleccionado] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const [animarBarras, setAnimarBarras] = useState(false);
-  const [faqAbierta, setFaqAbierta] = useState(null);
+// =========================================================
+// COMPONENTES GRÁFICOS INTEGRADOS (LOGOS CORPORATIVOS REALES)
+// =========================================================
 
-  // MODO OSCURO
-  const [darkMode, setDarkMode] = useState(false);
+const MediVaultLogo = () => (
+  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="32" height="32" rx="8" fill="#2563eb"/>
+    <path d="M16 7L24 11V17C24 21.42 19.58 25 16 25C12.42 25 8 21.42 8 17V11L16 7Z" fill="white"/>
+    <path d="M16 12V20" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+    <path d="M12 16H20" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
 
-  // ESTADOS FORMULARIOS
-  const [regNombre, setRegNombre] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [logEmail, setLogEmail] = useState('');
-  const [logPassword, setLogPassword] = useState('');
+const MedicalModuleIllo = () => (
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="60" r="50" fill="#eff6ff"/>
+    <rect x="35" y="30" width="50" height="65" rx="4" fill="white" stroke="#2563eb" strokeWidth="2"/>
+    <path d="M42 42H55" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M42 50H70" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="16" cy="16" r="16" transform="translate(75 60)" fill="#10b981"/>
+    <path d="M86 71V81" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <path d="M81 76H91" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="60" cy="100" r="15" fill="white" stroke="#bfdbfe" strokeWidth="2"/>
+  </svg>
+);
 
-  // VISIBILIDAD CONTRASEÑAS
-  const [verLogPassword, setVerLogPassword] = useState(false);
-  const [verRegPassword, setVerRegPassword] = useState(false);
+const PharmacyModuleIllo = () => (
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="60" r="50" fill="#fef3c7"/>
+    <path d="M40 40L60 30L80 40V70L60 80L40 70V40Z" fill="white" stroke="#d97706" strokeWidth="2"/>
+    <path d="M40 40L60 50L80 40" stroke="#d97706" strokeWidth="2"/>
+    <path d="M60 50V80" stroke="#d97706" strokeWidth="2"/>
+    <circle cx="20" cy="20" r="20" transform="translate(10 70)" fill="#d97706"/>
+    <path d="M25 85L29 89L35 81" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <rect x="75" y="70" width="30" height="20" rx="4" fill="white" stroke="#f59e0b" strokeWidth="2"/>
+  </svg>
+);
 
-  useEffect(() => {
-    setTimeout(() => setAnimarBarras(true), 800);
-  }, []);
+const HeroMockupUI = () => (
+  <svg width="100%" height="100%" viewBox="0 0 350 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="350" height="250" rx="12" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1"/>
+    <rect x="15" y="15" width="80" height="15" rx="4" fill="#eff6ff"/>
+    <circle cx="325" cy="22.5" r="7.5" fill="#2563eb"/>
+    <rect x="15" y="45" width="320" height="1" fill="#e2e8f0"/>
+    
+    <rect x="15" y="60" width="100" height="60" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="25" y="70" width="30" height="8" rx="2" fill="#bfdbfe"/>
+    <rect x="25" y="85" width="80" height="25" rx="2" fill="white" stroke="#e2e8f0"/>
+    
+    <rect x="125" y="60" width="210" height="175" rx="6" fill="white" stroke="#e2e8f0"/>
+    <rect x="135" y="70" width="100" height="10" rx="2" fill="#eff6ff"/>
+    <rect x="135" y="90" width="190" height="135" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="145" y="100" width="100" height="8" rx="2" fill="#e2e8f0"/>
+    <rect x="145" y="115" width="170" height="8" rx="2" fill="#e2e8f0"/>
 
-  const esEmailValido = (correo) => {
-    if (!correo) return null;
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(correo);
-  };
+    <rect x="15" y="130" width="100" height="105" rx="6" fill="#10b981" fillOpacity="0.1" stroke="#10b981" strokeDasharray="4 4"/>
+    <circle cx="65" cy="182.5" r="30" fill="white" stroke="#10b981" strokeWidth="2"/>
+    <path d="M65 170V195" stroke="#10b981" strokeWidth="4" strokeLinecap="round"/>
+    <path d="M52.5 182.5H77.5" stroke="#10b981" strokeWidth="4" strokeLinecap="round"/>
+  </svg>
+);
 
-  const totalDespachados = recetasEmitidas.filter(r => r.estado === 'Entregado' || r.estado === 'Dispensado').length + 1259;
-  const ordenesActivas = recetasEmitidas.filter(r => r.estado === 'Pendiente').length + 52;
-  const stockGlobalSurtido = inventario.reduce((acc, item) => acc + (parseInt(item.stock, 10) || 0), 0) + 9046;
+// LOGO REAL CRUZ VERDE
+const PharmacyLogoA = () => (
+  <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="22" r="21" fill="#00875A"/>
+    <path d="M22 9V35M9 22H35" stroke="white" strokeWidth="6.5" strokeLinecap="square"/>
+    <text x="54" y="20" fill="#002D1A" fontFamily="'Arial Black', Impact, sans-serif" fontSize="14" fontWeight="900" letterSpacing="-0.3">cruz</text>
+    <text x="54" y="35" fill="#00875A" fontFamily="'Arial Black', Impact, sans-serif" fontSize="16" fontWeight="900" letterSpacing="-0.5">verde</text>
+  </svg>
+);
 
-  const caracteristicas = [
-    { id: 'historial', icono: '📂', titulo: 'Historial Clínico Unificado', descripcion: 'Acceso centralizado e inmediato a los expedientes médicos de los pacientes en tiempo real.' },
-    { id: 'cripto', icono: '🔐', titulo: 'Fórmulas Criptográficas', descripcion: 'Validación automatizada mediante tokens de seguridad para evitar duplicidad de recetas.' },
-    { id: 'stock', icono: '📊', titulo: 'Control Inteligente de Stock', descripcion: 'Monitoreo dinámico del inventario farmacéutico con alertas tempranas de caducidad.' },
-    { id: 'alergias', icono: '🛡️', titulo: 'Seguridad Preventiva', descripcion: 'Alertas inmediatas ante interacciones medicamentosas adversas antes de emitir la orden.' }
+// LOGO REAL FARMATODO
+const PharmacyLogoB = () => (
+  <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 25V13L18 3L32 13V25H4Z" fill="#0D2C74"/>
+    <path d="M13 25V17H23V25H13Z" fill="white"/>
+    <circle cx="18" cy="10" r="2.5" fill="white"/>
+    <path d="M1 28H35" stroke="#0D2C74" strokeWidth="2.5" strokeLinecap="round"/>
+    <text x="44" y="21" fill="#0D2C74" fontFamily="'Franklin Gothic Medium', Arial, sans-serif" fontSize="15" fontWeight="bold" letterSpacing="-0.3">FARMATODO</text>
+    <rect x="44" y="26" width="95" height="3" fill="#00A3E0"/>
+  </svg>
+);
+
+// LOGO REAL MIFARMA
+const PharmacyLogoC = () => (
+  <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="4" width="38" height="36" rx="12" fill="#005691"/>
+    <path d="M20 13V31M11 22H29" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+    <path d="M20 17V27M15 22H25" stroke="#E30613" strokeWidth="2.5" strokeLinecap="round"/>
+    <text x="48" y="23" fill="#005691" fontFamily="'Arial Black', sans-serif" fontSize="17" fontWeight="900" letterSpacing="-0.5">mi</text>
+    <text x="68" y="23" fill="#E30613" fontFamily="'Arial Black', sans-serif" fontSize="17" fontWeight="900" letterSpacing="-0.5">farma</text>
+    <text x="48" y="34" fill="#777777" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold">Sabor a bienestar</text>
+  </svg>
+);
+
+// =========================================================
+// COMPONENTE PRINCIPAL
+// =========================================================
+
+function Landing({ onNavigateToLogin }) {
+  const [tabActiva, setTabActiva] = useState('medico');
+  const [faqActiva, setFaqActiva] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  const clientsData = [
+    { 
+      id: 1, 
+      tipo: 'medico', 
+      nombre: "Dr. Alejandro Mendoza", 
+      cargo: "Cardiología e Investigación", 
+      institucion: "Clínica Sanitas Premium", 
+      foto: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=256&h=256&q=80",
+      detalles: {
+        registro: "RM-994812-COL",
+        universidad: "Universidad Nacional de Colombia",
+        horario: "Lunes a Viernes (08:00 - 16:00)",
+        kpis: [
+          { label: "Efectividad Recetas", value: "98.4%", color: "#10b981" },
+          { label: "Tiempo Consulta", value: "14 min", color: "#2563eb" },
+          { label: "Score Nube", value: "4.9/5", color: "#f59e0b" }
+        ],
+        actividades: [
+          { tiempo: "Hace 4 min", evento: "Fórmula #MV-9012 firmada digitalmente." },
+          { tiempo: "Hace 18 min", evento: "Validación de DNI de paciente exitosa." },
+          { tiempo: "Hace 1 hora", evento: "Sincronización de vademécum completada." }
+        ]
+      }
+    },
+    { 
+      id: 2, 
+      tipo: 'farmacia', 
+      nombre: "Droguerías Cruz Verde", 
+      cargo: "Suministros y Logística", 
+      institucion: "Red Nacional de Despacho",
+      logoType: 'A',
+      detalles: {
+        sucursal: "Central de Distribución Norte",
+        horario: "Abierto 24 Horas",
+        contacto: "01-8000-CRUZV",
+        tokenStatus: "API Supabase Conectada",
+        kpis: [
+          { label: "Tiempo Despacho", value: "3.5 min", color: "#10b981" },
+          { label: "Precisión Stock", value: "99.9%", color: "#2563eb" },
+          { label: "Alertas Activas", value: "0", color: "#323232" }
+        ],
+        actividades: [
+          { tiempo: "Hace 2 min", evento: "Token #TK-7741 validado en Firestore." },
+          { tiempo: "Hace 12 min", evento: "Inventario de Insulina rebajado en sucursal." },
+          { tiempo: "Hace 45 min", evento: "Auditoría de lotes cruzada sin novedades." }
+        ]
+      }
+    },
+    { 
+      id: 3, 
+      tipo: 'medico', 
+      nombre: "Dra. Elena Rostova", 
+      cargo: "Pediatría y Medicina General", 
+      institucion: "Consultorio Independiente", 
+      foto: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=256&h=256&q=80",
+      detalles: {
+        registro: "RM-441209-COL",
+        universidad: "Pontificia Universidad Javeriana",
+        horario: "Martes y Jueves (09:00 - 18:00)",
+        kpis: [
+          { label: "Efectividad Recetas", value: "99.1%", color: "#10b981" },
+          { label: "Tiempo Consulta", value: "19 min", color: "#2563eb" },
+          { label: "Score Nube", value: "5.0/5", color: "#f59e0b" }
+        ],
+        actividades: [
+          { tiempo: "Hace 8 min", evento: "Nueva receta pediátrica tokenizada." },
+          { tiempo: "Hace 30 min", evento: "Consulta de historial clínico remoto." },
+          { tiempo: "Hace 2 horas", evento: "Actualización de base de datos de pacientes." }
+        ]
+      }
+    },
+    { 
+      id: 4, 
+      tipo: 'farmacia', 
+      nombre: "Farmatodo Colombia", 
+      cargo: "Inventario y Autoservicio", 
+      institucion: "Cadena de Distribución",
+      logoType: 'B',
+      detalles: {
+        sucursal: "Sede Principal Autoservicio",
+        horario: "Abierto 24 Horas",
+        contacto: "redes@farmatodo.com.co",
+        tokenStatus: "API Supabase Conectada",
+        kpis: [
+          { label: "Tiempo Despacho", value: "4.2 min", color: "#10b981" },
+          { label: "Precisión Stock", value: "99.7%", color: "#2563eb" },
+          { label: "Alertas Activas", value: "2", color: "#ef4444" }
+        ],
+        actividades: [
+          { tiempo: "Hace 5 min", evento: "Fórmula surtida y marcada como 'Consumida'." },
+          { tiempo: "Hace 22 min", evento: "Alerta automática: Stock crítico de Amoxicilina." },
+          { tiempo: "Hace 1 hora", evento: "Webhook de conciliación ejecutado correctamente." }
+        ]
+      }
+    },
+    { 
+      id: 5, 
+      tipo: 'medico', 
+      nombre: "Dr. Carlos Benítez", 
+      cargo: "Endocrinología Clínica", 
+      institucion: "Centro Médico Alfa", 
+      foto: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=256&h=256&q=80",
+      detalles: {
+        registro: "RM-775123-COL",
+        universidad: "Universidad del Rosario",
+        horario: "Lunes a Jueves (07:00 - 15:00)",
+        kpis: [
+          { label: "Efectividad Recetas", value: "97.8%", color: "#10b981" },
+          { label: "Tiempo Consulta", value: "12 min", color: "#2563eb" },
+          { label: "Score Nube", value: "4.7/5", color: "#f59e0b" }
+        ],
+        actividades: [
+          { tiempo: "Hace 15 min", evento: "Prescripción de tratamiento crónico subida." },
+          { tiempo: "Hace 40 min", evento: "Validación de firma electrónica por la entidad." },
+          { tiempo: "Hace 3 horas", evento: "Inicio de sesión seguro desde nodo clínico." }
+        ]
+      }
+    },
+    { 
+      id: 6, 
+      tipo: 'farmacia', 
+      nombre: "Mifarma Especializada", 
+      cargo: "Administración General", 
+      institucion: "Central de Medicamentos",
+      logoType: 'C',
+      detalles: {
+        sucursal: "Distribuidora Metropolitana",
+        horario: "Lunes a Sábado (06:00 - 22:00)",
+        contacto: "soporte@mifarma.com",
+        tokenStatus: "API Supabase Conectada",
+        kpis: [
+          { label: "Tiempo Despacho", value: "3.9 min", color: "#10b981" },
+          { label: "Precisión Stock", value: "99.8%", color: "#2563eb" },
+          { label: "Alertas Activas", value: "0", color: "#323232" }
+        ],
+        actividades: [
+          { tiempo: "Hace 10 min", evento: "Escaneo de código QR de receta verificado." },
+          { tiempo: "Hace 25 min", evento: "Sincronización de lotes con servidor central." },
+          { tiempo: "Hace 1 hora", evento: "Reporte de despacho diario generado en PDF." }
+        ]
+      }
+    }
   ];
 
-  const metricasBI = [
-    { nombre: 'Amoxicilina 500mg', porcentaje: 85, color: '#2563eb' },
-    { nombre: 'Acetaminofén Genérico', porcentaje: 65, color: '#3b82f6' },
-    { nombre: 'Losartán Potásico', porcentaje: 40, color: '#60a5fa' }
+  const faqsData = [
+    {
+      id: 1,
+      pregunta: "¿Cómo garantiza MediVault la seguridad de las recetas médicas?",
+      respuesta: "MediVault procesa cada fórmula generando un token criptográfico único guardado de forma segura en Firestore. Cuando la farmacia escanea o introduce dicho token, el sistema valida su autenticidad y lo marca inmediatamente como consumido, imposibilitando fraudes por duplicación."
+    },
+    {
+      id: 2,
+      pregunta: "¿El inventario de la farmacia se actualiza automáticamente al emitir una fórmula?",
+      respuesta: "Sí, la sincronización en la nube es instantánea. En el momento en que la farmacia procesa el despacho de los medicamentos, el stock general disminuye en tiempo real, lo que permite al módulo médico visualizar con precisión predictiva las existencias antes de recetar."
+    },
+    {
+      id: 3,
+      pregunta: "¿Qué sucede si una farmacia intenta surtir una receta ya entregada?",
+      respuesta: "El software arrojará de forma inmediata una alerta de seguridad denegando la transacción. Cada orden posee un estado único verificado por auditoría cruzada, asegurando que las recetas electrónicas sean de único uso."
+    },
+    {
+      id: 4,
+      pregunta: "¿Es compatible con cualquier tipo de clínica o farmacia pequeña?",
+      respuesta: "Totalmente. Al ser un software nativo en la nube (SaaS), MediVault está adaptado para optimizar los flujos de trabajo de consultorios independientes, Pymes de salud y cadenas de distribución farmacéutica sin requerir infraestructura local compleja."
+    }
   ];
 
-  const faqs = [
-    { id: 1, pregunta: '¿Cómo se garantiza la seguridad de los expedientes médicos?', respuesta: 'MediVault utiliza las reglas de seguridad avanzadas de Firebase Firestore combinadas con filtros de autenticación del lado del cliente, asegurando que solo el personal médico y farmacéutico con roles validados pueda consultar o alterar información.' },
-    { id: 2, pregunta: '¿Qué sucede si una receta digital ya fue dispensada?', respuesta: 'El sistema actualiza de forma instantánea el estado de la receta en la base de datos a "Dispensado". Si otra terminal intenta procesar el mismo token criptográfico, el sistema bloqueará la orden y emitirá una alerta de duplicidad.' },
-    { id: 3, pregunta: '¿Cómo funcionan las alertas preventivas de alergias?', respuesta: 'Al momento en que el especialista redacta la orden médica, el sistema cruza los compuestos activos del fármaco seleccionado con la lista de alergias e historial del paciente registrado en Firestore, gatillando un bloqueo visual si detecta riesgo.' }
-  ];
-
-  const s = {
-    container: { minHeight: '100vh', fontFamily: '"Inter", sans-serif', backgroundColor: darkMode ? '#0f172a' : '#ffffff', color: darkMode ? '#f1f5f9' : '#1e293b', overflowX: 'hidden', transition: 'background-color 0.3s ease, color 0.3s ease' },
-    nav: { padding: '0 60px', height: '80px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'fixed', top: 0, width: '100%', background: darkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', zIndex: 100, boxSizing: 'border-box', borderBottom: darkMode ? '1px solid #1e293b' : '1px solid #f1f5f9' },
-    heroSection: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '180px 20px 80px', textAlign: 'center', background: darkMode ? 'radial-gradient(circle at 50% 0%, #1e3a8a 0%, #0f172a 60%)' : 'radial-gradient(circle at 50% 0%, #eff6ff 0%, #ffffff 60%)', boxSizing: 'border-box' },
-    title: { fontSize: '5rem', fontWeight: '950', color: darkMode ? '#ffffff' : '#0f172a', margin: '0 auto 30px', lineHeight: '1.1', letterSpacing: '-4px', maxWidth: '900px' },
-    btnMain: { padding: '18px 42px', background: '#2563eb', color: '#ffffff', borderRadius: '14px', fontWeight: '700', border: 'none', cursor: 'pointer', transition: '0.3s ease', boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)' },
-    
-    loginOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, animation: 'fadeIn 0.3s' },
-    loginCard: { background: darkMode ? '#1e293b' : '#ffffff', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', padding: '45px', borderRadius: '36px', width: '480px', boxShadow: '0 30px 60px -15px rgba(0,0,0,0.3)', boxSizing: 'border-box', textAlign: 'center', position: 'relative', animation: 'slideUp 0.4s' },
-    cerrarModalBtn: { position: 'absolute', top: '25px', right: '25px', background: darkMode ? '#334155' : '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', color: darkMode ? '#cbd5e1' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' },
-    modalTitle: { fontSize: '2.2rem', fontWeight: '950', color: darkMode ? '#ffffff' : '#0f172a', marginBottom: '15px', lineHeight: '1.25', letterSpacing: '-1.5px', paddingRight: '20px' },
-    modalSub: { color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600', marginBottom: '35px', fontSize: '1.05rem' },
-    selectorBtn: { width: '100%', padding: '20px', marginBottom: '15px', borderRadius: '20px', border: darkMode ? '2px solid #334155' : '2px solid #f1f5f9', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '20px', transition: '0.2s ease' },
-    inputBase: (valido) => ({ width: '100%', padding: '14px 16px', borderRadius: '14px', fontSize: '1rem', outline: 'none', background: darkMode ? '#0f172a' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', boxSizing: 'border-box', marginBottom: '20px', transition: 'all 0.3s ease', border: valido === null ? (darkMode ? '2px solid #334155' : '2px solid #e2e8f0') : valido ? '2px solid #10b981' : '2px solid #ef4444' }),
-    passwordWrapper: { position: 'relative', width: '100%' },
-    ojoBtn: { position: 'absolute', right: '16px', top: '15px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#64748b', outline: 'none' },
-    
-    statsSection: { maxWidth: '1100px', margin: '0 auto', padding: '20px 20px 40px' },
-    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: darkMode ? '#1e293b' : '#f8fafc', padding: '50px 20px', borderRadius: '40px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0' },
-    statBlock: { display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: darkMode ? '1px solid #334155' : '1px solid #cbd5e1', justifyContent: 'center' },
-    statNumber: { fontSize: '4.5rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-3px', lineHeight: '1' },
-    statLabel: { fontSize: '0.85rem', fontWeight: '800', color: darkMode ? '#94a3b8' : '#64748b', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '15px', textAlign: 'center' },
-    
-    featuresSection: { padding: '80px 60px 40px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center' },
-    featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '25px', marginTop: '50px' },
-    featureCard: (isHovered) => ({ padding: '40px', borderRadius: '28px', background: darkMode ? '#1e293b' : '#ffffff', border: isHovered ? '2px solid #2563eb' : (darkMode ? '2px solid #334155' : '2px solid #f1f5f9'), boxShadow: isHovered ? '0 20px 40px -15px rgba(37, 99, 235, 0.2)' : '0 4px 20px rgba(0,0,0,0.01)', textAlign: 'left', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }),
-    featureIcon: { fontSize: '2rem', background: darkMode ? '#0f172a' : '#eff6ff', width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '25px', color: '#2563eb' },
-
-    analyticsSection: { padding: '100px 60px', background: darkMode ? '#020617' : '#0f172a', color: '#ffffff' },
-    analyticsContainer: { maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' },
-    barWrapper: { marginBottom: '30px' },
-    barBackground: { height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden', marginTop: '10px' },
-    barFill: (ancho, color) => ({ height: '100%', width: animarBarras ? `${ancho}%` : '0%', background: color, transition: 'width 1.5s cubic-bezier(0.65, 0, 0.35, 1)', borderRadius: '10px' }),
-
-    faqSection: { padding: '100px 60px 40px', maxWidth: '800px', margin: '0 auto', textAlign: 'center' },
-    faqItem: { background: darkMode ? '#1e293b' : '#f8fafc', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '20px', padding: '24px', marginBottom: '15px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s ease' },
-    faqHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '800', fontSize: '1.1rem', color: darkMode ? '#ffffff' : '#0f172a' },
-    faqBody: (isOpen) => ({ marginTop: isOpen ? '16px' : '0px', color: darkMode ? '#cbd5e1' : '#475569', fontSize: '0.98rem', lineHeight: '1.6', maxHeight: isOpen ? '200px' : '0px', overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', opacity: isOpen ? 1 : 0 }),
-
-    roleSection: { padding: '60px 60px 120px', maxWidth: '1100px', margin: '0 auto' },
-    roleGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px', marginTop: '50px' },
-    roleCard: { padding: '50px 40px', borderRadius: '32px', background: darkMode ? '#1e293b' : '#ffffff', border: darkMode ? '2px solid #334155' : '2px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', textAlign: 'left', boxSizing: 'border-box' },
-    
-    // CORREGIDO: Sintaxis limpia usando estructura condicional correcta para evitar errores de parseo (image_6d142e)
-    roleIcon: { fontSize: '2.5rem', background: darkMode ? '#0f172a' : '#eff6ff', width: '70px', height: '70px', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '30px', color: '#2563eb' },
-
-    themeToggleBtn: { position: 'fixed', bottom: '30px', right: '30px', width: '60px', height: '60px', borderRadius: '50%', background: '#2563eb', color: '#ffffff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', boxShadow: '0 10px 25px rgba(37, 99, 235, 0.4)', zIndex: 5000, transition: 'transform 0.2s' },
-
-    footerContainer: { padding: '60px 20px 40px', borderTop: darkMode ? '1px solid #334155' : '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' },
-    statusCintillo: { display: 'flex', alignItems: 'center', gap: '10px', background: darkMode ? '#1e293b' : '#f1f5f9', padding: '8px 16px', borderRadius: '30px', fontSize: '0.85rem', fontWeight: '700', color: darkMode ? '#cbd5e1' : '#475569' },
-    statusDotWrapper: { position: 'relative', display: 'inline-block', width: '10px', height: '10px' },
-    statusDot: { width: '10px', height: '10px', background: '#10b981', borderRadius: '50%' },
-    statusPulse: { position: 'absolute', top: 0, left: 0, width: '10px', height: '10px', background: '#10b981', borderRadius: '50%', animation: 'pulseHeartbeat 1.8s infinite ease-in-out', opacity: 0.6 }
+  const toggleFaq = (id) => {
+    setFaqActiva(faqActiva === id ? null : id);
   };
 
-  const seleccionarRol = (rol) => { setRolSeleccionado(rol); setLoginStep('formulario'); };
-  const cerrarYLimpiarModal = () => {
-    setShowLogin(false);
-    setRegNombre(''); setRegEmail(''); setRegPassword('');
-    setLogEmail(''); setLogPassword('');
-    setVerLogPassword(false); setVerRegPassword(false); setCargando(false);
+  const st = {
+    wrapper: {
+      background: '#ffffff',
+      minHeight: '100vh',
+      width: '100%',
+      fontFamily: '"Inter", "Segoe UI", sans-serif',
+      color: '#1e293b',
+      margin: 0,
+      padding: 0,
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      WebkitFontSmoothing: 'antialiased'
+    },
+    navbar: {
+      width: '100%',
+      borderBottom: '1px solid #e2e8f0',
+      background: '#ffffff',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000
+    },
+    navContainer: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '18px 24px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      boxSizing: 'border-box'
+    },
+    logo: {
+      fontSize: '1.45rem',
+      fontWeight: '800',
+      color: '#0f172a',
+      letterSpacing: '-0.5px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    },
+    navLinks: {
+      display: 'flex',
+      gap: '32px',
+      alignItems: 'center'
+    },
+    navLink: {
+      color: '#475569',
+      textDecoration: 'none',
+      fontWeight: '600',
+      fontSize: '0.9rem',
+      transition: 'color 0.15s ease'
+    },
+    btnNavLogin: {
+      background: 'transparent',
+      border: '1px solid #0052cc',
+      color: '#0052cc',
+      padding: '8px 20px',
+      borderRadius: '6px',
+      fontWeight: '700',
+      fontSize: '0.88rem',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease'
+    },
+    heroOuter: {
+      width: '100%',
+      background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)',
+      padding: '100px 24px 80px 24px',
+      boxSizing: 'border-box'
+    },
+    heroContainer: {
+      maxWidth: '1050px',
+      margin: '0 auto',
+      display: 'grid',
+      gridTemplateColumns: '1.1fr 0.9fr',
+      alignItems: 'center',
+      gap: '50px'
+    },
+    badgeSiigo: {
+      background: '#e6f0ff',
+      color: '#0052cc',
+      padding: '6px 14px',
+      borderRadius: '4px',
+      fontSize: '0.78rem',
+      fontWeight: '700',
+      display: 'inline-block',
+      marginBottom: '16px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px'
+    },
+    heroTitle: {
+      fontSize: '3.4rem',
+      fontWeight: '900',
+      color: '#0f172a',
+      lineHeight: '1.1',
+      margin: '0 0 24px 0',
+      letterSpacing: '-1.8px'
+    },
+    heroSubtitle: {
+      fontSize: '1.2rem',
+      color: '#475569',
+      lineHeight: '1.6',
+      margin: '0 0 40px 0',
+      fontWeight: '500'
+    },
+    ctaGroup: {
+      display: 'flex',
+      gap: '16px'
+    },
+    btnPrimary: {
+      background: '#0052cc',
+      color: '#ffffff',
+      border: 'none',
+      padding: '16px 36px',
+      borderRadius: '6px',
+      fontWeight: '700',
+      fontSize: '0.98rem',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      boxShadow: '0 4px 6px rgba(0, 82, 204, 0.15)'
+    },
+    btnSecondary: {
+      background: '#ffffff',
+      color: '#334155',
+      border: '1px solid #e2e8f0',
+      padding: '16px 36px',
+      borderRadius: '6px',
+      fontWeight: '700',
+      fontSize: '0.98rem',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease'
+    },
+    heroMockupContainer: {
+      position: 'relative',
+      width: '100%',
+      height: '300px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    heroMockupBox: {
+      width: '100%',
+      height: '100%',
+      background: '#ffffff',
+      border: '1px solid #e2e8f0',
+      borderRadius: '16px',
+      padding: '10px',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)',
+      transform: 'perspective(1000px) rotateY(-5deg) rotateX(2deg)',
+      overflow: 'hidden'
+    },
+    metricsBar: {
+      background: '#ffffff',
+      borderTop: '1px solid #e2e8f0',
+      borderBottom: '1px solid #e2e8f0',
+      padding: '30px 24px'
+    },
+    metricsContainer: {
+      maxWidth: '1100px',
+      margin: '0 auto',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '20px'
+    },
+    metricItem: {
+      textAlign: 'center',
+      borderRight: '1px solid #e2e8f0',
+      padding: '0 10px'
+    },
+    metricNumber: {
+      fontSize: '1.8rem',
+      fontWeight: '900',
+      color: '#0052cc',
+      display: 'block',
+      letterSpacing: '-0.5px'
+    },
+    metricLabel: {
+      fontSize: '0.9rem',
+      color: '#64748b',
+      fontWeight: '600',
+      marginTop: '4px'
+    },
+    sectionTabs: {
+      width: '100%',
+      maxWidth: '1150px',
+      margin: '0 auto',
+      padding: '90px 24px',
+      boxSizing: 'border-box'
+    },
+    sectionTitle: {
+      fontSize: '2.2rem',
+      fontWeight: '800',
+      color: '#0f172a',
+      textAlign: 'center',
+      marginBottom: '16px',
+      letterSpacing: '-0.8px'
+    },
+    sectionSubtitle: {
+      fontSize: '1.1rem',
+      color: '#64748b',
+      textAlign: 'center',
+      marginBottom: '50px',
+      fontWeight: '500',
+      maxWidth: '600px',
+      margin: '0 auto 50px auto'
+    },
+    tabsHeader: {
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '12px',
+      marginBottom: '40px',
+      borderBottom: '2px solid #f1f5f9',
+      paddingBottom: '20px'
+    },
+    tabBtn: (activo) => ({
+      padding: '14px 28px',
+      border: 'none',
+      background: activo ? '#e6f0ff' : 'transparent',
+      color: activo ? '#0052cc' : '#475569',
+      fontWeight: '700',
+      fontSize: '1rem',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease'
+    }),
+    tabContentCard: {
+      background: '#ffffff',
+      border: '1px solid #e2e8f0',
+      borderRadius: '16px',
+      padding: '50px',
+      display: 'grid',
+      gridTemplateColumns: '1.2fr 0.8fr',
+      gap: '50px',
+      alignItems: 'center',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
+    },
+    tabIlloContainer: {
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '15px'
+    },
+    sectionClients: {
+      width: '100%',
+      maxWidth: '1150px',
+      margin: '0 auto',
+      padding: '40px 24px 90px 24px',
+      boxSizing: 'border-box'
+    },
+    gridClients: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '24px',
+      marginTop: '40px'
+    },
+    cardClient: {
+      background: '#ffffff',
+      border: '1px solid #e2e8f0',
+      borderRadius: '16px',
+      padding: '32px 24px',
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      minHeight: '340px',
+      boxSizing: 'border-box',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease'
+    },
+    brandHeader: {
+      height: '64px',
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: '16px'
+    },
+    imageContainer: {
+      width: '64px',
+      height: '64px',
+      borderRadius: '50%',
+      overflow: 'hidden',
+      border: '2px solid #2563eb',
+      background: '#f8fafc',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    doctorImg: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover'
+    },
+    logoWrapper: {
+      width: '135px',
+      height: '42px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    clientBadge: {
+      fontSize: '0.72rem',
+      fontWeight: '700',
+      padding: '4px 10px',
+      borderRadius: '4px',
+ textTransform: 'uppercase',
+      letterSpacing: '0.3px',
+      marginBottom: '16px',
+      display: 'inline-block'
+    },
+    clientName: {
+      fontSize: '1.1rem',
+      fontWeight: '800',
+      color: '#0f172a',
+      margin: '0 0 6px 0',
+      lineHeight: '1.3'
+    },
+    clientSub: {
+      fontSize: '0.88rem',
+      color: '#64748b',
+      fontWeight: '600',
+      margin: '0 0 4px 0'
+    },
+    clientInst: {
+      fontSize: '0.82rem',
+      color: '#94a3b8',
+      fontWeight: '500',
+      marginTop: '4px'
+    },
+    sectionFaq: {
+      width: '100%',
+      background: '#f8fafc',
+      borderTop: '1px solid #e2e8f0',
+      borderBottom: '1px solid #e2e8f0',
+      padding: '90px 24px',
+      boxSizing: 'border-box'
+    },
+    faqContainer: {
+      maxWidth: '800px',
+      margin: '0 auto'
+    },
+    faqList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      marginTop: '40px'
+    },
+    faqItem: {
+      background: '#ffffff',
+      border: '1px solid #e2e8f0',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      transition: 'border-color 0.15s ease'
+    },
+    faqHeader: {
+      width: '100%',
+      padding: '20px 24px',
+      background: 'transparent',
+      border: 'none',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      cursor: 'pointer',
+      textAlign: 'left'
+    },
+    faqQuestion: {
+      fontSize: '1.05rem',
+      fontWeight: '700',
+      color: '#0f172a',
+      margin: 0
+    },
+    faqIcon: (abierto) => ({
+      fontSize: '1.2rem',
+      color: abierto ? '#0052cc' : '#94a3b8',
+      transform: abierto ? 'rotate(45deg)' : 'rotate(0deg)',
+      transition: 'transform 0.2s ease, color 0.15s ease',
+      fontWeight: '400'
+    }),
+    faqBody: (abierto) => ({
+      maxHeight: abierto ? '300px' : '0px',
+      padding: abierto ? '0 24px 20px 24px' : '0 24px',
+      opacity: abierto ? 1 : 0,
+      overflow: 'hidden',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxSizing: 'border-box'
+    }),
+    faqAnswer: {
+      fontSize: '0.98rem',
+      color: '#475569',
+      lineHeight: '1.6',
+      margin: 0,
+      fontWeight: '500'
+    },
+    footer: {
+      marginTop: 'auto',
+      width: '100%',
+      background: '#ffffff',
+      borderTop: '1px solid #e2e8f0',
+      padding: '40px 24px'
+    },
+    footerContainer: {
+      maxWidth: '1150px',
+      margin: '0 auto',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      fontSize: '0.9rem',
+      color: '#64748b',
+      fontWeight: '500'
+    },
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(15, 23, 42, 0.6)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2000,
+      padding: '20px'
+    },
+    modalContent: {
+      backgroundColor: '#ffffff',
+      borderRadius: '16px',
+      width: '100%',
+      maxWidth: '540px',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+      padding: '32px',
+      position: 'relative',
+      boxSizing: 'border-box',
+      border: '1px solid #e2e8f0',
+      maxHeight: '90vh',
+      overflowY: 'auto'
+    },
+    modalCloseBtn: {
+      position: 'absolute',
+      top: '20px',
+      right: '20px',
+      background: '#f1f5f9',
+      border: 'none',
+      color: '#64748b',
+      width: '32px',
+      height: '32px',
+      borderRadius: '50%',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold',
+      fontSize: '1rem',
+      transition: 'background 0.15s ease'
+    }
   };
 
-  const manejarSubmitLogin = async (e) => {
-    e.preventDefault();
-    setCargando(true);
-    await alIniciar({ email: logEmail.trim(), password: logPassword.trim(), rol: rolSeleccionado });
-    setCargando(false);
-  };
-
-  const manejarSubmitRegistro = async (e) => {
-    e.preventDefault();
-    setCargando(true);
-    const reg = await alRegistrar({ nombre: regNombre.trim(), email: regEmail.trim(), password: regPassword.trim(), rol: rolSeleccionado });
-    setCargando(false);
-    if (reg) { setLogEmail(regEmail.trim()); setLoginStep('formulario'); }
-  };
-
-  const alternarFaq = (id) => { setFaqAbierta(faqAbierta === id ? null : id); };
+  
 
   return (
-    <div style={s.container}>
+    <div style={st.wrapper}>
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulseHeartbeat { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(3.2); opacity: 0; } }
+        .siigo-link:hover { color: #0052cc !important; }
+        .btn-nav-login:hover { background: #0052cc !important; color: #ffffff !important; }
+        .btn-primary:hover { background: #0043a4 !important; transform: translateY(-1px); }
+        .btn-secondary:hover { background: #f8fafc !important; border-color: #cbd5e1 !important; }
+        .bullet-list { list-style: none; padding: 0; margin: 25px 0 0 0; }
+        .bullet-list li { margin-bottom: 14px; font-size: 1rem; color: #475569; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .bullet-icon { color: #10b981; font-weight: bold; font-size: 1.1rem; }
+        .metric-item-last { border-right: none !important; }
+        .faq-item-box:hover { border-color: #bfdbfe !important; }
+        .client-card-box:hover { border-color: #0052cc !important; transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0, 82, 204, 0.08); }
+        .close-modal-btn:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+        
+        /* ANIMACIÓN LIVE DE PULSO */
+        @keyframes livePing {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        .live-pulse-dot {
+          position: relative;
+          width: 8px;
+          height: 8px;
+          background-color: #10b981;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .live-pulse-dot::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          background-color: #10b981;
+          border-radius: 50%;
+          animation: livePing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
       `}</style>
 
-      {/* BOTÓN FLOTANTE DE MODO OSCURO */}
-      <button 
-        style={s.themeToggleBtn} 
-        onClick={() => setDarkMode(!darkMode)}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        {darkMode ? '☀️' : '🌙'}
-      </button>
-
-      {showLogin && (
-        <div style={s.loginOverlay} onClick={cerrarYLimpiarModal}>
-          <div style={s.loginCard} onClick={(e) => e.stopPropagation()}>
-            <button style={s.cerrarModalBtn} onClick={cerrarYLimpiarModal}>✕</button>
-            
-            {loginStep === 'seleccion' && (
-              <div>
-                <h3 style={s.modalTitle}>¿Cómo desea ingresar a MediVault?</h3>
-                <p style={s.modalSub}>Seleccione su rol operativo</p>
-                <button style={s.selectorBtn} onClick={() => seleccionarRol('medico')} onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2563eb'} onMouseLeave={(e) => e.currentTarget.style.borderColor = darkMode ? '#334155' : '#f1f5f9'}>
-                  <span style={{ fontSize: '2.5rem' }}>🩺</span>
-                  <div style={{ textAlign: 'left' }}><div style={{ fontWeight: '900', fontSize: '1.1rem' }}>Soy Médico</div><div style={{ fontSize: '0.85rem', color: '#64748b' }}>Especialista autorizado</div></div>
-                </button>
-                <button style={s.selectorBtn} onClick={() => seleccionarRol('farmacia')} onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2563eb'} onMouseLeave={(e) => e.currentTarget.style.borderColor = darkMode ? '#334155' : '#f1f5f9'}>
-                  <span style={{ fontSize: '2.5rem' }}>💊</span>
-                  <div style={{ textAlign: 'left' }}><div style={{ fontWeight: '900', fontSize: '1.1rem' }}>Soy Farmacéutico</div><div style={{ fontSize: '0.85rem', color: '#64748b' }}>Gestión de suministros</div></div>
-                </button>
-              </div>
-            )}
-
-            {loginStep === 'formulario' && (
-              <div>
-                <div style={{ background: '#eff6ff', color: '#2563eb', padding: '8px 16px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', marginBottom: '15px', display: 'inline-block', textTransform: 'uppercase' }}>{rolSeleccionado === 'medico' ? 'MÓDULO MÉDICO 🩺' : 'MÓDULO FARMACIA 💊'}</div>
-                <h3 style={s.modalTitle}>Iniciar Sesión</h3>
-                <form onSubmit={manejarSubmitLogin}>
-                  <div style={{ textAlign: 'left' }}>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: darkMode ? '#cbd5e1' : '#475569', display: 'block', marginBottom: '8px' }}>CORREO ELECTRÓNICO</label>
-                    <input style={s.inputBase(esEmailValido(logEmail))} type="email" placeholder="usuario@medivault.com" value={logEmail} onChange={(e) => setLogEmail(e.target.value)} required disabled={cargando} />
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: darkMode ? '#cbd5e1' : '#475569', display: 'block', marginBottom: '8px' }}>CONTRASEÑA</label>
-                    <div style={s.passwordWrapper}>
-                      <input style={{ ...s.inputBase(null), paddingRight: '50px' }} type={verLogPassword ? "text" : "password"} placeholder="••••••••••••" value={logPassword} onChange={(e) => setLogPassword(e.target.value)} required disabled={cargando} />
-                      <button type="button" style={s.ojoBtn} onClick={() => setVerLogPassword(!verLogPassword)}>{verLogPassword ? '👁️‍🗨️' : '👁'}</button>
-                    </div>
-                  </div>
-                  <button type="submit" style={{ ...s.btnMain, width: '100%', padding: '16px', opacity: cargando ? 0.7 : 1 }} disabled={cargando}>{cargando ? '⏳ PROCESANDO...' : 'INGRESAR'}</button>
-                  <div style={{ marginTop: '20px', fontSize: '0.9rem', color: '#64748b', fontWeight: '600' }}>¿No tiene cuenta? <span onClick={() => !cargando && setLoginStep('registro')} style={{ color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}>Regístrese aquí</span></div>
-                  <button type="button" onClick={() => !cargando && setLoginStep('seleccion')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '700', marginTop: '20px', cursor: 'pointer' }}>← Cambiar de Rol</button>
-                </form>
-              </div>
-            )}
-
-            {loginStep === 'registro' && (
-              <div>
-                <div style={{ background: '#ecfdf5', color: '#10b981', padding: '8px 16px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', marginBottom: '15px', display: 'inline-block', textTransform: 'uppercase' }}>Crear Cuenta: {rolSeleccionado === 'medico' ? 'Médico' : 'Farmacia'}</div>
-                <h3 style={s.modalTitle}>Registro Personal</h3>
-                <form onSubmit={manejarSubmitRegistro}>
-                  <div style={{ textAlign: 'left' }}>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: darkMode ? '#cbd5e1' : '#475569', display: 'block', marginBottom: '8px' }}>NOMBRE COMPLETO</label>
-                    <input style={s.inputBase(regNombre ? true : null)} type="text" placeholder="Dr. Carlos Mendoza" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} required disabled={cargando} />
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: darkMode ? '#cbd5e1' : '#475569', display: 'block', marginBottom: '8px' }}>CORREO ELECTRÓNICO</label>
-                    <input style={s.inputBase(esEmailValido(regEmail))} type="email" placeholder="nombre@medivault.com" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required disabled={cargando} />
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: darkMode ? '#cbd5e1' : '#475569', display: 'block', marginBottom: '8px' }}>CONTRASEÑA DE ACCESO</label>
-                    <div style={s.passwordWrapper}>
-                      <input style={{ ...s.inputBase(regPassword.length >= 6 ? true : regPassword ? false : null), paddingRight: '50px' }} type={verRegPassword ? "text" : "password"} placeholder="Mínimo 6 caracteres" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required disabled={cargando} />
-                      <button type="button" style={s.ojoBtn} onClick={() => setVerRegPassword(!verRegPassword)}>{verRegPassword ? '👁️‍🗨️' : '👁'}</button>
-                    </div>
-                  </div>
-                  <button type="submit" style={{ ...s.btnMain, width: '100%', padding: '16px', background: '#10b981', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.4)', opacity: cargando ? 0.7 : 1 }} disabled={cargando}>{cargando ? '⏳ CREANDO TERMINAL...' : 'CREAR CUENTA SECURE'}</button>
-                  <div style={{ marginTop: '20px', fontSize: '0.9rem', color: '#64748b', fontWeight: '600' }}>¿Ya tiene una cuenta? <span onClick={() => !cargando && setLoginStep('formulario')} style={{ color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}>Inicie sesión</span></div>
-                </form>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* NAVBAR */}
-      <nav style={s.nav}>
-        <div style={{ fontSize: '1.8rem', fontWeight: '950', color: '#2563eb', letterSpacing: '-2px' }}>MEDIVAULT</div>
-        <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
-          <span style={{ fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem', cursor: 'pointer' }}>PRODUCTO</span>
-          <button style={{ ...s.btnMain, padding: '10px 25px', fontSize: '0.85rem', boxShadow: 'none' }} onClick={() => { setLoginStep('seleccion'); setShowLogin(true); }}>LOGIN</button>
+      <nav style={st.navbar}>
+        <div style={st.navContainer}>
+          <div style={st.logo}>
+            <MediVaultLogo /> MediVault
+          </div>
+          <div style={st.navLinks}>
+            <a href="#soluciones" className="siigo-link" style={st.navLink}>Soluciones</a>
+            <a href="#clientes" className="siigo-link" style={st.navLink}>Nuestros Clientes</a>
+            <a href="#faqs" className="siigo-link" style={st.navLink}>Preguntas Frecuentes</a>
+            <button className="btn-nav-login" style={st.btnNavLogin} onClick={onNavigateToLogin}>
+              Iniciar Sesión
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={s.heroSection}>
-        <h1 style={s.title}>Tecnología que <br/><span style={{color: '#2563eb'}}>redefine el cuidado.</span></h1>
-      </section>
+      {/* HERO SECTION */}
+      <header style={st.heroOuter}>
+        <div style={st.heroContainer}>
+          <div>
+            <div style={st.badgeSiigo}>Software Administrativo y Clínico Cloud</div>
+            <h1 style={st.heroTitle}>Controla tu farmacia y consultas médicas en un solo lugar</h1>
+            <p style={st.heroSubtitle}>
+              La plataforma en la nube diseñada para Pymes de salud. Automatiza recetas digitales, asegura despachos con tokens únicos y gestiona inventarios en tiempo real.
+            </p>
+            <div style={st.ctaGroup}>
+              <button className="btn-primary" style={st.btnPrimary} onClick={onNavigateToLogin}>
+                Ingresar al Sistema
+              </button>
+              <button className="btn-secondary" style={st.btnSecondary}>
+                Solicitar Demo
+              </button>
+            </div>
+          </div>
+          <div style={st.heroMockupContainer}>
+            <div style={st.heroMockupBox}>
+              <HeroMockupUI />
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* SECCIÓN ANALÍTICA */}
-      <section style={s.statsSection}>
-        <div style={s.statsGrid}>
-          <div style={s.statBlock}><div style={s.statNumber}>{totalDespachados.toLocaleString()}</div><div style={s.statLabel}>Éxito Clínico</div></div>
-          <div style={s.statBlock}><div style={s.statNumber}>{ordenesActivas}</div><div style={s.statLabel}>Órdenes Activas</div></div>
-          <div style={{ ...s.statBlock, borderRight: 'none' }}><div style={s.statNumber}>{stockGlobalSurtido.toLocaleString()}</div><div style={s.statLabel}>Unidades Stock</div></div>
+      {/* BARRA DE MÉTRICAS */}
+      <section style={st.metricsBar}>
+        <div style={st.metricsContainer}>
+          <div style={st.metricItem}>
+            <span style={st.metricNumber}>+10,000</span>
+            <span style={st.metricLabel}>Recetas Procesadas</span>
+          </div>
+          <div style={st.metricItem}>
+            <span style={st.metricNumber}>100%</span>
+            <span style={st.metricLabel}>Sincronización Firestore</span>
+          </div>
+          <div style={st.metricItem}>
+            <span style={st.metricNumber}>0.0%</span>
+            <span style={st.metricLabel}>Tasa de Fraude</span>
+          </div>
+          <div className="metric-item-last" style={{...st.metricItem, borderRight: 'none'}}>
+            <span style={st.metricNumber}>99.9%</span>
+            <span style={st.metricLabel}>Uptime de Plataforma</span>
+          </div>
         </div>
       </section>
 
-      {/* CARACTERÍSTICAS */}
-      <section style={s.featuresSection}>
-        <h2 style={{ fontSize: '3.5rem', fontWeight: '950', letterSpacing: '-3px', color: darkMode ? '#ffffff' : '#0f172a', marginBottom: '15px' }}>Seguridad de extremo a extremo</h2>
-        <div style={s.featuresGrid}>
-          {caracteristicas.map(f => (
-            <div key={f.id} style={s.featureCard(hoverFeature === f.id)} onMouseEnter={() => setHoverFeature(f.id)} onMouseLeave={() => setHoverFeature(null)}>
-              <div style={s.featureIcon}>{f.icono}</div>
-              <h3 style={{ fontWeight: '900', fontSize: '1.4rem', marginBottom: '10px', color: darkMode ? '#ffffff' : '#0f172a' }}>{f.titulo}</h3>
-              <p style={{ color: darkMode ? '#94a3b8' : '#475569', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>{f.descripcion}</p>
+      {/* SECCIÓN SOLUCIONES */}
+      <section id="soluciones" style={st.sectionTabs}>
+        <h2 style={st.sectionTitle}>Ecosistema modular integrado</h2>
+        <p style={st.sectionSubtitle}>Simplifica la administración de tu práctica médica y farmacéutica con herramientas nativas cloud.</p>
+        <div style={st.tabsHeader}>
+          <button style={st.tabBtn(tabActiva === 'medico')} onClick={() => setTabActiva('medico')}>
+            📋 Módulo de Prescripción Médica
+          </button>
+          <button style={st.tabBtn(tabActiva === 'farmacia')} onClick={() => setTabActiva('farmacia')}>
+            📦 Módulo de Gestión de Farmacia
+          </button>
+        </div>
+
+        {tabActiva === 'medico' ? (
+          <div style={st.tabContentCard}>
+            <div>
+              <span style={{ ...st.badgeSiigo, background: '#dcfce7', color: '#16a34a' }}>Seguridad y Agilidad</span>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: '800', margin: '12px 0', color: '#0f172a' }}>Emisión inteligente de fórmulas</h3>
+              <p style={{ color: '#475569', lineHeight: '1.6', fontWeight: '500' }}>
+                Reduce tiempos en consulta con un flujo diseñado para la prescripción rápida y segura de medicamentos.
+              </p>
+              <ul className="bullet-list">
+                <li><span className="bullet-icon">✓</span> Validación de DNI de paciente en tiempo real.</li>
+                <li><span className="bullet-icon">✓</span> Búsqueda predictiva conectado al stock de farmacia.</li>
+                <li><span className="bullet-icon">✓</span> Generación de tokens criptográficos de único uso.</li>
+                <li><span className="bullet-icon">✓</span> Archivo histórico digital de recetas emitidas.</li>
+              </ul>
+            </div>
+            <div style={st.tabIlloContainer}>
+              <MedicalModuleIllo />
+              <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#64748b', background: '#f1f5f9', padding: '8px 16px', borderRadius: '6px' }}>
+                Interfaz Médica MediVault Pro
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={st.tabContentCard}>
+            <div>
+              <span style={{ ...st.badgeSiigo, background: '#fef3c7', color: '#d97706' }}>Control de Almacén</span>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: '800', margin: '12px 0', color: '#0f172a' }}>Inventario sincronizado y auditable</h3>
+              <p style={{ color: '#475569', lineHeight: '1.6', fontWeight: '500' }}>
+                Toma el control absoluto de tus existencias, trazabilidad de despachos y auditorías cruzadas automáticas.
+              </p>
+              <ul className="bullet-list">
+                <li><span className="bullet-icon">✓</span> Verificación de recetas mediante Token de seguridad.</li>
+                <li><span className="bullet-icon">✓</span> Alertas inteligentes de stock crítico y agotado.</li>
+                <li><span className="bullet-icon">✓</span> Reportes dinámicos de consumo global y por médico.</li>
+                <li><span className="bullet-icon">✓</span> Flujo de reabastecimiento simplificado en modal.</li>
+              </ul>
+            </div>
+            <div style={st.tabIlloContainer}>
+              <PharmacyModuleIllo />
+              <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#64748b', background: '#f1f5f9', padding: '8px 16px', borderRadius: '6px' }}>
+                Control de Farmacia Sincronizado
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* SECCIÓN NUESTROS CLIENTES */}
+      <section id="clientes" style={st.sectionClients}>
+        <h2 style={st.sectionTitle}>Nuestros clientes</h2>
+        <p style={st.sectionSubtitle}>Haz clic en cualquier tarjeta para auditar métricas de rendimiento y estado de conexión en vivo.</p>
+        
+        <div style={st.gridClients}>
+          {clientsData.map((client) => (
+            <div key={client.id} className="client-card-box" style={st.cardClient} onClick={() => setSelectedClient(client)}>
+              <div style={st.brandHeader}>
+                {client.tipo === 'medico' ? (
+                  <div style={st.imageContainer}>
+                    <img src={client.foto} alt={client.nombre} style={st.doctorImg} />
+                  </div>
+                ) : (
+                  <div style={st.logoWrapper}>
+                    {client.logoType === 'A' && <PharmacyLogoA />}
+                    {client.logoType === 'B' && <PharmacyLogoB />}
+                    {client.logoType === 'C' && <PharmacyLogoC />}
+                  </div>
+                )}
+              </div>
+              
+              <span style={{
+                ...st.clientBadge,
+                background: client.tipo === 'medico' ? '#e0f2fe' : '#fef3c7',
+                color: client.tipo === 'medico' ? '#0369a1' : '#b45309'
+              }}>
+                {client.tipo === 'medico' ? 'Especialista Verificado' : 'Farmacia Conectada'}
+              </span>
+              
+              <div>
+                <h4 style={st.clientName}>{client.nombre}</h4>
+                <p style={st.clientSub}>{client.cargo}</p>
+                <div style={st.clientInst}>{client.institucion}</div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* PANEL ANALÍTICO */}
-      <section style={s.analyticsSection}>
-        <div style={s.analyticsContainer}>
-          <div>
-            <div style={{ background: '#2563eb', color: '#fff', padding: '8px 16px', borderRadius: '8px', display: 'inline-block', fontSize: '0.8rem', fontWeight: '900', marginBottom: '20px' }}>MEDIVAULT INSIGHTS 📈</div>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: '950', lineHeight: '1.1', marginBottom: '25px', letterSpacing: '-2px' }}>Decisiones basadas <br/> en datos reales.</h2>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '40px' }}>Visualice tendencias epidemiológicas y optimice el flujo de suministros con nuestro motor analítico avanzado integrado en el núcleo del sistema.</p>
-            <button style={{ ...s.btnMain, background: 'transparent', border: '2px solid #ffffff', color: '#ffffff', boxShadow: 'none' }}>CONOCER MÁS</button>
-          </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '50px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <p style={{ fontWeight: '800', fontSize: '0.9rem', color: '#38bdf8', textTransform: 'uppercase', marginBottom: '30px' }}>Demanda por fármaco (Mes actual)</p>
-            {metricasBI.map((m, idx) => (
-              <div key={idx} style={s.barWrapper}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: '700' }}>
-                  <span>{m.nombre}</span>
-                  <span style={{ color: m.color }}>{m.porcentaje}%</span>
-                </div>
-                <div style={s.barBackground}>
-                  <div style={s.barFill(m.porcentaje, m.color)}></div>
-                </div>
+      {/* MODAL INTERACTIVO AVANZADO */}
+      {selectedClient && (
+        <div style={st.modalOverlay} onClick={() => setSelectedClient(null)}>
+          <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" style={st.modalCloseBtn} onClick={() => setSelectedClient(null)}>✕</button>
+            
+            {/* Cabecera del modal */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ ...st.brandHeader, height: '80px', marginBottom: '12px' }}>
+                {selectedClient.tipo === 'medico' ? (
+                  <div style={{ ...st.imageContainer, width: '80px', height: '80px' }}>
+                    <img src={selectedClient.foto} alt={selectedClient.nombre} style={st.doctorImg} />
+                  </div>
+                ) : (
+                  <div style={{ ...st.logoWrapper, width: '160px', height: '50px' }}>
+                    {selectedClient.logoType === 'A' && <PharmacyLogoA />}
+                    {selectedClient.logoType === 'B' && <PharmacyLogoB />}
+                    {selectedClient.logoType === 'C' && <PharmacyLogoC />}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* SECCIÓN PREGUNTAS FRECUENTES */}
-      <section style={s.faqSection}>
-        <h2 style={{ fontSize: '3.5rem', fontWeight: '950', letterSpacing: '-3px', color: darkMode ? '#ffffff' : '#0f172a', marginBottom: '15px' }}>Preguntas Frecuentes</h2>
-        <p style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '1.1rem', fontWeight: '500', marginBottom: '50px' }}>Todo lo que necesita saber sobre la operatividad y estándares del ecosistema MediVault.</p>
-        {faqs.map((faq) => (
-          <div key={faq.id} style={s.faqItem} onClick={() => alternarFaq(faq.id)} onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2563eb'} onMouseLeave={(e) => e.currentTarget.style.borderColor = darkMode ? '#334155' : '#e2e8f0'}>
-            <div style={s.faqHeader}>
-              <span>{faq.pregunta}</span>
-              <span style={{ transition: 'transform 0.3s', transform: faqAbierta === faq.id ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+              {/* FASE 1: Indicador en vivo */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '20px', marginBottom: '12px' }}>
+                <span className="live-pulse-dot"></span>
+                <span style={{ fontSize: '0.74rem', fontWeight: '700', color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Conectado Cloud Live
+                </span>
+              </div>
+              
+              <h3 style={{ fontSize: '1.35rem', fontWeight: '800', color: '#0f172a', margin: '0 0 2px 0' }}>{selectedClient.nombre}</h3>
+              <p style={{ fontSize: '0.88rem', color: '#64748b', fontWeight: '600', margin: 0 }}>{selectedClient.cargo}</p>
             </div>
-            <div style={s.faqBody(faqAbierta === faq.id)}>{faq.respuesta}</div>
-          </div>
-        ))}
-      </section>
 
-      {/* PORTAL OPERATIVO INFORMATIVO */}
-      <section style={s.roleSection} id="ingreso-sistema">
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '3.5rem', fontWeight: '950', letterSpacing: '-3px', color: darkMode ? '#ffffff' : '#0f172a', marginBottom: '10px' }}>Ingreso Personal Autorizado</h2>
-          <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: '500' }}>Utilice el acceso de la barra superior para iniciar sesión de forma segura.</p>
-        </div>
-        <div style={s.roleGrid}>
-          <div style={s.roleCard}>
-            <div style={s.roleIcon}>💼</div>
-            <h3 style={{ fontWeight: '900', fontSize: '1.8rem', marginBottom: '12px', color: darkMode ? '#ffffff' : '#0f172a' }}>Módulo Especialista</h3>
-            <p style={{ color: darkMode ? '#94a3b8' : '#475569', lineHeight: '1.6' }}>Terminal para la expedición de órdenes médicas en lote, consultas detalladas del expediente y control preventivo de AI.</p>
+            {/* FASE 2: KPIs de Rendimiento Express */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
+              {selectedClient.detalles.kpis.map((kpi, idx) => (
+                <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 8px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '600', display: 'block', lineHeight: '1.2', marginBottom: '4px' }}>
+                    {kpi.label}
+                  </span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: '800', color: kpi.color }}>
+                    {kpi.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* FASE 3: NUEVA SECCIÓN DE ACTIVIDAD RECIENTE (TIMELINE) */}
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 14px 0' }}>
+                Logs de Operación Reciente
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative', paddingLeft: '8px' }}>
+                {selectedClient.detalles.actividades.map((act, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', position: 'relative' }}>
+                    {/* Indicador de Línea del Timeline */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4px' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }}></div>
+                      {idx !== selectedClient.detalles.actividades.length - 1 && (
+                        <div style={{ width: '1px', height: '26px', background: '#e2e8f0', marginTop: '4px', marginBottom: '-10px' }}></div>
+                      )}
+                    </div>
+                    {/* Texto del Evento */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#94a3b8' }}>{act.tiempo}</span>
+                      <span style={{ fontSize: '0.84rem', color: '#334155', fontWeight: '500', lineHeight: '1.3' }}>{act.evento}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ficha Técnica Base */}
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+              <h4 style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px 0' }}>
+                Ficha de Enlace Técnico
+              </h4>
+              
+              {selectedClient.tipo === 'medico' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.88rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Registro Médico:</span>
+                    <span style={{ color: '#0f172a', fontWeight: '700', fontFamily: 'monospace' }}>{selectedClient.detalles.registro}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Institución Formadora:</span>
+                    <span style={{ color: '#0f172a', fontWeight: '600' }}>{selectedClient.detalles.universidad}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Ventana Operativa:</span>
+                    <span style={{ color: '#0f172a', fontWeight: '600' }}>{selectedClient.detalles.horario}</span>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.88rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Nodo de Despacho:</span>
+                    <span style={{ color: '#0f172a', fontWeight: '600' }}>{selectedClient.detalles.sucursal}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Horario Almacén:</span>
+                    <span style={{ color: '#10b981', fontWeight: '700' }}>{selectedClient.detalles.horario}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
+                    <span style={{ color: '#64748b', fontWeight: '500' }}>Web Service Core:</span>
+                    <span style={{ color: '#0052cc', fontWeight: '700', fontSize: '0.8rem', background: '#e6f0ff', padding: '2px 6px', borderRadius: '4px' }}>
+                      {selectedClient.detalles.tokenStatus}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button 
+              className="btn-primary" 
+              style={{ ...st.btnPrimary, width: '100%', padding: '12px', marginTop: '16px', fontSize: '0.9rem', boxShadow: 'none' }}
+              onClick={() => setSelectedClient(null)}
+            >
+              Cerrar Consola de Auditoría
+            </button>
           </div>
-          <div style={s.roleCard}>
-            <div style={s.roleIcon}>💊</div>
-            <h3 style={{ fontWeight: '900', fontSize: '1.8rem', marginBottom: '12px', color: darkMode ? '#ffffff' : '#0f172a' }}>Módulo Dispensación</h3>
-            <p style={{ color: darkMode ? '#94a3b8' : '#475569', lineHeight: '1.6' }}>Validación inmediata mediante tokens criptográficos de seguridad, despacho automatizado y auditorías globales de stock.</p>
+        </div>
+      )}
+
+      {/* BLOQUE DE PREGUNTAS FRECUENTES */}
+      <section id="faqs" style={st.sectionFaq}>
+        <div style={st.faqContainer}>
+          <h2 style={st.sectionTitle}>Preguntas frecuentes</h2>
+          <p style={st.sectionSubtitle}>Resuelve tus dudas operacionales y técnicas sobre el ecosistema cloud de MediVault.</p>
+          <div style={st.faqList}>
+            {faqsData.map((faq) => {
+              const abierto = faqActiva === faq.id;
+              return (
+                <div key={faq.id} className="faq-item-box" style={st.faqItem}>
+                  <button style={st.faqHeader} onClick={() => toggleFaq(faq.id)}>
+                    <h4 style={st.faqQuestion}>{faq.pregunta}</h4>
+                    <span style={st.faqIcon(abierto)}>+</span>
+                  </button>
+                  <div style={st.faqBody(abierto)}>
+                    <p style={st.faqAnswer}>{faq.respuesta}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={s.footerContainer}>
-        <div style={s.statusCintillo}>
-          <div style={s.statusDotWrapper}>
-            <div style={s.statusDot}></div>
-            <div style={s.statusPulse}></div>
+      <footer style={st.footer}>
+        <div style={st.footerContainer}>
+          <div>© 2026 MediVault Cloud Solutions. Todos los derechos reservados. Estándar UI SaaS Corporativo.</div>
+          <div style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
+            <span style={{ fontWeight: '600' }}>Security Cloud</span>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <span style={{ fontWeight: '600' }}>Soporte Técnico</span>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <span style={{ fontWeight: '600' }}>Términos y Condiciones</span>
           </div>
-          <span>🟢 TODOS LOS SISTEMAS OPERATIVOS – CLOUD FIRESTORE SINCRONIZADO</span>
         </div>
-        <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#2563eb', marginTop: '10px' }}>MEDIVAULT</div>
       </footer>
     </div>
+    
   );
 }
 
