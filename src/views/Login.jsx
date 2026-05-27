@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../components/Toast';
 
 // LOGO PRINCIPAL
 const MediVaultLogo = () => (
@@ -34,6 +35,7 @@ const CloudNetworkIllustration = () => (
 );
 
 function Login({ alIniciar, alRegistrar, onVolver }) {
+  const toast = useToast();
   const [esRegistro, setEsRegistro] = useState(false);
   const [rol, setRol] = useState('medico'); // 'medico' o 'farmacia'
   
@@ -48,17 +50,17 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      alert("Por favor complete todos los campos obligatorios.");
+      toast.warning("Complete todos los campos obligatorios.");
       return;
     }
 
     if (esRegistro) {
       if (!nombre) {
-        alert("Por favor ingrese su nombre completo.");
+        toast.warning("Ingrese su nombre completo.");
         return;
       }
       if (rol === 'medico' && pinFirma.length !== 4) {
-        alert("El PIN de firma digital debe ser de exactamente 4 dígitos.");
+        toast.warning("El PIN de firma digital debe ser de exactamente 4 dígitos.");
         return;
       }
       

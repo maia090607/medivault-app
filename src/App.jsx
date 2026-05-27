@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import Landing from './views/Landing';
-import Login from './views/Login'; // Importación de la nueva vista premium actualizada
+import Login from './views/Login';
 import DashboardMedico from './views/DashboardMedico';
 import DashboardFarmacia from './views/DashboardFarmacia';
+import { useToast } from './components/Toast';
 
 function App() {
+  const toast = useToast();
   const [paso, setPaso] = useState('landing'); 
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [inventario, setInventario] = useState([]);
   const [recetas, setRecetas] = useState([]);
@@ -17,28 +20,30 @@ function App() {
   const [usuariosDB, setUsuariosDB] = useState([]);
 
   useEffect(() => {
+    let loaded = 0;
+    const checkLoaded = () => { loaded++; if (loaded >= 5) setLoading(false); };
     const unsubInv = onSnapshot(collection(db, "inventario"), (snap) => {
-      setInventario(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setInventario(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
     });
     const unsubRec = onSnapshot(collection(db, "recetas"), (snap) => {
-      setRecetas(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setRecetas(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
     });
     const unsubPac = onSnapshot(collection(db, "pacientes"), (snap) => {
       setPacientes(snap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
         dni: d.data().dni ? String(d.data().dni).trim() : "" 
-      })));
+      }))); checkLoaded();
     });
     const unsubHist = onSnapshot(collection(db, "historiales"), (snap) => {
       setHistoriales(snap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
         dniPaciente: d.data().dniPaciente ? String(d.data().dniPaciente).trim() : "" 
-      })));
+      }))); checkLoaded();
     });
     const unsubUser = onSnapshot(collection(db, "usuarios"), (snap) => {
-      setUsuariosDB(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setUsuariosDB(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
     });
 
     return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); unsubUser(); };
@@ -48,7 +53,7 @@ function App() {
     const { email, password, rol } = credenciales;
     
     if (!usuariosDB || usuariosDB.length === 0) {
-      alert("⚠️ Conectando con la base de datos... Intente de nuevo en un segundo.");
+      toast.warning("Conectando con la base de datos... Intente de nuevo en un segundo.");
       return;
     }
 
@@ -62,6 +67,7 @@ function App() {
     });
 
     if (usuarioEncontrado) {
+      toast.success(`Bienvenido ${usuarioEncontrado.nombre || ''}`);
       setUser({
         email: usuarioEncontrado.correo || usuarioEncontrado.email,
         nombre: usuarioEncontrado.nombre || (rol === 'medico' ? "Dr. Especialista" : "Operador Farmacia"),
@@ -70,7 +76,7 @@ function App() {
       });
       setPaso('app'); 
     } else {
-      alert(`❌ Error de acceso.\n\nNo se encontró ninguna cuenta que coincida con:\n• Correo: ${email}\n• Rol: ${rol === 'medico' ? 'Médico' : 'Farmacia'}\n\nVerifique sus datos o regístrese.`);
+      toast.error("Credenciales incorrectas. Verifique sus datos e intente nuevamente.");
     }
   };
 
@@ -85,11 +91,10 @@ function App() {
       });
       
       if (existe) {
-        alert("⚠️ Este correo electrónico ya está registrado.");
+        toast.warning("Este correo electrónico ya está registrado.");
         return false;
       }
 
-      // Preparar documento dinámico según rol para Firestore
       const docData = {
         nombre: nuevoUsuario.nombre.trim(),
         correo: emailLimpio,
@@ -107,14 +112,24 @@ function App() {
 
       await addDoc(collection(db, "usuarios"), docData);
 
-      alert("🎉 ¡Registro guardado exitosamente en Firestore! Ahora puede iniciar sesión.");
+      toast.success("Registro guardado exitosamente. Ahora puede iniciar sesión.");
       return true;
     } catch (error) {
       console.error("Error al escribir en la colección 'usuarios':", error);
-      alert(`❌ Error en Firebase: ${error.message}`);
+      toast.error(`Error en Firebase: ${error.message}`);
       return false;
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Inter, sans-serif', background: '#f8fafc', color: '#1e293b' }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
+        <span style={{ fontWeight: '600', fontSize: '1rem', color: '#64748b' }}>Conectando con MediVault...</span>
+      </div>
+    );
+  }
 
   if (paso === 'landing') {
     return (

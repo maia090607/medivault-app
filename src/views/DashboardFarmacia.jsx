@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
 import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
+import { useToast } from '../components/Toast';
 
 
 
 function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [] }) {
+  const toast = useToast();
   const [vista, setVista] = useState('dispensar'); // 'dispensar', 'inventario', 'auditoria', 'estadisticas'
   const [tokenBusqueda, setTokenBusqueda] = useState('');
   const [recetaEncontrada, setRecetaEncontrada] = useState(null);
@@ -106,7 +108,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const st = {
     container: { 
       padding: '24px 30px', 
-      fontFamily: '"Segoe UI", Roboto, sans-serif', 
+      fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif', 
       background: darkMode ? '#0f172a' : '#f8fafc', 
       minHeight: '100vh', 
       width: '100%',
@@ -120,7 +122,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       background: darkMode ? '#1e293b' : '#1e3a8a', 
       padding: '16px 24px', 
       borderRadius: '12px', 
-      boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
       marginBottom: '24px', 
       color: '#ffffff'
     },
@@ -154,7 +156,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       padding: '30px', 
       borderRadius: '12px', 
       border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-      boxShadow: '0 4px 12px rgba(0,0,0,0.03)', 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
       marginBottom: '24px',
       width: '100%',
       boxSizing: 'border-box',
@@ -260,7 +262,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   // --- LÓGICA DE NEGOCIO ---
   const buscarRecetaPorToken = () => {
     const t = tokenBusqueda.trim();
-    if (!t) return alert("Por favor, digite un token de receta válido.");
+    if (!t) return toast.warning("Digite un token de receta válido.");
 
     const encontrada = recetasValidas.find(r => r && String(r.token) === t);
 
@@ -268,7 +270,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       setRecetaEncontrada(encontrada);
       setDespachoReciente(null);
     } else {
-      alert("No se encontró ninguna prescripción con el token ingresado.");
+      toast.error("No se encontró prescripción con ese token.");
       setRecetaEncontrada(null);
     }
   };
@@ -305,18 +307,18 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         fechaDespacho: new Date().toLocaleString()
       });
 
-      alert("Medicamentos dispensados y descargados de inventario exitosamente.");
+      toast.success("Medicamentos dispensados exitosamente.");
       setRecetaEncontrada(null);
       setTokenBusqueda('');
     } catch (err) {
       console.error(err);
-      alert("Ocurrió un inconveniente al actualizar el estado de dispensación.");
+      toast.error("Error al actualizar el estado de dispensación.");
     }
   };
 
   const registrarNuevoMedicamento = async (e) => {
     e.preventDefault();
-    if (!nuevoNombre || !nuevoStock) return alert("El nombre y stock inicial son obligatorios.");
+    if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
 
     try {
       await addDoc(collection(db, "inventario"), {
@@ -325,14 +327,14 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         stock: parseInt(nuevoStock, 10) || 0
       });
 
-      alert("Fármaco registrado en el catálogo maestro de la farmacia.");
+      toast.success("Fármaco registrado en el inventario.");
       setNuevoNombre('');
       setNuevaConcentracion('');
       setNuevoStock('');
       setMostrarForm(false);
     } catch (err) {
       console.error(err);
-      alert("Error al guardar el medicamento.");
+      toast.error("Error al guardar el medicamento.");
     }
   };
 
@@ -354,13 +356,13 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         stock: stockActual + adicion
       });
 
-      alert(`Inventario actualizado para ${medSeleccionado.nombre}.`);
+      toast.success(`Inventario actualizado: ${medSeleccionado.nombre}.`);
       setMostrarModalAbastecer(false);
       setMedSeleccionado(null);
       setCantidadAñadir('');
     } catch (err) {
       console.error(err);
-      alert("Error al procesar el reabastecimiento.");
+      toast.error("Error al procesar el reabastecimiento.");
     }
   };
 
@@ -370,7 +372,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
   return (
     <div style={st.container}>
-      
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {/* HEADER SUPERIOR */}
       <div style={st.topBar} className="no-print">
         <div>
@@ -405,7 +407,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* VISTA 1: DISPENSAR MEDICAMENTOS */}
       {vista === 'dispensar' && !despachoReciente && (
-        <div style={st.card}>
+        <div key="dispensar" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
               Validación y Entrega de Fórmulas
@@ -486,7 +488,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* COMPROBANTE DE DESPACHO INTERNO */}
       {despachoReciente && (
-        <div style={{ background: '#ffffff', color: '#1f2937', padding: '32px', borderRadius: '12px', border: '1px solid #cbd5e1', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <div key="despacho" style={{ background: '#ffffff', color: '#1f2937', padding: '32px', borderRadius: '12px', border: '1px solid #cbd5e1', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ borderBottom: '2px solid #2563eb', paddingBottom: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ margin: 0, color: '#2563eb', fontSize: '1.3rem', fontWeight: '700' }}>COMPROBANTE DE DISPENSACIÓN</h2>
             <div style={{ textAlign: 'right' }}>
@@ -528,7 +530,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* VISTA 2: INVENTARIO */}
       {vista === 'inventario' && (
-        <div style={st.card}>
+        <div key="inventario" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Catálogo Maestro de Inventario</h2>
             <button onClick={() => setMostrarForm(!mostrarForm)} style={st.btnAction}>
@@ -607,7 +609,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* VISTA 3: HISTORIAL E INFORMES */}
       {vista === 'auditoria' && (
-        <div style={st.card}>
+        <div key="auditoria" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
             Historial y Auditoría de Fórmulas Dispensadas
           </h2>
@@ -658,7 +660,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* VISTA 4: ESTADÍSTICAS EXCLUSIVAS (INCLUYE NUEVO FILTRO POR DOCTOR) */}
       {vista === 'estadisticas' && (
-        <div>
+        <div key="estadisticas" style={{ animation: 'fadeIn 0.25s ease' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }} className="no-print">
             
             {/* GRÁFICA 1: MEDICAMENTOS MÁS VENDIDOS / DISPENSADOS */}

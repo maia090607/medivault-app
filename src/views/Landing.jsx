@@ -330,8 +330,8 @@ function Landing({ onNavigateToLogin }) {
     },
     btnNavLogin: {
       background: 'transparent',
-      border: '1px solid #0052cc',
-      color: '#0052cc',
+      border: '1px solid #2563eb',
+      color: '#2563eb',
       padding: '8px 20px',
       borderRadius: '6px',
       fontWeight: '700',
@@ -355,7 +355,7 @@ function Landing({ onNavigateToLogin }) {
     },
     badgeSiigo: {
       background: '#e6f0ff',
-      color: '#0052cc',
+      color: '#2563eb',
       padding: '6px 14px',
       borderRadius: '4px',
       fontSize: '0.78rem',
@@ -385,7 +385,7 @@ function Landing({ onNavigateToLogin }) {
       gap: '16px'
     },
     btnPrimary: {
-      background: '#0052cc',
+      background: '#2563eb',
       color: '#ffffff',
       border: 'none',
       padding: '16px 36px',
@@ -447,7 +447,7 @@ function Landing({ onNavigateToLogin }) {
     metricNumber: {
       fontSize: '1.8rem',
       fontWeight: '900',
-      color: '#0052cc',
+      color: '#2563eb',
       display: 'block',
       letterSpacing: '-0.5px'
     },
@@ -493,7 +493,7 @@ function Landing({ onNavigateToLogin }) {
       padding: '14px 28px',
       border: 'none',
       background: activo ? '#e6f0ff' : 'transparent',
-      color: activo ? '#0052cc' : '#475569',
+      color: activo ? '#2563eb' : '#475569',
       fontWeight: '700',
       fontSize: '1rem',
       borderRadius: '8px',
@@ -651,7 +651,7 @@ function Landing({ onNavigateToLogin }) {
     },
     faqIcon: (abierto) => ({
       fontSize: '1.2rem',
-      color: abierto ? '#0052cc' : '#94a3b8',
+      color: abierto ? '#2563eb' : '#94a3b8',
       transform: abierto ? 'rotate(45deg)' : 'rotate(0deg)',
       transition: 'transform 0.2s ease, color 0.15s ease',
       fontWeight: '400'
@@ -740,8 +740,8 @@ function Landing({ onNavigateToLogin }) {
   return (
     <div style={st.wrapper}>
       <style>{`
-        .siigo-link:hover { color: #0052cc !important; }
-        .btn-nav-login:hover { background: #0052cc !important; color: #ffffff !important; }
+        .siigo-link:hover { color: #2563eb !important; }
+        .btn-nav-login:hover { background: #2563eb !important; color: #ffffff !important; }
         .btn-primary:hover { background: #0043a4 !important; transform: translateY(-1px); }
         .btn-secondary:hover { background: #f8fafc !important; border-color: #cbd5e1 !important; }
         .bullet-list { list-style: none; padding: 0; margin: 25px 0 0 0; }
@@ -749,7 +749,7 @@ function Landing({ onNavigateToLogin }) {
         .bullet-icon { color: #10b981; font-weight: bold; font-size: 1.1rem; }
         .metric-item-last { border-right: none !important; }
         .faq-item-box:hover { border-color: #bfdbfe !important; }
-        .client-card-box:hover { border-color: #0052cc !important; transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0, 82, 204, 0.08); }
+        .client-card-box:hover { border-color: #2563eb !important; transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0, 82, 204, 0.08); }
         .close-modal-btn:hover { background: #e2e8f0 !important; color: #0f172a !important; }
         
         /* ANIMACIÓN LIVE DE PULSO */
@@ -1050,7 +1050,7 @@ function Landing({ onNavigateToLogin }) {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
                     <span style={{ color: '#64748b', fontWeight: '500' }}>Web Service Core:</span>
-                    <span style={{ color: '#0052cc', fontWeight: '700', fontSize: '0.8rem', background: '#e6f0ff', padding: '2px 6px', borderRadius: '4px' }}>
+                    <span style={{ color: '#2563eb', fontWeight: '700', fontSize: '0.8rem', background: '#e6f0ff', padding: '2px 6px', borderRadius: '4px' }}>
                       {selectedClient.detalles.tokenStatus}
                     </span>
                   </div>

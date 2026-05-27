@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { useToast } from '../components/Toast';
 
 function DashboardMedico({ 
   user = {}, 
@@ -10,6 +11,7 @@ function DashboardMedico({
   pacientesDB = [], 
   historialesDB = [] 
 }) {
+  const toast = useToast();
   const [vista, setVista] = useState('nueva');
   const [busquedaPac, setBusquedaPac] = useState('');
   const [pacienteSel, setPacienteSel] = useState(null);
@@ -115,7 +117,7 @@ function DashboardMedico({
   const agregarMedicamentoALista = (med) => {
     if (!med) return;
     if (medicamentosSeleccionados.some(item => item.id === med.id)) {
-      alert("Este medicamento ya está agregado en la orden actual.");
+      toast.warning("Este medicamento ya está en la orden actual.");
       return;
     }
     setMedicamentosSeleccionados([...medicamentosSeleccionados, { 
@@ -147,7 +149,7 @@ function DashboardMedico({
   // --- PROCESOS CLÍNICOS Y REGISTROS ---
   const buscarHistorialCompleto = () => {
     const d = busquedaDNI.trim();
-    if (!d) return alert("Por favor, ingrese un DNI válido.");
+    if (!d) return toast.warning("Ingrese un DNI válido.");
 
     const historial = (historialesDB || []).find(h => h && String(h.dniPaciente) === d);
     const pacienteBase = (pacientesDB || []).find(pac => pac && String(pac.dni) === d);
@@ -172,7 +174,7 @@ function DashboardMedico({
       });
       setMostrarEditor(false);
     } else {
-      alert("Paciente no localizado.");
+      toast.error("Paciente no localizado.");
     }
   };
 
@@ -200,22 +202,22 @@ function DashboardMedico({
         });
         setFichaPaciente({ ...fichaPaciente, idHistorial: docRef.id });
       }
-      alert("Expediente clínico actualizado exitosamente.");
+      toast.success("Expediente clínico actualizado.");
       setMostrarEditor(false);
       setNuevosDiagnosticos('');
       setNuevosAntecedentes('');
       setNuevaNotaConsulta('');
       buscarHistorialCompleto();
     } catch (err) {
-  console.error(err); // Al poner 'err' aquí, el linter ya ve que sí la estás usando
-  alert("Ocurrió un error al guardar el expediente.");
+  console.error(err);
+  toast.error("Error al guardar el expediente.");
 }
 
   };
 
   const registrarNuevoPaciente = async (e) => {
     e.preventDefault();
-    if (!nuevoNombrePac || !nuevoDNIPac) return alert("Nombre y DNI son obligatorios.");
+    if (!nuevoNombrePac || !nuevoDNIPac) return toast.warning("Nombre y DNI son obligatorios.");
     try {
       await addDoc(collection(db, "pacientes"), {
         nombre: nuevoNombrePac,
@@ -224,19 +226,19 @@ function DashboardMedico({
         alergias: nuevasAlergiasPac || "Ninguna",
         clinica: nuevaClinicaPac || "General"
       });
-      alert("Paciente registrado.");
+      toast.success("Paciente registrado.");
       setShowModalPaciente(false);
       setNuevoNombrePac(''); setNuevoDNIPac(''); setNuevoCorreoPac(''); setNuevasAlergiasPac(''); setNuevaClinicaPac('');
     } catch (err) {
-  console.error(err); // Al poner 'err' aquí, el linter ya ve que sí la estás usando
-  alert("Ocurrió un error al procesar al paciente");
+  console.error(err);
+  toast.error("Error al procesar al paciente");
 }
 
   };
 
   const handleFirma = async () => {
     if (pin !== (user?.pin || "1234")) {
-      alert("PIN incorrecto.");
+      toast.error("PIN incorrecto.");
       return;
     }
 
@@ -275,8 +277,8 @@ function DashboardMedico({
       setShowFirma(false);
       setBusquedaPac('');
     } catch (err) {
-  console.error(err); // Al poner 'err' aquí, el linter ya ve que sí la estás usando
-  alert("Ocurrió un error al procesar la receta");
+  console.error(err);
+  toast.error("Error al procesar la receta");
 }
 
   };
@@ -285,7 +287,7 @@ function DashboardMedico({
   const st = {
     container: { 
       padding: '24px 30px', 
-      fontFamily: '"Segoe UI", Roboto, sans-serif', 
+      fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif', 
       background: darkMode ? '#0f172a' : '#f8fafc', 
       minHeight: '100vh', 
       width: '100%',
@@ -299,7 +301,7 @@ function DashboardMedico({
       background: darkMode ? '#1e293b' : '#1e3a8a', 
       padding: '16px 24px', 
       borderRadius: '12px', 
-      boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
       marginBottom: '24px', 
       color: '#ffffff'
     },
@@ -324,7 +326,7 @@ function DashboardMedico({
       padding: '30px', 
       borderRadius: '12px', 
       border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-      boxShadow: '0 4px 12px rgba(0,0,0,0.03)', 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
       marginBottom: '24px',
       width: '100%',
       boxSizing: 'border-box',
@@ -386,6 +388,7 @@ function DashboardMedico({
 
   return (
     <div style={st.container}>
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {/* HEADER SUPERIOR */}
       <div style={st.topBar} className="no-print">
         <div>
@@ -411,7 +414,7 @@ function DashboardMedico({
 
       {/* PESTAÑA: NUEVA RECETA */}
       {vista === 'nueva' && !recetaReciente && (
-        <div style={st.card}>
+        <div key="nueva" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
               Emitir Nueva Prescripción
@@ -515,7 +518,7 @@ function DashboardMedico({
 
       {/* COMPROBANTE DE RECETA GENERADA */}
       {recetaReciente && (
-        <div style={{ background: '#ffffff', color: '#1f2937', padding: '32px', borderRadius: '12px', border: '1px solid #cbd5e1', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <div key="receta" style={{ background: '#ffffff', color: '#1f2937', padding: '32px', borderRadius: '12px', border: '1px solid #cbd5e1', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ borderBottom: '2px solid #2563eb', paddingBottom: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ margin: 0, color: '#2563eb', fontSize: '1.3rem', fontWeight: '700' }}>ORDEN RECETA MÉDICA</h2>
             <div style={{ textAlign: 'right' }}>
@@ -557,7 +560,7 @@ function DashboardMedico({
 
       {/* HISTORIAL DE RECETAS */}
       {vista === 'historial' && (
-        <div style={st.card}>
+        <div key="historial" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Historial de Recetas Emitidas</h2>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '16px' }}>
             <input style={{ ...st.input, marginBottom: 0 }} placeholder="Buscar por paciente, DNI o Token..." value={busquedaHistorial} onChange={e => setBusquedaHistorial(e.target.value)} />
@@ -603,7 +606,7 @@ function DashboardMedico({
 
       {/* EXPEDIENTE CLÍNICO */}
       {vista === 'clinico' && (
-        <div style={st.card}>
+        <div key="clinico" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Búsqueda de Expediente Clínico</h2>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', maxWidth: '400px' }}>
             <input style={{ ...st.input, marginBottom: 0 }} placeholder="Ingrese DNI del paciente..." value={busquedaDNI} onChange={e => setBusquedaDNI(e.target.value)} />
