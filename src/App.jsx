@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import Landing from './views/Landing';
+import Login from './views/Login'; // Importación de la nueva vista premium actualizada
 import DashboardMedico from './views/DashboardMedico';
 import DashboardFarmacia from './views/DashboardFarmacia';
 
@@ -69,14 +70,14 @@ function App() {
       });
       setPaso('app'); 
     } else {
-      alert(`❌ Error de acceso.\n\nNo se encontró ninguna cuenta que coincida con:\n• Correo: ${email}\n• Rol: ${rol}\n\nVerifique sus datos o regístrese.`);
+      alert(`❌ Error de acceso.\n\nNo se encontró ninguna cuenta que coincida con:\n• Correo: ${email}\n• Rol: ${rol === 'medico' ? 'Médico' : 'Farmacia'}\n\nVerifique sus datos o regístrese.`);
     }
   };
 
   const manejarRegistroDirecto = async (nuevoUsuario) => {
     try {
       const emailLimpio = nuevoUsuario.email ? nuevoUsuario.email.toLowerCase().trim() : "";
-      const rolFiltrado = (nuevoUsuario.rol || nuevoUsuario.role || 'medico').toLowerCase().trim();
+      const rolFiltrado = (nuevoUsuario.rol || 'medico').toLowerCase().trim();
 
       const existe = usuariosDB.some(u => {
         const correoF = u.correo || u.email || "";
@@ -88,15 +89,23 @@ function App() {
         return false;
       }
 
-      await addDoc(collection(db, "usuarios"), {
-        nombre: (nuevoUsuario.nombre || "Usuario").trim(),
+      // Preparar documento dinámico según rol para Firestore
+      const docData = {
+        nombre: nuevoUsuario.nombre.trim(),
         correo: emailLimpio,
         password: String(nuevoUsuario.password || "").trim(),
         role: rolFiltrado,
-        especialidad: rolFiltrado === 'medico' ? "general" : "",
-        pin: rolFiltrado === 'medico' ? "4567" : "",
         uid: "uid_" + Math.random().toString(36).substr(2, 9)
-      });
+      };
+
+      if (rolFiltrado === 'medico') {
+        docData.especialidad = nuevoUsuario.extraInfo;
+        docData.pin = nuevoUsuario.pinFirma;
+      } else {
+        docData.sucursal = nuevoUsuario.extraInfo;
+      }
+
+      await addDoc(collection(db, "usuarios"), docData);
 
       alert("🎉 ¡Registro guardado exitosamente en Firestore! Ahora puede iniciar sesión.");
       return true;
@@ -110,10 +119,19 @@ function App() {
   if (paso === 'landing') {
     return (
       <Landing 
-        alIniciar={manejarLoginDirecto} 
-        alRegistrar={manejarRegistroDirecto}
+        onNavigateToLogin={() => setPaso('login')} 
         recetasEmitidas={recetas} 
         inventario={inventario} 
+      />
+    );
+  }
+
+  if (paso === 'login') {
+    return (
+      <Login 
+        alIniciar={manejarLoginDirecto} 
+        alRegistrar={manejarRegistroDirecto} 
+        onVolver={() => setPaso('landing')} 
       />
     );
   }
