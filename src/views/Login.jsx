@@ -306,6 +306,13 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
               >
                 📦 Punto Farmacia
               </button>
+              <button 
+                type="button" 
+                style={st.roleTab(rol === 'admin')} 
+                onClick={() => { setRol('admin'); setExtraInfo(''); }}
+              >
+                🔐 Admin
+              </button>
             </div>
 
             {esRegistro && (
@@ -314,7 +321,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
                   <label style={st.label}>Nombre Completo / Razón Social</label>
                   <input 
                     type="text" 
-                    placeholder={rol === 'medico' ? "Ej. Dr. Alejandro Mendoza" : "Ej. Droguerías Cruz Verde"} 
+                    placeholder={rol === 'medico' ? "Ej. Dr. Alejandro Mendoza" : rol === 'farmacia' ? "Ej. Droguerías Cruz Verde" : "Ej. Admin MediVault"} 
                     style={st.input} 
                     className="input-modern" 
                     value={nombre} 
@@ -322,17 +329,19 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
                   />
                 </div>
 
-                <div style={st.inputGroup}>
-                  <label style={st.label}>{rol === 'medico' ? 'Especialidad Médica' : 'Nombre de la Sucursal'}</label>
-                  <input 
-                    type="text" 
-                    placeholder={rol === 'medico' ? "Ej. Cardiología, Pediatría..." : "Ej. Sede Central..."} 
-                    style={st.input} 
-                    className="input-modern" 
-                    value={extraInfo} 
-                    onChange={(e) => setExtraInfo(e.target.value)} 
-                  />
-                </div>
+                {rol !== 'admin' && (
+                  <div style={st.inputGroup}>
+                    <label style={st.label}>{rol === 'medico' ? 'Especialidad Médica' : 'Nombre de la Sucursal'}</label>
+                    <input 
+                      type="text" 
+                      placeholder={rol === 'medico' ? "Ej. Cardiología, Pediatría..." : "Ej. Sede Central..."} 
+                      style={st.input} 
+                      className="input-modern" 
+                      value={extraInfo} 
+                      onChange={(e) => setExtraInfo(e.target.value)} 
+                    />
+                  </div>
+                )}
 
                 {rol === 'medico' && (
                   <div style={st.inputGroup}>

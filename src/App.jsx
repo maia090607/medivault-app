@@ -5,6 +5,7 @@ import Landing from './views/Landing';
 import Login from './views/Login';
 import DashboardMedico from './views/DashboardMedico';
 import DashboardFarmacia from './views/DashboardFarmacia';
+import DashboardAdmin from './views/DashboardAdmin';
 import { useToast } from './components/Toast';
 
 function App() {
@@ -18,10 +19,11 @@ function App() {
   const [pacientes, setPacientes] = useState([]);
   const [historiales, setHistoriales] = useState([]);
   const [usuariosDB, setUsuariosDB] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
 
   useEffect(() => {
     let loaded = 0;
-    const checkLoaded = () => { loaded++; if (loaded >= 5) setLoading(false); };
+    const checkLoaded = () => { loaded++; if (loaded >= 6) setLoading(false); };
     const unsubInv = onSnapshot(collection(db, "inventario"), (snap) => {
       setInventario(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
     });
@@ -45,8 +47,11 @@ function App() {
     const unsubUser = onSnapshot(collection(db, "usuarios"), (snap) => {
       setUsuariosDB(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
     });
+    const unsubSolicitudes = onSnapshot(collection(db, "solicitudes"), (snap) => {
+      setSolicitudes(snap.docs.map(d => ({ id: d.id, ...d.data() }))); checkLoaded();
+    });
 
-    return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); unsubUser(); };
+    return () => { unsubInv(); unsubRec(); unsubPac(); unsubHist(); unsubUser(); unsubSolicitudes(); };
   }, []);
 
   const manejarLoginDirecto = (credenciales) => {
@@ -70,7 +75,7 @@ function App() {
       toast.success(`Bienvenido ${usuarioEncontrado.nombre || ''}`);
       setUser({
         email: usuarioEncontrado.correo || usuarioEncontrado.email,
-        nombre: usuarioEncontrado.nombre || (rol === 'medico' ? "Dr. Especialista" : "Operador Farmacia"),
+        nombre: usuarioEncontrado.nombre || (rol === 'medico' ? "Dr. Especialista" : rol === 'farmacia' ? "Operador Farmacia" : "Administrador"),
         role: usuarioEncontrado.role,
         pin: usuarioEncontrado.pin || "1234"
       });
@@ -106,7 +111,7 @@ function App() {
       if (rolFiltrado === 'medico') {
         docData.especialidad = nuevoUsuario.extraInfo;
         docData.pin = nuevoUsuario.pinFirma;
-      } else {
+      } else if (rolFiltrado === 'farmacia') {
         docData.sucursal = nuevoUsuario.extraInfo;
       }
 
@@ -161,6 +166,16 @@ function App() {
           recetasEmitidas={recetas} 
           pacientesDB={pacientes} 
           historialesDB={historiales} 
+        />
+      ) : user?.role === 'admin' ? (
+        <DashboardAdmin
+          user={user}
+          onLogout={() => { setUser(null); setPaso('landing'); }}
+          inventario={inventario}
+          recetasEmitidas={recetas}
+          pacientesDB={pacientes}
+          usuariosDB={usuariosDB}
+          solicitudes={solicitudes}
         />
       ) : (
         <DashboardFarmacia 
