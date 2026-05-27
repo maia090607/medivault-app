@@ -21,6 +21,9 @@ function DashboardAdmin({
   const [busquedaSolicitud, setBusquedaSolicitud] = useState('');
   const [busquedaUsuario, setBusquedaUsuario] = useState('');
   const [busquedaInventario, setBusquedaInventario] = useState('');
+  const [busquedaDirectorio, setBusquedaDirectorio] = useState('');
+  const [paginaPacientes, setPaginaPacientes] = useState(1);
+  const PACIENTES_POR_PAGINA = 8;
 
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
   const inventarioValido = Array.isArray(inventario) ? inventario : [];
@@ -70,6 +73,40 @@ function DashboardAdmin({
       toast.error('Error al actualizar la solicitud.');
     }
   };
+
+  // --- DATOS PARA NUEVAS PESTAÑAS ---
+  const conteoMedicamentos = (() => {
+    const map = {};
+    recetasValidas.forEach(r => {
+      if (Array.isArray(r.medicamento)) {
+        r.medicamento.forEach(m => {
+          const nom = m.nombre || 'Desconocido';
+          map[nom] = (map[nom] || 0) + (m.amount || m.cantidad || 1);
+        });
+      }
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  })();
+
+  const conteoPacientes = (() => {
+    const map = {};
+    recetasValidas.forEach(r => {
+      const nom = r.paciente || 'Desconocido';
+      map[nom] = (map[nom] || 0) + 1;
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  })();
+
+  const filtroDirectorio = (busquedaDirectorio || '').trim()
+    ? pacientesValidos.filter(p => {
+        if (!p) return false;
+        return (p.nombre || '').toLowerCase().includes(busquedaDirectorio.toLowerCase()) ||
+               String(p.dni || '').includes(busquedaDirectorio);
+      })
+    : pacientesValidos;
+
+  const totalPaginas = Math.ceil(filtroDirectorio.length / PACIENTES_POR_PAGINA) || 1;
+  const pacientesDirectorio = filtroDirectorio.slice(0, paginaPacientes * PACIENTES_POR_PAGINA);
 
   const st = {
     container: {
@@ -209,10 +246,13 @@ function DashboardAdmin({
         <button style={st.btnNav(vista === 'solicitudes')} onClick={() => cambiarVista('solicitudes')}>📩 Solicitudes Demo</button>
         <button style={st.btnNav(vista === 'usuarios')} onClick={() => cambiarVista('usuarios')}>👥 Usuarios</button>
         <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>📦 Inventario</button>
+        <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>👤 Pacientes</button>
+        <button style={st.btnNav(vista === 'estadisticas')} onClick={() => cambiarVista('estadisticas')}>📊 Estadísticas</button>
+        <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>🔔 Notificaciones</button>
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Admin {vista === 'resumen' ? '> Resumen' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes Demo' : vista === 'usuarios' ? '> Usuarios' : '> Inventario'}
+        Admin {vista === 'resumen' ? '> Resumen' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes Demo' : vista === 'usuarios' ? '> Usuarios' : vista === 'inventario' ? '> Inventario' : vista === 'pacientes' ? '> Pacientes' : vista === 'estadisticas' ? '> Estadísticas' : '> Notificaciones'}
       </div>
 
       {/* RESUMEN */}
@@ -436,6 +476,124 @@ function DashboardAdmin({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* PACIENTES */}
+      {vista === 'pacientes' && (
+        <div key="pacientes" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Directorio de Pacientes</h2>
+          <input style={st.input} placeholder="Buscar por nombre o DNI..." value={busquedaDirectorio} onChange={e => { setBusquedaDirectorio(e.target.value); setPaginaPacientes(1); }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
+            {pacientesDirectorio.length > 0 ? pacientesDirectorio.map(p => (
+              <div key={p.id} style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontWeight: '700', fontSize: '1rem', color: '#2563eb' }}>{p.nombre}</div>
+                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>DNI: {p.dni} | {p.email || 'Sin correo'}</div>
+                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>Alergias: {p.alergias || 'Ninguna'}</div>
+              </div>
+            )) : (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>
+                {busquedaDirectorio.trim() ? 'No se encontraron pacientes con ese criterio.' : 'No hay pacientes registrados.'}
+              </div>
+            )}
+          </div>
+          {totalPaginas > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+              <button disabled={paginaPacientes <= 1} onClick={() => setPaginaPacientes(p => Math.max(1, p - 1))} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes <= 1 ? 'not-allowed' : 'pointer', opacity: paginaPacientes <= 1 ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Anterior</button>
+              <span style={{ display: 'flex', alignItems: 'center', fontWeight: '600', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem' }}>Página {paginaPacientes}</span>
+              <button disabled={paginaPacientes >= totalPaginas} onClick={() => setPaginaPacientes(p => p + 1)} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes >= totalPaginas ? 'not-allowed' : 'pointer', opacity: paginaPacientes >= totalPaginas ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Siguiente</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ESTADÍSTICAS */}
+      {vista === 'estadisticas' && (
+        <div key="estadisticas" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Estadísticas del Sistema</h2>
+          {recetasValidas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay datos de recetas para mostrar estadísticas.</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Top Medicamentos Recetados</h3>
+                {conteoMedicamentos.length > 0 ? conteoMedicamentos.map(([nom, cant], idx) => {
+                  const maxCant = conteoMedicamentos[0][1] || 1;
+                  const pct = (cant / maxCant) * 100;
+                  return (
+                    <div key={nom} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                        <span>{idx + 1}. {nom}</span>
+                        <span>{cant} uds</span>
+                      </div>
+                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: '6px', transition: 'width 0.5s ease' }} />
+                      </div>
+                    </div>
+                  );
+                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de medicamentos.</div>}
+              </div>
+              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Pacientes Más Atendidos</h3>
+                {conteoPacientes.length > 0 ? conteoPacientes.map(([nom, cant], idx) => {
+                  const maxCant = conteoPacientes[0][1] || 1;
+                  const pct = (cant / maxCant) * 100;
+                  return (
+                    <div key={nom} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                        <span>{idx + 1}. {nom}</span>
+                        <span>{cant} recetas</span>
+                      </div>
+                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: '#10b981', borderRadius: '6px', transition: 'width 0.5s ease' }} />
+                      </div>
+                    </div>
+                  );
+                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de pacientes.</div>}
+              </div>
+            </div>
+          )}
+          <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#2563eb' }}>{recetasValidas.length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Totales</div>
+            </div>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#f59e0b' }}>{recetasPendientes.length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Pendientes</div>
+            </div>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#10b981' }}>{recetasDispensadas.length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Dispensadas</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFICACIONES */}
+      {vista === 'notificaciones' && (
+        <div key="notificaciones" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Notificaciones de Recetas</h2>
+          {recetasDispensadas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay recetas dispensadas recientemente.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {recetasDispensadas.slice().reverse().map(r => (
+                <div key={r.id} style={{ background: darkMode ? '#0f172a' : '#f0fdf4', borderRadius: '10px', padding: '16px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b', fontSize: '0.95rem' }}>✔️ {r.paciente}</div>
+                    <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
+                      Token: <strong style={{ color: '#2563eb' }}>{r.token}</strong> | Médico: {r.medico} | {formatearFecha(r.fecha)}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#065f46', marginTop: '4px' }}>
+                      {Array.isArray(r.medicamento) ? r.medicamento.map(m => m.nombre).join(', ') : 'Medicamentos no listados'}
+                    </div>
+                  </div>
+                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', whiteSpace: 'nowrap' }}>Dispensado</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

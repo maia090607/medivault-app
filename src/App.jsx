@@ -189,6 +189,7 @@ function App() {
           onLogout={() => { setUser(null); setPaso('landing'); }} 
           recetasEmitidas={recetas} 
           inventario={inventario} 
+          pacientesDB={pacientes} 
         />
       )}
     </div>

@@ -6,7 +6,7 @@ import { formatearFecha } from '../utils';
 
 
 
-function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [] }) {
+function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); };
@@ -32,12 +32,30 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   // ESTADO NUEVO: Doctor seleccionado para la gráfica cruzada de estadísticas
   const [doctorSeleccionado, setDoctorSeleccionado] = useState('');
 
+  // Estados para directorio de pacientes
+  const [busquedaDirectorio, setBusquedaDirectorio] = useState('');
+  const [paginaPacientes, setPaginaPacientes] = useState(1);
+  const PACIENTES_POR_PAGINA = 8;
+
   // CONTROL SEGURO DE ARRAYS
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
   const inventarioValido = Array.isArray(inventario) ? inventario : [];
 
+  const pacientesValidos = Array.isArray(pacientesDB) ? pacientesDB : [];
+
   // Filtrar recetas entregadas/dispensadas para la tabla de auditoría
   const recetasEntregadas = recetasValidas.filter(r => r && (r.estado === 'Entregado' || r.estado === 'Dispensado'));
+
+  // Datos para directorio de pacientes
+  const filtroDirectorio = (busquedaDirectorio || '').trim()
+    ? pacientesValidos.filter(p => {
+        if (!p) return false;
+        return (p.nombre || '').toLowerCase().includes(busquedaDirectorio.toLowerCase()) ||
+               String(p.dni || '').includes(busquedaDirectorio);
+      })
+    : pacientesValidos;
+  const totalPaginas = Math.ceil(filtroDirectorio.length / PACIENTES_POR_PAGINA) || 1;
+  const pacientesDirectorio = filtroDirectorio.slice(0, paginaPacientes * PACIENTES_POR_PAGINA);
 
   // ==========================================
   //     PROCESAMIENTO SEGURO DE ESTADÍSTICAS
@@ -139,6 +157,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     },
     nav: { 
       display: 'flex', 
+      flexWrap: 'wrap',
       gap: '10px', 
       marginBottom: '24px'
     },
@@ -407,10 +426,16 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         <button style={st.btnNav(vista === 'estadisticas')} onClick={() => cambiarVista('estadisticas')}>
           📊 Estadísticas
         </button>
+        <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>
+          👤 Pacientes
+        </button>
+        <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>
+          🔔 Notificaciones
+        </button>
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Farmacia {vista === 'dispensar' ? '> Panel de Dispensación' : vista === 'inventario' ? '> Catálogo e Inventario' : vista === 'auditoria' ? '> Historial e Informes' : '> Estadísticas'}
+        Farmacia {vista === 'dispensar' ? '> Panel de Dispensación' : vista === 'inventario' ? '> Catálogo e Inventario' : vista === 'auditoria' ? '> Historial e Informes' : vista === 'estadisticas' ? '> Estadísticas' : vista === 'pacientes' ? '> Pacientes' : '> Notificaciones'}
       </div>
 
       {/* VISTA 1: DISPENSAR MEDICAMENTOS */}
@@ -849,6 +874,60 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         </div>
       )}
 
+      {/* PACIENTES */}
+      {vista === 'pacientes' && (
+        <div key="pacientes" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Directorio de Pacientes</h2>
+          <input style={st.input} placeholder="Buscar por nombre o DNI..." value={busquedaDirectorio} onChange={e => { setBusquedaDirectorio(e.target.value); setPaginaPacientes(1); }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
+            {pacientesDirectorio.length > 0 ? pacientesDirectorio.map(p => (
+              <div key={p.id} style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontWeight: '700', fontSize: '1rem', color: '#2563eb' }}>{p.nombre}</div>
+                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>DNI: {p.dni} | {p.email || 'Sin correo'}</div>
+                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>Alergias: {p.alergias || 'Ninguna'}</div>
+              </div>
+            )) : (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>
+                {busquedaDirectorio.trim() ? 'No se encontraron pacientes con ese criterio.' : 'No hay pacientes registrados.'}
+              </div>
+            )}
+          </div>
+          {totalPaginas > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+              <button disabled={paginaPacientes <= 1} onClick={() => setPaginaPacientes(p => Math.max(1, p - 1))} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes <= 1 ? 'not-allowed' : 'pointer', opacity: paginaPacientes <= 1 ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Anterior</button>
+              <span style={{ display: 'flex', alignItems: 'center', fontWeight: '600', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem' }}>Página {paginaPacientes}</span>
+              <button disabled={paginaPacientes >= totalPaginas} onClick={() => setPaginaPacientes(p => p + 1)} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes >= totalPaginas ? 'not-allowed' : 'pointer', opacity: paginaPacientes >= totalPaginas ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Siguiente</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* NOTIFICACIONES */}
+      {vista === 'notificaciones' && (
+        <div key="notificaciones" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Notificaciones de Recetas</h2>
+          {recetasEntregadas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay recetas dispensadas recientemente.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {recetasEntregadas.slice().reverse().map(r => (
+                <div key={r.id} style={{ background: darkMode ? '#0f172a' : '#f0fdf4', borderRadius: '10px', padding: '16px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b', fontSize: '0.95rem' }}>✔️ {r.paciente}</div>
+                    <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
+                      Token: <strong style={{ color: '#2563eb' }}>{r.token}</strong> | Médico: {r.medico} | {formatearFecha(r.fecha)}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#065f46', marginTop: '4px' }}>
+                      {Array.isArray(r.medicamento) ? r.medicamento.map(m => m.nombre).join(', ') : 'Medicamentos no listados'}
+                    </div>
+                  </div>
+                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', whiteSpace: 'nowrap' }}>Dispensado</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
