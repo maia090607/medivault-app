@@ -43,6 +43,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
   const [password, setPassword] = useState('');
   const [extraInfo, setExtraInfo] = useState(''); 
   const [pinFirma, setPinFirma] = useState(''); 
+  const [mostrarPassword, setMostrarPassword] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -361,14 +362,35 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
 
             <div style={st.inputGroup}>
               <label style={st.label}>Contraseña</label>
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                style={st.input} 
-                className="input-modern" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={mostrarPassword ? 'text' : 'password'} 
+                  placeholder="••••••••" 
+                  style={{ ...st.input, paddingRight: '40px' }} 
+                  className="input-modern" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarPassword(!mostrarPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1.1rem',
+                    color: '#94a3b8',
+                    padding: '4px',
+                    lineHeight: 1,
+                  }}
+                >
+                  {mostrarPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn-submit-login" style={st.btnSubmit}>
@@ -388,22 +410,53 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
       {/* SECCIÓN DERECHA: PANEL DE MARCA PREMIUM */}
       <div style={st.brandSide}>
         <div style={st.bgPattern}>
-          {/* ILUSTRACIÓN TECNOLÓGICA ADJUNTA */}
           <CloudNetworkIllustration />
 
-          <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-            <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '5px 12px', borderRadius: '30px', fontSize: '0.68rem', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              Ecosistema Integrado Cloud
-            </span>
-          </div>
+          {rol === 'medico' ? (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '5px 12px', borderRadius: '30px', fontSize: '0.68rem', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                  Módulo Clínico
+                </span>
+              </div>
 
-          <h3 style={{ fontSize: '1.5rem', fontWeight: '800', lineHeight: '1.3', margin: '0 0 10px 0', color: '#ffffff', letterSpacing: '-0.5px' }}>
-            Sincronización Médica Inmediata
-          </h3>
-          
-          <p style={{ fontSize: '0.85rem', color: '#93c5fd', lineHeight: '1.5', margin: '0 0 20px 0', fontWeight: '500', maxWidth: '300px' }}>
-            Conectamos consultas de especialistas con dispensarios farmacéuticos mediante transacciones tokenizadas seguras y trazabilidad en tiempo real.
-          </p>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '800', lineHeight: '1.3', margin: '0 0 10px 0', color: '#ffffff', letterSpacing: '-0.5px' }}>
+                Prescripción Digital Segura
+              </h3>
+
+              <p style={{ fontSize: '0.85rem', color: '#93c5fd', lineHeight: '1.5', margin: '0 0 20px 0', fontWeight: '500', maxWidth: '300px' }}>
+                Emite recetas electrónicas con firma digital, accede al historial clínico de tus pacientes y coordina tratamientos en tiempo real con la red farmacéutica.
+              </p>
+
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0', textAlign: 'left', fontSize: '0.78rem', color: '#bfdbfe', lineHeight: '1.8' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Firma digital con PIN</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Historial unificado del paciente</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Recetas electrónicas trazables</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                <span style={{ background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', padding: '5px 12px', borderRadius: '30px', fontSize: '0.68rem', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                  Red de Dispensación
+                </span>
+              </div>
+
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '800', lineHeight: '1.3', margin: '0 0 10px 0', color: '#ffffff', letterSpacing: '-0.5px' }}>
+                Validación y Despacho Express
+              </h3>
+
+              <p style={{ fontSize: '0.85rem', color: '#93c5fd', lineHeight: '1.5', margin: '0 0 20px 0', fontWeight: '500', maxWidth: '300px' }}>
+                Recibe y valida recetas digitales al instante, gestiona tu inventario y despacha medicamentos con total trazabilidad y respaldo legal.
+              </p>
+
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0', textAlign: 'left', fontSize: '0.78rem', color: '#bfdbfe', lineHeight: '1.8' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Validación de recetas en vivo</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Control de stock automatizado</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Historial de dispensación</li>
+              </ul>
+            </>
+          )}
 
           <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)', width: '100%', justifyContent: 'center' }}>
             <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%' }}></div>
