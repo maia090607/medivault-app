@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
+import { formatearFecha } from '../utils';
 
 function DashboardMedico({ 
   user = {}, 
@@ -13,6 +14,7 @@ function DashboardMedico({
 }) {
   const toast = useToast();
   const [vista, setVista] = useState('nueva');
+  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setRecetaReciente(null); };
   const [busquedaPac, setBusquedaPac] = useState('');
   const [pacienteSel, setPacienteSel] = useState(null);
   const [busquedaMed, setBusquedaMed] = useState('');
@@ -401,15 +403,21 @@ function DashboardMedico({
             {darkMode ? '☀️' : '🌙'}
           </button>
           <span style={{ fontWeight: '600' }}>Dr(a). {user?.nombre || 'Especialista'}</span>
-          <button onClick={onLogout} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
+          <button onClick={() => {
+            if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
+          }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
         </div>
       </div>
 
       {/* PESTAÑAS DE NAVEGACIÓN */}
       <div style={st.nav} className="no-print">
-        <button style={st.btnNav(vista === 'nueva')} onClick={() => { setVista('nueva'); setRecetaReciente(null); }}>Nueva Receta</button>
-        <button style={st.btnNav(vista === 'historial')} onClick={() => { setVista('historial'); setRecetaReciente(null); }}>Historial Recetas</button>
-        <button style={st.btnNav(vista === 'clinico')} onClick={() => { setVista('clinico'); setRecetaReciente(null); }}>Expediente Clínico</button>
+        <button style={st.btnNav(vista === 'nueva')} onClick={() => cambiarVista('nueva')}>Nueva Receta</button>
+        <button style={st.btnNav(vista === 'historial')} onClick={() => cambiarVista('historial')}>Historial Recetas</button>
+        <button style={st.btnNav(vista === 'clinico')} onClick={() => cambiarVista('clinico')}>Expediente Clínico</button>
+      </div>
+
+      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
+        Médico {vista === 'nueva' ? '> Nueva Receta' : vista === 'historial' ? '> Historial Recetas' : '> Expediente Clínico'}
       </div>
 
       {/* PESTAÑA: NUEVA RECETA */}
@@ -583,10 +591,10 @@ function DashboardMedico({
                 </tr>
               </thead>
               <tbody>
-                {recetasHistorialFiltradas.map(r => (
+                {recetasHistorialFiltradas.length > 0 ? recetasHistorialFiltradas.map(r => (
                   <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}><strong>{r.paciente}</strong></td>
-                    <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>{r.fecha}</td>
+                    <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>{formatearFecha(r.fecha)}</td>
                     <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>
                       {Array.isArray(r.medicamento) ? r.medicamento.map((m, idx) => (
                         <div key={idx}>• {m.nombre} ({m.amount || m.cantidad || 1} Uds)</div>
@@ -597,7 +605,9 @@ function DashboardMedico({
                       <span style={{ background: r.estado === 'Pendiente' ? '#fef3c7' : '#d1fae5', color: r.estado === 'Pendiente' ? '#92400e' : '#065f46', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600' }}>{r.estado}</span>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr><td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: '500' }}>No hay recetas que coincidan con la búsqueda.</td></tr>
+                )}
               </tbody>
             </table>
           </div>

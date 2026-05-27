@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
+import { formatearFecha } from '../utils';
 
 
 
 function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [] }) {
   const toast = useToast();
-  const [vista, setVista] = useState('dispensar'); // 'dispensar', 'inventario', 'auditoria', 'estadisticas'
+  const [vista, setVista] = useState('dispensar');
+  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); };
   const [tokenBusqueda, setTokenBusqueda] = useState('');
   const [recetaEncontrada, setRecetaEncontrada] = useState(null);
   const [busquedaInventario, setBusquedaInventario] = useState('');
@@ -385,24 +387,30 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             {darkMode ? '☀️' : '🌙'}
           </button>
           <span style={{ fontWeight: '600' }}>Regente: {user?.nombre || 'Administrador'}</span>
-          <button onClick={onLogout} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
+          <button onClick={() => {
+            if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
+          }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
         </div>
       </div>
 
       {/* MENÚ DE NAVEGACIÓN TABULAR */}
       <div style={st.nav} className="no-print">
-        <button style={st.btnNav(vista === 'dispensar')} onClick={() => { setVista('dispensar'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'dispensar')} onClick={() => cambiarVista('dispensar')}>
           📋 Panel de Dispensación
         </button>
-        <button style={st.btnNav(vista === 'inventario')} onClick={() => { setVista('inventario'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>
           📦 Catálogo e Inventario
         </button>
-        <button style={st.btnNav(vista === 'auditoria')} onClick={() => { setVista('auditoria'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'auditoria')} onClick={() => cambiarVista('auditoria')}>
           📜 Historial e Informes
         </button>
-        <button style={st.btnNav(vista === 'estadisticas')} onClick={() => { setVista('estadisticas'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'estadisticas')} onClick={() => cambiarVista('estadisticas')}>
           📊 Estadísticas
         </button>
+      </div>
+
+      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
+        Farmacia {vista === 'dispensar' ? '> Panel de Dispensación' : vista === 'inventario' ? '> Catálogo e Inventario' : vista === 'auditoria' ? '> Historial e Informes' : '> Estadísticas'}
       </div>
 
       {/* VISTA 1: DISPENSAR MEDICAMENTOS */}
@@ -444,7 +452,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                 <p style={{ margin: 0 }}><strong>Paciente:</strong> {recetaEncontrada.paciente}</p>
                 <p style={{ margin: 0 }}><strong>DNI Paciente:</strong> {recetaEncontrada.dniPaciente}</p>
                 <p style={{ margin: 0 }}><strong>Médico Emisor:</strong> {recetaEncontrada.medico}</p>
-                <p style={{ margin: 0 }}><strong>Fecha Emisión:</strong> {recetaEncontrada.fecha}</p>
+                <p style={{ margin: 0 }}><strong>Fecha Emisión:</strong> {formatearFecha(recetaEncontrada.fecha)}</p>
               </div>
 
               <h4 style={st.label}>Detalle de Fármacos Solicitados</h4>
@@ -472,7 +480,11 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
               {recetaEncontrada.estado === 'Pendiente' ? (
                 <div style={{ marginTop: '35px', textAlign: 'right' }}>
-                  <button onClick={dispensarMedicamentosReceta} style={st.btnSuccess}>
+                  <button onClick={() => {
+                    if (window.confirm('¿Confirmar el despacho de estos medicamentos? Se descontarán del inventario.')) {
+                      dispensarMedicamentosReceta();
+                    }
+                  }} style={st.btnSuccess}>
                     ✔ Confirmar y Despachar Medicamentos
                   </button>
                 </div>
@@ -584,7 +596,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
               </tr>
             </thead>
             <tbody>
-              {inventarioFiltrado.map((item, idx) => {
+              {inventarioFiltrado.length > 0 ? inventarioFiltrado.map((item, idx) => {
                 if (!item) return null;
                 const stockCritico = (parseInt(item.stock, 10) || 0) <= 10;
                 return (
@@ -601,7 +613,9 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                     </td>
                   </tr>
                 );
-              })}
+              }) : (
+                <tr><td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: '500' }}>No se encontraron medicamentos en el inventario.</td></tr>
+              )}
             </tbody>
           </table>
         </div>

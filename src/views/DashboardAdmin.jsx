@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
+import { formatearFecha } from '../utils';
 
 function DashboardAdmin({
   user = {},
@@ -14,6 +15,7 @@ function DashboardAdmin({
 }) {
   const toast = useToast();
   const [vista, setVista] = useState('resumen');
+  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); };
   const [darkMode, setDarkMode] = useState(false);
   const [busquedaReceta, setBusquedaReceta] = useState('');
   const [busquedaSolicitud, setBusquedaSolicitud] = useState('');
@@ -195,16 +197,22 @@ function DashboardAdmin({
             {darkMode ? '☀️' : '🌙'}
           </button>
           <span style={{ fontWeight: '600' }}>{user?.nombre || 'Admin'}</span>
-          <button onClick={onLogout} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
+          <button onClick={() => {
+            if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
+          }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
         </div>
       </div>
 
       <div style={st.nav} className="no-print">
-        <button style={st.btnNav(vista === 'resumen')} onClick={() => setVista('resumen')}>📊 Resumen</button>
-        <button style={st.btnNav(vista === 'recetas')} onClick={() => setVista('recetas')}>📋 Recetas</button>
-        <button style={st.btnNav(vista === 'solicitudes')} onClick={() => setVista('solicitudes')}>📩 Solicitudes Demo</button>
-        <button style={st.btnNav(vista === 'usuarios')} onClick={() => setVista('usuarios')}>👥 Usuarios</button>
-        <button style={st.btnNav(vista === 'inventario')} onClick={() => setVista('inventario')}>📦 Inventario</button>
+        <button style={st.btnNav(vista === 'resumen')} onClick={() => cambiarVista('resumen')}>📊 Resumen</button>
+        <button style={st.btnNav(vista === 'recetas')} onClick={() => cambiarVista('recetas')}>📋 Recetas</button>
+        <button style={st.btnNav(vista === 'solicitudes')} onClick={() => cambiarVista('solicitudes')}>📩 Solicitudes Demo</button>
+        <button style={st.btnNav(vista === 'usuarios')} onClick={() => cambiarVista('usuarios')}>👥 Usuarios</button>
+        <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>📦 Inventario</button>
+      </div>
+
+      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
+        Admin {vista === 'resumen' ? '> Resumen' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes Demo' : vista === 'usuarios' ? '> Usuarios' : '> Inventario'}
       </div>
 
       {/* RESUMEN */}
@@ -282,7 +290,7 @@ function DashboardAdmin({
                     <td style={st.td}>{r.medico}</td>
                     <td style={st.td}><strong style={{ color: '#2563eb' }}>{r.token}</strong></td>
                     <td style={st.td}><span style={st.badge(r.estado)}>{r.estado}</span></td>
-                    <td style={st.td}>{r.fecha}</td>
+                    <td style={st.td}>{formatearFecha(r.fecha)}</td>
                   </tr>
                 ))}
                 {recetasFiltradas.length === 0 && (
@@ -325,7 +333,7 @@ function DashboardAdmin({
                     <td style={st.td}>{s.email}</td>
                     <td style={st.td}>{s.telefono || '—'}</td>
                     <td style={{ ...st.td, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.mensaje || '—'}</td>
-                    <td style={st.td}>{s.fecha ? new Date(s.fecha).toLocaleDateString() : '—'}</td>
+                    <td style={st.td}>{formatearFecha(s.fecha)}</td>
                     <td style={st.td}>
                       {s.estado === 'contactado' ? (
                         <span style={st.badge('contactado')}>Contactado</span>
