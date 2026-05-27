@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { useToast } from '../components/Toast';
 
 // =========================================================
 // COMPONENTES GRÁFICOS INTEGRADOS (LOGOS CORPORATIVOS REALES)
@@ -101,9 +104,36 @@ const PharmacyLogoC = () => (
 // =========================================================
 
 function Landing({ onNavigateToLogin }) {
+  const toast = useToast();
   const [tabActiva, setTabActiva] = useState('medico');
   const [faqActiva, setFaqActiva] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoForm, setDemoForm] = useState({ nombre: '', email: '', telefono: '', mensaje: '' });
+  const [enviando, setEnviando] = useState(false);
+
+  const handleDemoSubmit = async (e) => {
+    e.preventDefault();
+    if (!demoForm.nombre || !demoForm.email) {
+      toast.warning('Nombre y correo son obligatorios.');
+      return;
+    }
+    setEnviando(true);
+    try {
+      await addDoc(collection(db, "solicitudes"), {
+        ...demoForm,
+        fecha: new Date().toISOString(),
+        tipo: 'demo'
+      });
+      toast.success('Solicitud enviada. Nos pondremos en contacto pronto.');
+      setShowDemoModal(false);
+      setDemoForm({ nombre: '', email: '', telefono: '', mensaje: '' });
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al enviar la solicitud. Intente nuevamente.');
+    }
+    setEnviando(false);
+  };
 
   const clientsData = [
     { 
@@ -809,7 +839,7 @@ function Landing({ onNavigateToLogin }) {
               <button className="btn-primary" style={st.btnPrimary} onClick={onNavigateToLogin}>
                 Ingresar al Sistema
               </button>
-              <button className="btn-secondary" style={st.btnSecondary}>
+              <button className="btn-secondary" style={st.btnSecondary} onClick={() => setShowDemoModal(true)}>
                 Solicitar Demo
               </button>
             </div>
@@ -1106,6 +1136,92 @@ function Landing({ onNavigateToLogin }) {
           </div>
         </div>
       </footer>
+
+      {/* MODAL SOLICITAR DEMO */}
+      {showDemoModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 5000, backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', padding: '40px',
+            maxWidth: '440px', width: '90%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+            position: 'relative', animation: 'fadeIn 0.25s ease',
+          }}>
+            <button
+              onClick={() => setShowDemoModal(false)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px',
+                background: '#f1f5f9', border: 'none', borderRadius: '8px',
+                width: '32px', height: '32px', cursor: 'pointer',
+                fontSize: '1.1rem', color: '#64748b', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontWeight: '700',
+              }}
+            >✕</button>
+
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', fontWeight: '700', color: '#0f172a' }}>
+              Solicitar Demo
+            </h3>
+            <p style={{ margin: '0 0 24px 0', fontSize: '0.9rem', color: '#64748b' }}>
+              Complete el formulario y un asesor se comunicará con usted.
+            </p>
+
+            <form onSubmit={handleDemoSubmit}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.85rem', color: '#334155', marginBottom: '6px' }}>Nombre completo *</label>
+                <input
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#0f172a' }}
+                  placeholder="Ej. Carlos López"
+                  value={demoForm.nombre}
+                  onChange={e => setDemoForm({ ...demoForm, nombre: e.target.value })}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.85rem', color: '#334155', marginBottom: '6px' }}>Correo electrónico *</label>
+                <input
+                  type="email"
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#0f172a' }}
+                  placeholder="carlos@clinica.com"
+                  value={demoForm.email}
+                  onChange={e => setDemoForm({ ...demoForm, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.85rem', color: '#334155', marginBottom: '6px' }}>Teléfono</label>
+                <input
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#0f172a' }}
+                  placeholder="+57 300 123 4567"
+                  value={demoForm.telefono}
+                  onChange={e => setDemoForm({ ...demoForm, telefono: e.target.value })}
+                />
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.85rem', color: '#334155', marginBottom: '6px' }}>Mensaje</label>
+                <textarea
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#0f172a', minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
+                  placeholder="Cuéntenos sobre su proyecto o necesidades..."
+                  value={demoForm.mensaje}
+                  onChange={e => setDemoForm({ ...demoForm, mensaje: e.target.value })}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={enviando}
+                style={{
+                  width: '100%', padding: '14px', background: enviando ? '#94a3b8' : '#2563eb',
+                  color: '#ffffff', border: 'none', borderRadius: '10px',
+                  fontWeight: '700', fontSize: '1rem', cursor: enviando ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {enviando ? 'Enviando...' : 'Enviar Solicitud'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
     
   );
