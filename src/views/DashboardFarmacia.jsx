@@ -102,96 +102,78 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const maxMedDocValue = rankingMedsPorDoctor[0]?.total || 1;
 
 
-  // --- PALETA DE ESTILOS PREMIUM ULTRA-PULIDA ---
+  // --- ESTILOS ADAPTADOS DE DashboardMedico ---
   const st = {
-    container: {
-      padding: '32px 50px',
-      fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, sans-serif',
-      background: darkMode ? '#0f172a' : '#f8fafc',
-      minHeight: '100vh',
+    container: { 
+      padding: '24px 30px', 
+      fontFamily: '"Segoe UI", Roboto, sans-serif', 
+      background: darkMode ? '#0f172a' : '#f8fafc', 
+      minHeight: '100vh', 
       width: '100%',
       boxSizing: 'border-box',
-      color: darkMode ? '#f1f5f9' : '#1e293b',
-      transition: 'background-color 0.3s ease'
+      color: darkMode ? '#f1f5f9' : '#1e293b'
     },
-    topBar: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      background: darkMode ? '#1e293b' : '#ffffff',
-      padding: '18px 36px',
-      borderRadius: '16px',
-      boxShadow: darkMode ? '0 4px 30px rgba(0,0,0,0.2)' : '0 10px 30px -10px rgba(0,0,0,0.04)',
-      marginBottom: '32px',
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+    topBar: { 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      background: darkMode ? '#1e293b' : '#1e3a8a', 
+      padding: '16px 24px', 
+      borderRadius: '12px', 
+      boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+      marginBottom: '24px', 
+      color: '#ffffff'
     },
     logoTitle: {
       margin: 0,
       fontSize: '1.4rem',
-      fontWeight: '800',
-      color: '#0052cc', 
+      fontWeight: '700',
+      color: '#ffffff',
       display: 'flex',
       alignItems: 'center',
       gap: '12px'
     },
-    navBar: {
-      display: 'flex',
-      gap: '8px',
-      marginBottom: '32px',
-      background: darkMode ? '#1e293b' : '#e2e8f0',
-      padding: '6px',
-      borderRadius: '14px',
-      width: 'fit-content'
+    nav: { 
+      display: 'flex', 
+      gap: '10px', 
+      marginBottom: '24px'
     },
-    navTab: (activo) => ({
-      padding: '12px 24px',
+    btnNav: (act) => ({ 
+      padding: '12px 22px', 
+      borderRadius: '8px', 
+      fontWeight: '700', 
       fontSize: '0.9rem',
-      fontWeight: '700',
-      cursor: 'pointer',
-      background: activo ? (darkMode ? '#334155' : '#ffffff') : 'transparent',
-      border: 'none',
-      color: activo ? (darkMode ? '#38bdf8' : '#0052cc') : (darkMode ? '#94a3b8' : '#64748b'),
-      borderRadius: '10px',
-      boxShadow: activo && !darkMode ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+      cursor: 'pointer', 
+      border: act ? 'none' : (darkMode ? '1px solid #334155' : '1px solid #cbd5e1'), 
+      background: act ? '#2563eb' : (darkMode ? '#1e293b' : '#ffffff'), 
+      color: act ? '#ffffff' : (darkMode ? '#94a3b8' : '#4b5563'), 
+      boxShadow: act ? '0 4px 6px rgba(37,99,235,0.15)' : 'none'
     }),
-    gridAnalytics: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '32px',
-      marginBottom: '32px'
-    },
-    card: {
-      background: darkMode ? '#1e293b' : '#ffffff',
-      padding: '36px',
-      borderRadius: '20px',
-      boxShadow: darkMode ? '0 10px 40px rgba(0,0,0,0.3)' : '0 12px 36px -4px rgba(0,0,0,0.03)',
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-      marginBottom: '32px',
-    },
-    analyticsCard: {
-      background: darkMode ? '#1e293b' : '#ffffff',
-      padding: '30px',
-      borderRadius: '20px',
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-      boxShadow: darkMode ? '0 10px 40px rgba(0,0,0,0.2)' : '0 10px 25px -5px rgba(0,0,0,0.02)',
-      color: darkMode ? '#f1f5f9' : '#1e293b'
-    },
-    input: {
+    card: { 
+      background: darkMode ? '#1e293b' : '#ffffff', 
+      padding: '30px', 
+      borderRadius: '12px', 
+      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+      boxShadow: '0 4px 12px rgba(0,0,0,0.03)', 
+      marginBottom: '24px',
       width: '100%',
-      padding: '14px 18px',
-      fontSize: '0.95rem',
-      borderRadius: '10px',
-      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1',
-      background: darkMode ? '#0f172a' : '#ffffff',
-      color: darkMode ? '#ffffff' : '#0f172a',
       boxSizing: 'border-box',
-      marginBottom: '18px',
+      position: 'relative'
+    },
+    input: { 
+      padding: '12px 14px', 
+      width: '100%', 
+      boxSizing: 'border-box', 
+      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1', 
+      borderRadius: '8px', 
+      background: darkMode ? '#0f172a' : '#ffffff', 
+      color: darkMode ? '#ffffff' : '#0f172a', 
+      marginBottom: '16px', 
       outline: 'none',
-      transition: 'all 0.2s ease'
+      fontSize: '0.95rem'
     },
     select: {
-      padding: '10px 16px',
+      padding: '12px 14px',
       fontSize: '0.95rem',
       borderRadius: '8px',
       border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1',
@@ -202,110 +184,77 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       cursor: 'pointer'
     },
     label: {
+      fontWeight: '700',
       display: 'block',
-      fontWeight: '700',
-      fontSize: '0.78rem',
       marginBottom: '8px',
-      color: darkMode ? '#94a3b8' : '#64748b',
-      textTransform: 'uppercase',
-      letterSpacing: '0.8px'
+      color: darkMode ? '#cbd5e1' : '#1e293b', 
+      fontSize: '0.95rem'
     },
-    btnAction: {
-      background: 'linear-gradient(135deg, #0052cc 0%, #0065ff 100%)',
-      color: '#ffffff',
-      border: 'none',
-      padding: '14px 28px',
-      borderRadius: '10px',
-      fontWeight: '700',
+    btnAction: { 
+      background: '#2563eb', 
+      color: '#ffffff', 
+      border: 'none', 
+      padding: '12px 24px', 
+      borderRadius: '8px', 
+      fontWeight: '700', 
       fontSize: '0.95rem',
-      cursor: 'pointer',
-      transition: 'transform 0.1s ease, opacity 0.2s ease',
-      boxShadow: '0 4px 14px rgba(0, 82, 204, 0.25)'
+      cursor: 'pointer'
     },
-    btnSuccess: {
-      background: 'linear-gradient(135deg, #00875a 0%, #36b37e 100%)',
-      color: '#ffffff',
-      border: 'none',
-      padding: '14px 28px',
-      borderRadius: '10px',
-      fontWeight: '700',
+    btnSuccess: { 
+      background: '#10b981', 
+      color: '#ffffff', 
+      border: 'none', 
+      padding: '12px 24px', 
+      borderRadius: '8px', 
+      fontWeight: '700', 
       fontSize: '0.95rem',
-      cursor: 'pointer',
-      boxShadow: '0 4px 14px rgba(0, 135, 90, 0.25)'
+      cursor: 'pointer'
     },
     btnSecondary: {
       background: darkMode ? '#334155' : '#f1f5f9',
       color: darkMode ? '#f1f5f9' : '#334155',
       border: 'none',
       padding: '12px 20px',
-      borderRadius: '10px',
+      borderRadius: '8px',
       fontWeight: '700',
       fontSize: '0.9rem',
-      cursor: 'pointer',
-      transition: 'all 0.2s'
+      cursor: 'pointer'
     },
     table: {
       width: '100%',
-      borderCollapse: 'separate',
-      borderSpacing: '0',
-      marginTop: '15px',
+      borderCollapse: 'collapse',
+      fontSize: '0.9rem'
     },
     th: {
-      background: darkMode ? '#0f172a' : '#f8fafc',
-      color: darkMode ? '#94a3b8' : '#64748b',
-      padding: '16px 20px',
-      fontWeight: '700',
-      fontSize: '0.8rem',
+      padding: '12px',
       textAlign: 'left',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      borderBottom: darkMode ? '2px solid #334155' : '2px solid #e2e8f0'
+      color: darkMode ? '#ffffff' : '#1f2937',
+      borderBottom: '1px solid #e5e7eb',
+      background: darkMode ? '#0f172a' : '#f9fafb'
     },
     td: {
-      padding: '18px 20px',
-      borderBottom: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-      color: darkMode ? '#e2e8f0' : '#334155',
-      fontSize: '0.95rem',
-      verticalAlign: 'middle'
+      padding: '12px',
+      borderBottom: '1px solid #f3f4f6',
+      color: darkMode ? '#ffffff' : '#1f2937',
+      fontSize: '0.9rem'
     },
     badge: (tipo) => {
-      let bg = darkMode ? '#3a2a00' : '#fff9e6'; 
-      let col = darkMode ? '#ffcb42' : '#b78103';
+      let bg = '#fef3c7';
+      let col = '#92400e';
       if (tipo === 'Entregado' || tipo === 'Dispensado') { 
-        bg = darkMode ? '#052e16' : '#e3fcef'; 
-        col = darkMode ? '#4ade80' : '#006644'; 
+        bg = '#d1fae5'; 
+        col = '#065f46'; 
       }
       return {
-        padding: '6px 14px',
-        borderRadius: '20px',
-        fontSize: '0.75rem',
-        fontWeight: '800',
+        padding: '4px 8px',
+        borderRadius: '12px',
+        fontSize: '0.8rem',
+        fontWeight: '600',
         background: bg,
         color: col,
         display: 'inline-block'
       };
-    },
-    chartRow: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '20px',
-      gap: '14px'
-    },
-    chartBarContainer: {
-      flex: 1,
-      background: darkMode ? '#0f172a' : '#f1f5f9',
-      height: '14px',
-      borderRadius: '20px',
-      overflow: 'hidden',
-      padding: '2px'
-    },
-    chartBarFill: (width, color) => ({
-      width: `${width}%`,
-      background: color,
-      height: '100%',
-      borderRadius: '20px',
-      transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
-    })
+    }
   };
 
   // --- LÓGICA DE NEGOCIO ---
@@ -424,42 +373,32 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       
       {/* HEADER SUPERIOR */}
       <div style={st.topBar} className="no-print">
-        <div style={st.logoTitle}>
-          <span style={{ background: 'linear-gradient(135deg, #0052cc 0%, #0065ff 100%)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,82,204,0.3)' }}>☁️</span> 
-          <span style={{ color: darkMode ? '#ffffff' : '#0f172a' }}>siigo nube <span style={{ fontWeight: '300', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '1.1rem' }}>| Gestión de Farmacia</span></span>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>
+            Gestión de Farmacia
+          </h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <button 
-            onClick={() => setDarkMode(!darkMode)} 
-            style={{ background: 'none', border: 'none', fontSize: '0.9rem', cursor: 'pointer', color: darkMode ? '#94a3b8' : '#475569', fontWeight: '700' }}
-          >
-            {darkMode ? '☀️ Modo Claro' : '🌙 Modo Oscuro'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>
+            {darkMode ? '☀️' : '🌙'}
           </button>
-          <div style={{ height: '20px', width: '1px', background: darkMode ? '#334155' : '#e2e8f0' }}></div>
-          <span style={{ fontWeight: '700', color: darkMode ? '#cbd5e1' : '#334155', fontSize: '0.9rem' }}>
-            Regente: <span style={{ color: '#0052cc', fontWeight: '800' }}>{user?.nombre || 'Administrador'}</span>
-          </span>
-          <button 
-            onClick={onLogout} 
-            style={{ background: 'linear-gradient(135deg, #ff8b00 0%, #ffab00 100%)', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,139,0,0.25)' }}
-          >
-            Salir del Sistema
-          </button>
+          <span style={{ fontWeight: '600' }}>Regente: {user?.nombre || 'Administrador'}</span>
+          <button onClick={onLogout} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
         </div>
       </div>
 
       {/* MENÚ DE NAVEGACIÓN TABULAR */}
-      <div style={st.navBar} className="no-print">
-        <button style={st.navTab(vista === 'dispensar')} onClick={() => { setVista('dispensar'); setDespachoReciente(null); }}>
+      <div style={st.nav} className="no-print">
+        <button style={st.btnNav(vista === 'dispensar')} onClick={() => { setVista('dispensar'); setDespachoReciente(null); }}>
           📋 Panel de Dispensación
         </button>
-        <button style={st.navTab(vista === 'inventario')} onClick={() => { setVista('inventario'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'inventario')} onClick={() => { setVista('inventario'); setDespachoReciente(null); }}>
           📦 Catálogo e Inventario
         </button>
-        <button style={st.navTab(vista === 'auditoria')} onClick={() => { setVista('auditoria'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'auditoria')} onClick={() => { setVista('auditoria'); setDespachoReciente(null); }}>
           📜 Historial e Informes
         </button>
-        <button style={st.navTab(vista === 'estadisticas')} onClick={() => { setVista('estadisticas'); setDespachoReciente(null); }}>
+        <button style={st.btnNav(vista === 'estadisticas')} onClick={() => { setVista('estadisticas'); setDespachoReciente(null); }}>
           📊 Estadísticas
         </button>
       </div>
@@ -467,8 +406,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {/* VISTA 1: DISPENSAR MEDICAMENTOS */}
       {vista === 'dispensar' && !despachoReciente && (
         <div style={st.card}>
-          <div style={{ marginBottom: '25px' }}>
-            <h2 style={{ marginTop: 0, fontSize: '1.5rem', fontWeight: '800', color: darkMode ? '#fff' : '#0f172a' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
               Validación y Entrega de Fórmulas
             </h2>
             <p style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.95rem', marginTop: '-8px' }}>Ingrese el token de seguridad provisto por el paciente para consultar el estado del documento.</p>
@@ -493,7 +432,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           {recetaEncontrada && (
             <div style={{ marginTop: '40px', borderTop: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', paddingTop: '30px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, color: darkMode ? '#38bdf8' : '#0052cc', fontSize: '1.3rem', fontWeight: '800' }}>
+                <h3 style={{ margin: 0, color: '#2563eb', fontSize: '1.2rem', fontWeight: '700' }}>
                   Prescripción Autorizada Encontrada
                 </h3>
                 <span style={st.badge(recetaEncontrada.estado)}>{recetaEncontrada.estado}</span>
@@ -523,7 +462,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                         <div style={{ fontWeight: '600', color: darkMode ? '#cbd5e1' : '#334155' }}>{m?.posologia}</div>
                         <small style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem' }}>{m?.indicaciones}</small>
                       </td>
-                      <td style={st.td}><strong style={{ color: darkMode ? '#38bdf8' : '#0052cc', fontSize: '1.05rem' }}>{(m?.cantidad || m?.amount)} Uds</strong></td>
+                      <td style={st.td}><strong style={{ color: '#2563eb', fontSize: '1.05rem' }}>{(m?.cantidad || m?.amount)} Uds</strong></td>
                     </tr>
                   ))}
                 </tbody>
@@ -547,48 +486,42 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* COMPROBANTE DE DESPACHO INTERNO */}
       {despachoReciente && (
-        <div style={{ background: '#ffffff', color: '#172b4d', padding: '45px', borderRadius: '24px', border: '1px solid #e2e8f0', maxWidth: '680px', margin: '0 auto', boxShadow: '0 30px 60px rgba(0,0,0,0.08)' }}>
-          <div style={{ borderBottom: '2px solid #0052cc', paddingBottom: '18px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h2 style={{ margin: 0, color: '#0052cc', fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-0.5px' }}>SIIGO NUBE</h2>
-              <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Comprobante de Dispensación</span>
-            </div>
+        <div style={{ background: '#ffffff', color: '#1f2937', padding: '32px', borderRadius: '12px', border: '1px solid #cbd5e1', maxWidth: '600px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <div style={{ borderBottom: '2px solid #2563eb', paddingBottom: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0, color: '#2563eb', fontSize: '1.3rem', fontWeight: '700' }}>COMPROBANTE DE DISPENSACIÓN</h2>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontWeight: '800', color: '#00875a', fontSize: '1.1rem', background: '#e3fcef', padding: '6px 14px', borderRadius: '20px' }}>RECETA SURTIDA</span>
-              <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '700' }}>Token: {despachoReciente.token}</p>
+              <span style={{ fontWeight: 'bold', color: '#10b981' }}>Token: {despachoReciente.token}</span>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>Fecha: {despachoReciente.fechaDespacho}</p>
             </div>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.95rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', color: '#1e293b', border: '1px solid #edf2f7' }}>
-            <p style={{ margin: 0 }}><strong>Paciente:</strong> {despachoReciente.paciente}</p>
-            <p style={{ margin: 0 }}><strong>Identificación:</strong> {despachoReciente.dniPaciente}</p>
-            <p style={{ margin: 0, gridColumn: 'span 2' }}><strong>Fecha Entrega:</strong> {despachoReciente.fechaDespacho}</p>
+          <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem' }}>
+            <p style={{ margin: '0 0 4px 0' }}><strong>Paciente:</strong> {despachoReciente.paciente}</p>
+            <p style={{ margin: 0 }}><strong>DNI Paciente:</strong> {despachoReciente.dniPaciente}</p>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #0f172a' }}>
-                <th style={{ textAlign: 'left', paddingBottom: '12px', fontWeight: '800', color: '#0f172a', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.5px' }}>Fármaco Entregado</th>
-                <th style={{ textAlign: 'right', paddingBottom: '12px', width: '120px', fontWeight: '800', color: '#0f172a', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.5px' }}>Cant. Surtida</th>
+              <tr style={{ borderBottom: '1px solid #1f2937' }}>
+                <th style={{ textAlign: 'left', paddingBottom: '8px' }}>Descripción Fármaco</th>
+                <th style={{ textAlign: 'center', paddingBottom: '8px', width: '80px' }}>Cantidad</th>
               </tr>
             </thead>
             <tbody>
               {despachoReciente.meds?.map((m, i) => (
-                <tr key={i} style={{ borderBottom: '1px dashed #e2e8f0' }}>
-                  <td style={{ padding: '16px 0', color: '#1e293b' }}>
-                    <strong style={{color: '#0f172a', fontSize: '1.05rem'}}>{m?.nombre}</strong> <br />
-                    <span style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px', display: 'inline-block' }}>Indicaciones: {m?.indicaciones || 'N/A'}</span>
+                <tr key={i} style={{ borderBottom: '1px dashed #e5e7eb' }}>
+                  <td style={{ padding: '10px 0' }}>
+                    <strong>{m?.nombre}</strong> <br />
+                    <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>Indicaciones: {m?.indicaciones || 'N/A'}</span>
                   </td>
-                  <td style={{ textAlign: 'right', padding: '16px 0', fontWeight: '800', color: '#00875a', fontSize: '1.1rem' }}>{(m?.cantidad || m?.amount)} Uds</td>
+                  <td style={{ textAlign: 'center', padding: '10px 0', fontWeight: '700', color: '#10b981' }}>{m?.cantidad || m?.amount} Uds</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div style={{ marginTop: '45px', textAlign: 'center' }} className="no-print">
-            <button onClick={() => window.print()} style={st.btnAction}>
-              🖨 Imprimir Soporte de Entrega
-            </button>
+          <div style={{ marginTop: '30px', textAlign: 'center' }} className="no-print">
+            <button onClick={() => window.print()} style={st.btnAction}>🖨 Imprimir Documento</button>
           </div>
         </div>
       )}
@@ -597,7 +530,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {vista === 'inventario' && (
         <div style={st.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '800', color: darkMode ? '#fff' : '#0f172a' }}>Catálogo Maestro de Inventario</h2>
+            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Catálogo Maestro de Inventario</h2>
             <button onClick={() => setMostrarForm(!mostrarForm)} style={st.btnAction}>
               {mostrarForm ? '✖ Cancelar' : '➕ Registrar Nuevo Fármaco'}
             </button>
@@ -606,7 +539,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           {/* FORMULARIO AGREGAR MEDICAMENTO */}
           {mostrarForm && (
             <form onSubmit={registrarNuevoMedicamento} style={{ background: darkMode ? '#0f172a' : '#f8fafc', padding: '30px', borderRadius: '16px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', marginBottom: '30px' }}>
-              <h3 style={{ marginTop: 0, fontSize: '1.15rem', marginBottom: '20px', color: darkMode ? '#38bdf8' : '#0052cc', fontWeight: '800' }}>Crear Registro en Inventario</h3>
+              <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '16px', color: '#2563eb', fontWeight: '700' }}>Crear Registro en Inventario</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
                 <div>
                   <label style={st.label}>Nombre Comercial / Genérico</label>
@@ -675,10 +608,10 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {/* VISTA 3: HISTORIAL E INFORMES */}
       {vista === 'auditoria' && (
         <div style={st.card}>
-          <h2 style={{ marginTop: 0, fontSize: '1.5rem', fontWeight: '800', marginBottom: '25px', color: darkMode ? '#fff' : '#0f172a' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
             Historial y Auditoría de Fórmulas Dispensadas
           </h2>
-          <p style={{ color: darkMode ? '#94a3b8' : '#64748b', marginTop: '-15px', marginBottom: '25px', fontSize: '0.95rem' }}>
+          <p style={{ color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '20px', fontSize: '0.9rem' }}>
             Listado oficial de recetas surtidas en la farmacia para control de inventarios y trazabilidad médica.
           </p>
 
@@ -704,7 +637,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                         <div key={i} style={{ fontSize: '0.9rem', padding: '4px 0', color: darkMode ? '#cbd5e1' : '#334155' }}>• <span style={{ fontWeight: '700' }}>{m?.nombre}</span> ({(m?.cantidad || m?.amount || 1)} Uds)</div>
                       )) : 'Fórmula estructurada anterior'}
                     </td>
-                    <td style={{ ...st.td, textAlign: 'center', fontWeight: '800', color: darkMode ? '#38bdf8' : '#0052cc', fontSize: '1.05rem' }}>{r.token}</td>
+                    <td style={{ ...st.td, textAlign: 'center', fontWeight: '800', color: '#2563eb', fontSize: '1.05rem' }}>{r.token}</td>
                     <td style={{ ...st.td, textAlign: 'center' }}>
                       <span style={st.badge(r.estado)}>{r.estado}</span>
                     </td>
@@ -726,30 +659,30 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {/* VISTA 4: ESTADÍSTICAS EXCLUSIVAS (INCLUYE NUEVO FILTRO POR DOCTOR) */}
       {vista === 'estadisticas' && (
         <div>
-          <div style={st.gridAnalytics} className="no-print">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }} className="no-print">
             
             {/* GRÁFICA 1: MEDICAMENTOS MÁS VENDIDOS / DISPENSADOS */}
-            <div style={st.analyticsCard}>
+            <div style={st.card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: darkMode ? '#38bdf8' : '#0052cc', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                  🔥 Fármacos de Mayor Demanda (Unidades)
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>
+                  Fármacos de Mayor Demanda (Unidades)
                 </h3>
-                <span style={{ fontSize: '0.75rem', background: darkMode ? '#052e16' : '#e3fcef', color: darkMode ? '#4ade80' : '#006644', padding: '6px 12px', borderRadius: '20px', fontWeight: '800' }}>En Tiempo Real</span>
+                <span style={{ fontSize: '0.75rem', background: '#d1fae5', color: '#065f46', padding: '4px 8px', borderRadius: '12px', fontWeight: '600' }}>En Tiempo Real</span>
               </div>
 
               {rankingMedicamentos.length > 0 ? (
                 rankingMedicamentos.map((item, idx) => {
                   const porcentaje = Math.round((item.total / maxMedValue) * 100);
-                  const colores = ['#0052cc', '#00875a', '#ff8b00', '#6554c0'];
+                  const colores = ['#2563eb', '#10b981', '#ff8b00', '#6554c0'];
                   return (
                     <div key={idx} style={{ marginBottom: '22px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '8px' }}>
                         <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>{idx + 1}. {item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: darkMode ? '#38bdf8' : '#0052cc' }}>{item.total} Uds</span>
+                        <span style={{ fontWeight: '800', color: '#2563eb' }}>{item.total} Uds</span>
                       </div>
-                      <div style={st.chartRow}>
-                        <div style={st.chartBarContainer}>
-                          <div style={st.chartBarFill(porcentaje, colores[idx % colores.length])}></div>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
+                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
+                          <div style={{ width: `${porcentaje}%`, background: colores[idx % colores.length], height: '100%', borderRadius: '20px' }}></div>
                         </div>
                         <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
                       </div>
@@ -762,12 +695,12 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             </div>
 
             {/* GRÁFICA 2: DOCTORES CON MAYOR EMISIÓN */}
-            <div style={st.analyticsCard}>
+            <div style={st.card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: darkMode ? '#4ade80' : '#00875a', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                  👨‍⚕️ Médicos con Mayor Actividad (Órdenes)
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700', color: '#10b981' }}>
+                  Médicos con Mayor Actividad (Órdenes)
                 </h3>
-                <span style={{ fontSize: '0.75rem', background: darkMode ? '#03285c' : '#deebff', color: darkMode ? '#38bdf8' : '#0052cc', padding: '6px 12px', borderRadius: '20px', fontWeight: '800' }}>Auditoría Activa</span>
+                <span style={{ fontSize: '0.75rem', background: '#dbeafe', color: '#2563eb', padding: '4px 8px', borderRadius: '12px', fontWeight: '600' }}>Auditoría Activa</span>
               </div>
 
               {rankingDoctores.length > 0 ? (
@@ -777,11 +710,11 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                     <div key={idx} style={{ marginBottom: '22px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '8px' }}>
                         <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>Dr(a). {item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: darkMode ? '#4ade80' : '#00875a' }}>{item.total} Fórmulas</span>
+                        <span style={{ fontWeight: '800', color: '#10b981' }}>{item.total} Fórmulas</span>
                       </div>
-                      <div style={st.chartRow}>
-                        <div style={st.chartBarContainer}>
-                          <div style={st.chartBarFill(porcentaje, '#00875a')}></div>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
+                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
+                          <div style={{ width: `${porcentaje}%`, background: '#10b981', height: '100%', borderRadius: '20px' }}></div>
                         </div>
                         <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
                       </div>
@@ -799,10 +732,10 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           <div style={st.card} className="no-print">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', marginBottom: '25px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: darkMode ? '#ffffff' : '#0f172a' }}>
-                  💊 Medicamentos más Recetados por Médico
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
+                  Medicamentos más Recetados por Médico
                 </h3>
-                <p style={{ margin: '4px 0 0 0', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.9rem' }}>
+                <p style={{ margin: '4px 0 0 0', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem' }}>
                   Seleccione un doctor para evaluar las preferencias de dosificación e indicaciones cruzadas.
                 </p>
               </div>
@@ -826,7 +759,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             {/* Renderizado dinámico de la gráfica cruzada */}
             {doctorFiltroEfectivo && rankingMedsPorDoctor.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', background: darkMode ? '#0f172a' : '#f8fafc', padding: '24px', borderRadius: '14px', border: darkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
-                <div style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '700', color: darkMode ? '#38bdf8' : '#0052cc' }}>
+                <div style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '700', color: '#2563eb' }}>
                   Top Fármacos Emitidos por el Dr(a). {doctorFiltroEfectivo}:
                 </div>
                 {rankingMedsPorDoctor.map((item, idx) => {
@@ -835,11 +768,11 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                     <div key={idx}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '6px' }}>
                         <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>{item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: darkMode ? '#38bdf8' : '#0052cc' }}>{item.total} Unidades prescritas</span>
+                        <span style={{ fontWeight: '800', color: '#2563eb' }}>{item.total} Unidades prescritas</span>
                       </div>
-                      <div style={st.chartRow}>
-                        <div style={st.chartBarContainer}>
-                          <div style={st.chartBarFill(porcentaje, '#6554c0')}></div>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
+                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
+                          <div style={{ width: `${porcentaje}%`, background: '#6554c0', height: '100%', borderRadius: '20px' }}></div>
                         </div>
                         <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
                       </div>
@@ -858,19 +791,19 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* MODAL GLOBAL PARA REABASTECIMIENTO */}
       {mostrarModalAbastecer && medSeleccionado && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, backdropFilter: 'blur(8px)' }}>
-          <div style={{ ...st.card, width: '440px', margin: 0, padding: '36px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <h3 style={{ marginTop: 0, color: darkMode ? '#38bdf8' : '#0052cc', fontSize: '1.3rem', fontWeight: '800', marginBottom: '10px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000 }}>
+          <div style={{ ...st.card, maxWidth: '440px', margin: 0 }}>
+            <h3 style={{ marginTop: 0, color: '#2563eb', fontWeight: '700' }}>
               Entrada de Inventario
             </h3>
-            <p style={{ fontSize: '0.95rem', color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '24px' }}>
-              Incrementar existencias para: <strong style={{ color: darkMode ? '#ffffff' : '#0f172a' }}>{medSeleccionado.nombre}</strong>
+            <p style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '24px' }}>
+              Incrementar existencias para: <strong style={{ color: '#0f172a' }}>{medSeleccionado.nombre}</strong>
             </p>
 
             <form onSubmit={procesarAbastecimientoModal}>
               <label style={st.label}>Cantidad de unidades a ingresar</label>
               <input 
-                style={{ ...st.input, fontSize: '1.4rem', textAlign: 'center', fontWeight: '800', marginBottom: '28px', padding: '14px', borderRadius: '12px' }} 
+                style={st.input}
                 type="number" 
                 placeholder="Ej. 50" 
                 min="1" 
@@ -880,17 +813,17 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                 autoFocus
               />
 
-              <div style={{ display: 'flex', gap: '14px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button 
                   type="button" 
                   onClick={() => setMostrarModalAbastecer(false)} 
-                  style={{ ...st.btnSecondary, flex: 1, padding: '14px' }}
+                  style={{ background: '#64748b', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', flex: 1, fontWeight: '600' }}
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit" 
-                  style={{ ...st.btnSuccess, flex: 1, padding: '14px' }}
+                  style={{ ...st.btnSuccess, flex: 1 }}
                 >
                   Confirmar Ingreso
                 </button>
