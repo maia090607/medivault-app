@@ -62,7 +62,6 @@ const HeroMockupUI = () => (
   </svg>
 );
 
-// LOGO REAL CRUZ VERDE
 const PharmacyLogoA = () => (
   <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="22" cy="22" r="21" fill="#00875A"/>
@@ -72,7 +71,6 @@ const PharmacyLogoA = () => (
   </svg>
 );
 
-// LOGO REAL FARMATODO
 const PharmacyLogoB = () => (
   <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4 25V13L18 3L32 13V25H4Z" fill="#0D2C74"/>
@@ -84,7 +82,6 @@ const PharmacyLogoB = () => (
   </svg>
 );
 
-// LOGO REAL MIFARMA
 const PharmacyLogoC = () => (
   <svg width="100%" height="100%" viewBox="0 0 150 45" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="1" y="4" width="38" height="36" rx="12" fill="#005691"/>
@@ -100,7 +97,7 @@ const PharmacyLogoC = () => (
 // COMPONENTE PRINCIPAL
 // =========================================================
 
-function Landing({ onNavigateToLogin }) {
+function Landing({ onNavigateToLogin, recetasEmitidas, inventario }) {
   const [tabActiva, setTabActiva] = useState('medico');
   const [faqActiva, setFaqActiva] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -583,7 +580,7 @@ function Landing({ onNavigateToLogin }) {
       fontWeight: '700',
       padding: '4px 10px',
       borderRadius: '4px',
- textTransform: 'uppercase',
+      textTransform: 'uppercase',
       letterSpacing: '0.3px',
       marginBottom: '16px',
       display: 'inline-block'
@@ -735,8 +732,6 @@ function Landing({ onNavigateToLogin }) {
     }
   };
 
-  
-
   return (
     <div style={st.wrapper}>
       <style>{`
@@ -752,7 +747,6 @@ function Landing({ onNavigateToLogin }) {
         .client-card-box:hover { border-color: #0052cc !important; transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0, 82, 204, 0.08); }
         .close-modal-btn:hover { background: #e2e8f0 !important; color: #0f172a !important; }
         
-        /* ANIMACIÓN LIVE DE PULSO */
         @keyframes livePing {
           0% { transform: scale(0.8); opacity: 0.5; }
           50% { opacity: 1; }
@@ -826,7 +820,7 @@ function Landing({ onNavigateToLogin }) {
       <section style={st.metricsBar}>
         <div style={st.metricsContainer}>
           <div style={st.metricItem}>
-            <span style={st.metricNumber}>+10,000</span>
+            <span style={st.metricNumber}>+{recetasEmitidas?.length || '10,000'}</span>
             <span style={st.metricLabel}>Recetas Procesadas</span>
           </div>
           <div style={st.metricItem}>
@@ -950,7 +944,6 @@ function Landing({ onNavigateToLogin }) {
           <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
             <button className="close-modal-btn" style={st.modalCloseBtn} onClick={() => setSelectedClient(null)}>✕</button>
             
-            {/* Cabecera del modal */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
               <div style={{ ...st.brandHeader, height: '80px', marginBottom: '12px' }}>
                 {selectedClient.tipo === 'medico' ? (
@@ -966,7 +959,6 @@ function Landing({ onNavigateToLogin }) {
                 )}
               </div>
 
-              {/* FASE 1: Indicador en vivo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '20px', marginBottom: '12px' }}>
                 <span className="live-pulse-dot"></span>
                 <span style={{ fontSize: '0.74rem', fontWeight: '700', color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -978,7 +970,6 @@ function Landing({ onNavigateToLogin }) {
               <p style={{ fontSize: '0.88rem', color: '#64748b', fontWeight: '600', margin: 0 }}>{selectedClient.cargo}</p>
             </div>
 
-            {/* FASE 2: KPIs de Rendimiento Express */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
               {selectedClient.detalles.kpis.map((kpi, idx) => (
                 <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 8px', textAlign: 'center' }}>
@@ -992,7 +983,6 @@ function Landing({ onNavigateToLogin }) {
               ))}
             </div>
 
-            {/* FASE 3: NUEVA SECCIÓN DE ACTIVIDAD RECIENTE (TIMELINE) */}
             <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
               <h4 style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 14px 0' }}>
                 Logs de Operación Reciente
@@ -1000,14 +990,12 @@ function Landing({ onNavigateToLogin }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative', paddingLeft: '8px' }}>
                 {selectedClient.detalles.actividades.map((act, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', position: 'relative' }}>
-                    {/* Indicador de Línea del Timeline */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4px' }}>
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }}></div>
                       {idx !== selectedClient.detalles.actividades.length - 1 && (
                         <div style={{ width: '1px', height: '26px', background: '#e2e8f0', marginTop: '4px', marginBottom: '-10px' }}></div>
                       )}
                     </div>
-                    {/* Texto del Evento */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#94a3b8' }}>{act.tiempo}</span>
                       <span style={{ fontSize: '0.84rem', color: '#334155', fontWeight: '500', lineHeight: '1.3' }}>{act.evento}</span>
@@ -1017,7 +1005,6 @@ function Landing({ onNavigateToLogin }) {
               </div>
             </div>
 
-            {/* Ficha Técnica Base */}
             <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
               <h4 style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px 0' }}>
                 Ficha de Enlace Técnico
@@ -1107,7 +1094,6 @@ function Landing({ onNavigateToLogin }) {
         </div>
       </footer>
     </div>
-    
   );
 }
 
