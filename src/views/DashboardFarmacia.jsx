@@ -34,6 +34,10 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   // Estado para la gráfica cruzada de estadísticas
   const [doctorSeleccionado, setDoctorSeleccionado] = useState('');
 
+  // Estados para búsqueda y filtro en historial
+  const [busquedaAuditoria, setBusquedaAuditoria] = useState('');
+  const [filtroEstadoAuditoria, setFiltroEstadoAuditoria] = useState('todos');
+
   // CONTROL SEGURO DE ARRAYS
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
   const inventarioValido = Array.isArray(inventario) ? inventario : [];
@@ -46,6 +50,26 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const inventarioFiltrado = inventarioValido.filter(item => 
     item && item.nombre && item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase())
   );
+
+  const recetasFiltradasAuditoria = recetasValidas.filter(r => {
+    if (!r) return false;
+    const query = (busquedaAuditoria || '').toLowerCase().trim();
+    const nombrePaciente = (r.paciente || '').toLowerCase();
+    const dniPaciente = String(r.dniPaciente || '');
+    const tokenReceta = String(r.token || '');
+    const estadoReceta = (r.estado || '').toLowerCase();
+    const cumpleBuscador = !query || nombrePaciente.includes(query) || dniPaciente.includes(query) || tokenReceta.includes(query);
+    if (filtroEstadoAuditoria === 'todos') return cumpleBuscador;
+    if (filtroEstadoAuditoria === 'pendiente') return cumpleBuscador && estadoReceta === 'pendiente';
+    if (filtroEstadoAuditoria === 'entregado') return cumpleBuscador && (estadoReceta === 'entregado' || estadoReceta === 'dispensado');
+    return cumpleBuscador;
+  });
+
+  const recetasEntregadasOrdenadas = [...recetasEntregadas].sort((a, b) => {
+    const da = new Date(a.fecha || 0);
+    const db = new Date(b.fecha || 0);
+    return db - da;
+  });
 
   const st = createStyles(darkMode);
   st.logoTitle = { margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '12px' };
@@ -461,128 +485,114 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {/* VISTA 3: HISTORIAL E INFORMES */}
       {vista === 'auditoria' && (
         <div key="auditoria" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-            Historial y Auditoría de Fórmulas Dispensadas
-          </h2>
-          <p style={{ color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '20px', fontSize: '0.9rem' }}>
-            Listado oficial de recetas surtidas en la farmacia para control de inventarios y trazabilidad médica.
-          </p>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Historial y Auditoría de Recetas</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <input style={{ ...st.input, marginBottom: 0 }} placeholder="Buscar por paciente, DNI o Token..." value={busquedaAuditoria} onChange={e => setBusquedaAuditoria(e.target.value)} />
+            <select style={{ ...st.input, marginBottom: 0 }} value={filtroEstadoAuditoria} onChange={e => setFiltroEstadoAuditoria(e.target.value)}>
+              <option value="todos">Todos los Estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="entregado">Entregados / Dispensados</option>
+            </select>
+          </div>
 
-          <table style={st.table}>
-            <thead>
-              <tr>
-                <th style={st.th}>Beneficiario / Paciente</th>
-                <th style={st.th}>Identificación</th>
-                <th style={st.th}>Fórmulas Entregadas</th>
-                <th style={{ ...st.th, textAlign: 'center' }}>Código Único (Token)</th>
-                <th style={{ ...st.th, textAlign: 'center' }}>Estado Operación</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recetasEntregadas.map((r, index) => {
-                if (!r) return null;
-                return (
-                  <tr key={r.id || index}>
-                    <td style={st.td}><strong style={{color: darkMode ? '#ffffff' : '#0f172a'}}>{r.paciente}</strong></td>
-                    <td style={st.td}>{r.dniPaciente}</td>
-                    <td style={st.td}>
-                      {Array.isArray(r.medicamento) ? r.medicamento.map((m, i) => (
-                        <div key={i} style={{ fontSize: '0.9rem', padding: '4px 0', color: darkMode ? '#cbd5e1' : '#334155' }}>• <span style={{ fontWeight: '700' }}>{m?.nombre}</span> ({(m?.cantidad || m?.amount || 1)} Uds)</div>
-                      )) : 'Fórmula estructurada anterior'}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', color: darkMode ? '#ffffff' : '#1f2937' }}>Paciente</th>
+                  <th style={{ padding: '12px', textAlign: 'left', color: darkMode ? '#ffffff' : '#1f2937' }}>Fecha</th>
+                  <th style={{ padding: '12px', textAlign: 'left', color: darkMode ? '#ffffff' : '#1f2937' }}>Medicamentos</th>
+                  <th style={{ padding: '12px', textAlign: 'center', color: darkMode ? '#ffffff' : '#1f2937' }}>Token</th>
+                  <th style={{ padding: '12px', textAlign: 'center', color: darkMode ? '#ffffff' : '#1f2937' }}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recetasFiltradasAuditoria.length > 0 ? recetasFiltradasAuditoria.map(r => (
+                  <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                    <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}><strong>{r.paciente}</strong></td>
+                    <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>{formatearFecha(r.fecha)}</td>
+                    <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>
+                      {Array.isArray(r.medicamento) ? r.medicamento.map((m, idx) => (
+                        <div key={idx}>• {m.nombre} ({m.amount || m.cantidad || 1} Uds)</div>
+                      )) : 'Formato anterior'}
                     </td>
-                    <td style={{ ...st.td, textAlign: 'center', fontWeight: '800', color: '#2563eb', fontSize: '1.05rem' }}>{r.token}</td>
-                    <td style={{ ...st.td, textAlign: 'center' }}>
-                      <span style={st.badge(r.estado)}>{r.estado}</span>
+                    <td style={{ padding: '12px', textAlign: 'center', fontWeight: '700', color: '#2563eb' }}>{r.token}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <span style={{ background: r.estado === 'Pendiente' ? '#fef3c7' : '#d1fae5', color: r.estado === 'Pendiente' ? '#92400e' : '#065f46', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600' }}>{r.estado}</span>
                     </td>
                   </tr>
-                );
-              })}
-              {recetasEntregadas.length === 0 && (
-                <tr>
-                  <td colSpan="5" style={{ ...st.td, textAlign: 'center', padding: '50px', color: '#64748b', fontWeight: '600' }}>
-                    No se registran despachos procesados en la jornada actual.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )) : (
+                  <tr><td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: '500' }}>No hay recetas que coincidan con la búsqueda.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* VISTA 4: ESTADÍSTICAS EXCLUSIVAS (INCLUYE NUEVO FILTRO POR DOCTOR) */}
+      {/* VISTA 4: ESTADÍSTICAS */}
       {vista === 'estadisticas' && (
-        <div key="estadisticas" style={{ animation: 'fadeIn 0.25s ease' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }} className="no-print">
-            
-            {/* GRÁFICA 1: MEDICAMENTOS MÁS VENDIDOS / DISPENSADOS */}
-            <div style={st.card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>
-                  Fármacos de Mayor Demanda (Unidades)
-                </h3>
-                <span style={{ fontSize: '0.75rem', background: '#d1fae5', color: '#065f46', padding: '4px 8px', borderRadius: '12px', fontWeight: '600' }}>En Tiempo Real</span>
-              </div>
-
-              {rankingMedicamentos.length > 0 ? (
-                rankingMedicamentos.map((item, idx) => {
-                  const porcentaje = Math.round((item.total / maxMedValue) * 100);
-                  const colores = ['#2563eb', '#10b981', '#ff8b00', '#6554c0'];
+        <div key="estadisticas" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Estadísticas de Dispensación</h2>
+          {recetasEntregadas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay datos de dispensaciones para mostrar estadísticas.</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Top Medicamentos Dispensados</h3>
+                {rankingMedicamentos.length > 0 ? rankingMedicamentos.map((item, idx) => {
+                  const maxCant = rankingMedicamentos[0].total || 1;
+                  const pct = (item.total / maxCant) * 100;
                   return (
-                    <div key={idx} style={{ marginBottom: '22px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '8px' }}>
-                        <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>{idx + 1}. {item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: '#2563eb' }}>{item.total} Uds</span>
+                    <div key={item.nombre} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                        <span>{idx + 1}. {item.nombre}</span>
+                        <span>{item.total} uds</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
-                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
-                          <div style={{ width: `${porcentaje}%`, background: colores[idx % colores.length], height: '100%', borderRadius: '20px' }}></div>
-                        </div>
-                        <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
+                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: '6px', transition: 'width 0.5s ease' }} />
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <p style={{ fontSize: '0.95rem', color: '#64748b', textAlign: 'center', padding: '30px 0', fontWeight: '600' }}>No hay suficientes datos de ventas acumulados hoy.</p>
-              )}
-            </div>
-
-            {/* GRÁFICA 2: DOCTORES CON MAYOR EMISIÓN */}
-            <div style={st.card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700', color: '#10b981' }}>
-                  Médicos con Mayor Actividad (Órdenes)
-                </h3>
-                <span style={{ fontSize: '0.75rem', background: '#dbeafe', color: '#2563eb', padding: '4px 8px', borderRadius: '12px', fontWeight: '600' }}>Auditoría Activa</span>
+                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de medicamentos.</div>}
               </div>
-
-              {rankingDoctores.length > 0 ? (
-                rankingDoctores.map((item, idx) => {
-                  const porcentaje = Math.round((item.total / maxDocValue) * 100);
+              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Médicos con Mayor Actividad</h3>
+                {rankingDoctores.length > 0 ? rankingDoctores.map((item, idx) => {
+                  const maxCant = rankingDoctores[0].total || 1;
+                  const pct = (item.total / maxCant) * 100;
                   return (
-                    <div key={idx} style={{ marginBottom: '22px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '8px' }}>
-                        <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>Dr(a). {item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: '#10b981' }}>{item.total} Fórmulas</span>
+                    <div key={item.nombre} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                        <span>{idx + 1}. Dr(a). {item.nombre}</span>
+                        <span>{item.total} recetas</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
-                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
-                          <div style={{ width: `${porcentaje}%`, background: '#10b981', height: '100%', borderRadius: '20px' }}></div>
-                        </div>
-                        <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
+                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: '#10b981', borderRadius: '6px', transition: 'width 0.5s ease' }} />
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <p style={{ fontSize: '0.95rem', color: '#64748b', textAlign: 'center', padding: '30px 0', fontWeight: '600' }}>Esperando registros de órdenes médicas entrantes.</p>
-              )}
+                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de médicos.</div>}
+              </div>
             </div>
-
+          )}
+          <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#2563eb' }}>{recetasValidas.length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Totales</div>
+            </div>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#f59e0b' }}>{recetasValidas.filter(r => r.estado === 'Pendiente').length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Pendientes</div>
+            </div>
+            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#10b981' }}>{recetasEntregadas.length}</div>
+              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Entregadas</div>
+            </div>
           </div>
 
-          {/* NUEVO APARTADO SEPARADO: MEDICAMENTOS MÁS RECETADOS POR DOCTOR */}
-          <div style={st.card} className="no-print">
+          {/* APARTADO: MEDICAMENTOS MÁS RECETADOS POR DOCTOR */}
+          <div style={{ ...st.card, marginTop: '24px' }} className="no-print">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', marginBottom: '25px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
@@ -592,8 +602,6 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                   Seleccione un doctor para evaluar las preferencias de dosificación e indicaciones cruzadas.
                 </p>
               </div>
-
-              {/* Selector interactivo de doctores con colores corregidos */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontWeight: '700', fontSize: '0.85rem', color: darkMode ? '#cbd5e1' : '#475569', textTransform: 'uppercase' }}>Doctor:</span>
                 <select 
@@ -609,25 +617,22 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
               </div>
             </div>
 
-            {/* Renderizado dinámico de la gráfica cruzada */}
             {doctorFiltroEfectivo && rankingMedsPorDoctor.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', background: darkMode ? '#0f172a' : '#f8fafc', padding: '24px', borderRadius: '14px', border: darkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
                 <div style={{ marginBottom: '10px', fontSize: '0.9rem', fontWeight: '700', color: '#2563eb' }}>
                   Top Fármacos Emitidos por el Dr(a). {doctorFiltroEfectivo}:
                 </div>
                 {rankingMedsPorDoctor.map((item, idx) => {
-                  const porcentaje = Math.round((item.total / maxMedDocValue) * 100);
+                  const maxCantM = rankingMedsPorDoctor[0].total || 1;
+                  const pct = (item.total / maxCantM) * 100;
                   return (
-                    <div key={idx}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' }}>{item.nombre}</span>
-                        <span style={{ fontWeight: '800', color: '#2563eb' }}>{item.total} Unidades prescritas</span>
+                    <div key={item.nombre || idx}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                        <span>{idx + 1}. {item.nombre}</span>
+                        <span>{item.total} uds</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '14px' }}>
-                        <div style={{ flex: 1, background: darkMode ? '#0f172a' : '#f1f5f9', height: '14px', borderRadius: '20px', overflow: 'hidden', padding: '2px' }}>
-                          <div style={{ width: `${porcentaje}%`, background: '#6554c0', height: '100%', borderRadius: '20px' }}></div>
-                        </div>
-                        <span style={{ fontSize: '0.85rem', minWidth: '40px', textAlign: 'right', fontWeight: '700', color: darkMode ? '#94a3b8' : '#64748b' }}>{porcentaje}%</span>
+                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: '#6554c0', borderRadius: '6px', transition: 'width 0.5s ease' }} />
                       </div>
                     </div>
                   );
@@ -694,6 +699,9 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           darkMode={darkMode}
           st={st}
           style={{ animation: 'fadeIn 0.25s ease' }}
+          renderActions={(p) => (
+            <button onClick={() => { setBusquedaAuditoria(p.nombre); cambiarVista('auditoria'); }} style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Ver Recetas</button>
+          )}
         />
       )}
 
@@ -701,11 +709,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {vista === 'notificaciones' && (
         <NotificacionesList
           key="notificaciones"
-          recetas={[...recetasEntregadas].sort((a, b) => {
-            const da = new Date(a.fecha || 0);
-            const db = new Date(b.fecha || 0);
-            return db - da;
-          })}
+          recetas={recetasEntregadasOrdenadas}
           darkMode={darkMode}
           st={st}
           showMedico={true}
