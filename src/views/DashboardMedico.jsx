@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
+import { createStyles, fadeInKeyframes, COLORS } from '../theme';
 
 function DashboardMedico({ 
   user = {}, 
@@ -14,7 +15,7 @@ function DashboardMedico({
 }) {
   const toast = useToast();
   const [vista, setVista] = useState('nueva');
-  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setRecetaReciente(null); };
+  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setRecetaReciente(null); setFichaPaciente(null); setPacienteSel(null); setShowFirma(false); setMostrarEditor(false); };
   const [busquedaPac, setBusquedaPac] = useState('');
   const [pacienteSel, setPacienteSel] = useState(null);
   const [busquedaMed, setBusquedaMed] = useState('');
@@ -39,6 +40,7 @@ function DashboardMedico({
   
   // Estados para registro de nuevo paciente
   const [showModalPaciente, setShowModalPaciente] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [nuevoNombrePac, setNuevoNombrePac] = useState('');
   const [nuevoDNIPac, setNuevoDNIPac] = useState('');
   const [nuevoCorreoPac, setNuevoCorreoPac] = useState('');
@@ -187,6 +189,7 @@ function DashboardMedico({
 
   const guardarCambiosExpediente = async () => {
     if (!fichaPaciente) return;
+    setLoading(true);
     const fechaHoy = new Date().toLocaleDateString();
     const listaNuevos = nuevosDiagnosticos.split(',').map(d => d.trim()).filter(d => d.length > 0);
     const listaDiagnosticosActualizada = [...(fichaPaciente.diagnosticosLista || []), ...listaNuevos];
@@ -216,15 +219,18 @@ function DashboardMedico({
       setNuevaNotaConsulta('');
       buscarHistorialCompleto();
     } catch (err) {
-  console.error(err);
-  toast.error("Error al guardar el expediente.");
-}
+      console.error(err);
+      toast.error("Error al guardar el expediente.");
+    } finally {
+      setLoading(false);
+    }
 
   };
 
   const registrarNuevoPaciente = async (e) => {
     e.preventDefault();
     if (!nuevoNombrePac || !nuevoDNIPac) return toast.warning("Nombre y DNI son obligatorios.");
+    setLoading(true);
     try {
       await addDoc(collection(db, "pacientes"), {
         nombre: nuevoNombrePac,
@@ -237,9 +243,11 @@ function DashboardMedico({
       setShowModalPaciente(false);
       setNuevoNombrePac(''); setNuevoDNIPac(''); setNuevoCorreoPac(''); setNuevasAlergiasPac(''); setNuevaClinicaPac('');
     } catch (err) {
-  console.error(err);
-  toast.error("Error al procesar al paciente");
-}
+      console.error(err);
+      toast.error("Error al procesar al paciente");
+    } finally {
+      setLoading(false);
+    }
 
   };
 
@@ -249,6 +257,7 @@ function DashboardMedico({
       return;
     }
 
+    setLoading(true);
     const token = Math.floor(100000 + Math.random() * 900000).toString();
     const fechaHoy = new Date().toLocaleDateString();
 
@@ -284,9 +293,11 @@ function DashboardMedico({
       setShowFirma(false);
       setBusquedaPac('');
     } catch (err) {
-  console.error(err);
-  toast.error("Error al procesar la receta");
-}
+      console.error(err);
+      toast.error("Error al procesar la receta");
+    } finally {
+      setLoading(false);
+    }
 
   };
 
@@ -327,112 +338,11 @@ function DashboardMedico({
   const pacientesDirectorio = filtroDirectorio.slice(0, paginaPacientes * PACIENTES_POR_PAGINA);
 
   // --- ESTILOS GENERALES ADAPTADOS ---
-  const st = {
-    container: { 
-      padding: '24px 30px', 
-      fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif', 
-      background: darkMode ? '#0f172a' : '#f8fafc', 
-      minHeight: '100vh', 
-      width: '100%',
-      boxSizing: 'border-box',
-      color: darkMode ? '#f1f5f9' : '#1e293b'
-    },
-    topBar: { 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      background: darkMode ? '#1e293b' : '#1e3a8a', 
-      padding: '16px 24px', 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-      marginBottom: '24px', 
-      color: '#ffffff'
-    },
-    nav: { 
-      display: 'flex', 
-      flexWrap: 'wrap',
-      gap: '10px', 
-      marginBottom: '24px'
-    },
-    btnNav: (act) => ({ 
-      padding: '12px 22px', 
-      borderRadius: '8px', 
-      fontWeight: '700', 
-      fontSize: '0.9rem',
-      cursor: 'pointer', 
-      border: act ? 'none' : (darkMode ? '1px solid #334155' : '1px solid #cbd5e1'), 
-      background: act ? '#2563eb' : (darkMode ? '#1e293b' : '#ffffff'), 
-      color: act ? '#ffffff' : (darkMode ? '#94a3b8' : '#4b5563'), 
-      boxShadow: act ? '0 4px 6px rgba(37,99,235,0.15)' : 'none'
-    }),
-    card: { 
-      background: darkMode ? '#1e293b' : '#ffffff', 
-      padding: '30px', 
-      borderRadius: '12px', 
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
-      marginBottom: '24px',
-      width: '100%',
-      boxSizing: 'border-box',
-      position: 'relative'
-    },
-    input: { 
-      padding: '12px 14px', 
-      width: '100%', 
-      boxSizing: 'border-box', 
-      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1', 
-      borderRadius: '8px', 
-      background: darkMode ? '#0f172a' : '#ffffff', 
-      color: darkMode ? '#ffffff' : '#0f172a', 
-      marginBottom: '16px', 
-      outline: 'none',
-      fontSize: '0.95rem'
-    },
-    label: {
-      fontWeight: '700',
-      display: 'block',
-      marginBottom: '8px',
-      color: darkMode ? '#cbd5e1' : '#1e293b', 
-      fontSize: '0.95rem'
-    },
-    btnAction: { 
-      background: '#2563eb', 
-      color: '#ffffff', 
-      border: 'none', 
-      padding: '12px 24px', 
-      borderRadius: '8px', 
-      fontWeight: '700', 
-      fontSize: '0.95rem',
-      cursor: 'pointer'
-    },
-    /* SOLUCIÓN RÍGIDA PARA EL CUADRO DE SUGERENCIAS INVISIBLES */
-    sugBox: { 
-      background: '#ffffff', 
-      border: '1px solid #cbd5e1', 
-      borderRadius: '8px', 
-      overflow: 'hidden', 
-      marginTop: '-12px', 
-      marginBottom: '20px',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      zIndex: 50,
-      position: 'relative'
-    },
-    sugItem: { 
-      padding: '12px 16px', 
-      cursor: 'pointer', 
-      borderBottom: '1px solid #f1f5f9', 
-      color: '#0f172a', // Texto 100% oscuro visible siempre
-      fontSize: '0.95rem',
-      fontWeight: '600',
-      textAlign: 'left',
-      backgroundColor: '#ffffff',
-      transition: 'background-color 0.2s ease'
-    }
-  };
+  const st = createStyles(darkMode);
 
   return (
     <div style={st.container}>
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{fadeInKeyframes}</style>
       {/* HEADER SUPERIOR */}
       <div style={st.topBar} className="no-print">
         <div>
@@ -715,7 +625,7 @@ function DashboardMedico({
                   <label style={st.label}>Nueva Nota de Consulta:</label>
                   <textarea style={{ ...st.input, height: '80px' }} value={nuevaNotaConsulta} onChange={e => setNuevaNotaConsulta(e.target.value)} />
 
-                  <button onClick={guardarCambiosExpediente} style={st.btnAction}>Guardar Modificaciones</button>
+                  <button onClick={guardarCambiosExpediente} disabled={loading} style={{ ...st.btnAction, opacity: loading ? 0.6 : 1 }}>{loading ? 'Guardando...' : 'Guardar Modificaciones'}</button>
                 </div>
               )}
             </div>
@@ -857,7 +767,7 @@ function DashboardMedico({
               <input style={st.input} placeholder="Alergias Conocidas" value={nuevasAlergiasPac} onChange={e => setNuevasAlergiasPac(e.target.value)} />
               <input style={st.input} placeholder="Clínica / Centro" value={nuevaClinicaPac} onChange={e => setNuevaClinicaPac(e.target.value)} />
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" style={{ ...st.btnAction, flex: 1, background: '#10b981' }}>Dar de Alta</button>
+                <button type="submit" disabled={loading} style={{ ...st.btnAction, flex: 1, background: '#10b981', opacity: loading ? 0.6 : 1 }}>{loading ? 'Registrando...' : 'Dar de Alta'}</button>
                 <button type="button" onClick={() => setShowModalPaciente(false)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', flex: 1, fontWeight: '600' }}>Cerrar</button>
               </div>
             </form>
@@ -873,7 +783,7 @@ function DashboardMedico({
             <input type="password" style={{ ...st.input, textAlign: 'center', fontSize: '2rem', letterSpacing: '8px', color: darkMode ? '#ffffff' : '#0f172a', background: darkMode ? '#0f172a' : '#ffffff' }} value={pin} onChange={e => setPin(e.target.value)} maxLength="4" placeholder="••••" />
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
               <button onClick={() => setShowFirma(false)} style={{ flex: 1, padding: '10px', background: '#64748b', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Cancelar</button>
-              <button onClick={handleFirma} style={{ flex: 1, padding: '10px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Autorizar</button>
+              <button onClick={handleFirma} disabled={loading} style={{ flex: 1, padding: '10px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: '600', opacity: loading ? 0.6 : 1 }}>{loading ? 'Firmando...' : 'Autorizar'}</button>
             </div>
           </div>
         </div>

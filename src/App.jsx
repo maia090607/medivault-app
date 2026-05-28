@@ -158,12 +158,6 @@ function App() {
 
   return (
     <div>
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: #fff !important; color: #000 !important; }
-        }
-      `}</style>
       {user?.role === 'medico' ? (
         <DashboardMedico 
           user={user} 

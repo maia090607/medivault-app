@@ -3,13 +3,14 @@ import { db } from '../firebase';
 import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
+import { createStyles, fadeInKeyframes } from '../theme';
 
 
 
 function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
-  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); };
+  const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); setRecetaEncontrada(null); setTokenBusqueda(''); setPacienteHistorialSel(null); setBusquedaHistorialPac(''); };
   const [tokenBusqueda, setTokenBusqueda] = useState('');
   const [recetaEncontrada, setRecetaEncontrada] = useState(null);
   const [busquedaInventario, setBusquedaInventario] = useState('');
@@ -26,6 +27,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
   // ESTADOS PARA EL MODAL DE ABASTECIMIENTO
   const [mostrarModalAbastecer, setMostrarModalAbastecer] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [medSeleccionado, setMedSeleccionado] = useState(null);
   const [cantidadAñadir, setCantidadAñadir] = useState('');
 
@@ -125,160 +127,9 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
 
   // --- ESTILOS ADAPTADOS DE DashboardMedico ---
-  const st = {
-    container: { 
-      padding: '24px 30px', 
-      fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif', 
-      background: darkMode ? '#0f172a' : '#f8fafc', 
-      minHeight: '100vh', 
-      width: '100%',
-      boxSizing: 'border-box',
-      color: darkMode ? '#f1f5f9' : '#1e293b'
-    },
-    topBar: { 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      background: darkMode ? '#1e293b' : '#1e3a8a', 
-      padding: '16px 24px', 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-      marginBottom: '24px', 
-      color: '#ffffff'
-    },
-    logoTitle: {
-      margin: 0,
-      fontSize: '1.4rem',
-      fontWeight: '700',
-      color: '#ffffff',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px'
-    },
-    nav: { 
-      display: 'flex', 
-      flexWrap: 'wrap',
-      gap: '10px', 
-      marginBottom: '24px'
-    },
-    btnNav: (act) => ({ 
-      padding: '12px 22px', 
-      borderRadius: '8px', 
-      fontWeight: '700', 
-      fontSize: '0.9rem',
-      cursor: 'pointer', 
-      border: act ? 'none' : (darkMode ? '1px solid #334155' : '1px solid #cbd5e1'), 
-      background: act ? '#2563eb' : (darkMode ? '#1e293b' : '#ffffff'), 
-      color: act ? '#ffffff' : (darkMode ? '#94a3b8' : '#4b5563'), 
-      boxShadow: act ? '0 4px 6px rgba(37,99,235,0.15)' : 'none'
-    }),
-    card: { 
-      background: darkMode ? '#1e293b' : '#ffffff', 
-      padding: '30px', 
-      borderRadius: '12px', 
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
-      marginBottom: '24px',
-      width: '100%',
-      boxSizing: 'border-box',
-      position: 'relative'
-    },
-    input: { 
-      padding: '12px 14px', 
-      width: '100%', 
-      boxSizing: 'border-box', 
-      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1', 
-      borderRadius: '8px', 
-      background: darkMode ? '#0f172a' : '#ffffff', 
-      color: darkMode ? '#ffffff' : '#0f172a', 
-      marginBottom: '16px', 
-      outline: 'none',
-      fontSize: '0.95rem'
-    },
-    select: {
-      padding: '12px 14px',
-      fontSize: '0.95rem',
-      borderRadius: '8px',
-      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1',
-      background: darkMode ? '#0f172a' : '#ffffff',
-      color: darkMode ? '#ffffff' : '#0f172a',
-      outline: 'none',
-      fontWeight: '600',
-      cursor: 'pointer'
-    },
-    label: {
-      fontWeight: '700',
-      display: 'block',
-      marginBottom: '8px',
-      color: darkMode ? '#cbd5e1' : '#1e293b', 
-      fontSize: '0.95rem'
-    },
-    btnAction: { 
-      background: '#2563eb', 
-      color: '#ffffff', 
-      border: 'none', 
-      padding: '12px 24px', 
-      borderRadius: '8px', 
-      fontWeight: '700', 
-      fontSize: '0.95rem',
-      cursor: 'pointer'
-    },
-    btnSuccess: { 
-      background: '#10b981', 
-      color: '#ffffff', 
-      border: 'none', 
-      padding: '12px 24px', 
-      borderRadius: '8px', 
-      fontWeight: '700', 
-      fontSize: '0.95rem',
-      cursor: 'pointer'
-    },
-    btnSecondary: {
-      background: darkMode ? '#334155' : '#f1f5f9',
-      color: darkMode ? '#f1f5f9' : '#334155',
-      border: 'none',
-      padding: '12px 20px',
-      borderRadius: '8px',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      cursor: 'pointer'
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      fontSize: '0.9rem'
-    },
-    th: {
-      padding: '12px',
-      textAlign: 'left',
-      color: darkMode ? '#ffffff' : '#1f2937',
-      borderBottom: '1px solid #e5e7eb',
-      background: darkMode ? '#0f172a' : '#f9fafb'
-    },
-    td: {
-      padding: '12px',
-      borderBottom: '1px solid #f3f4f6',
-      color: darkMode ? '#ffffff' : '#1f2937',
-      fontSize: '0.9rem'
-    },
-    badge: (tipo) => {
-      let bg = '#fef3c7';
-      let col = '#92400e';
-      if (tipo === 'Entregado' || tipo === 'Dispensado') { 
-        bg = '#d1fae5'; 
-        col = '#065f46'; 
-      }
-      return {
-        padding: '4px 8px',
-        borderRadius: '12px',
-        fontSize: '0.8rem',
-        fontWeight: '600',
-        background: bg,
-        color: col,
-        display: 'inline-block'
-      };
-    }
-  };
+  const st = createStyles(darkMode);
+  st.logoTitle = { margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '12px' };
+  st.btnSecondary = { background: darkMode ? '#334155' : '#f1f5f9', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' };
 
   // --- LÓGICA DE NEGOCIO ---
   const buscarRecetaPorToken = () => {
@@ -298,6 +149,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
   const dispensarMedicamentosReceta = async () => {
     if (!recetaEncontrada) return;
+    setLoading(true);
 
     try {
       const medicamentosEnOrden = recetaEncontrada.medicamento || [];
@@ -334,6 +186,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     } catch (err) {
       console.error(err);
       toast.error("Error al actualizar el estado de dispensación.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -368,6 +222,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const procesarAbastecimientoModal = async (e) => {
     e.preventDefault();
     if (!medSeleccionado || !cantidadAñadir) return;
+    setLoading(true);
 
     try {
       const stockActual = parseInt(medSeleccionado.stock, 10) || 0;
@@ -384,6 +239,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     } catch (err) {
       console.error(err);
       toast.error("Error al procesar el reabastecimiento.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -393,7 +250,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
   return (
     <div style={st.container}>
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{fadeInKeyframes}</style>
       {/* HEADER SUPERIOR */}
       <div style={st.topBar} className="no-print">
         <div>
@@ -509,8 +366,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                     if (window.confirm('¿Confirmar el despacho de estos medicamentos? Se descontarán del inventario.')) {
                       dispensarMedicamentosReceta();
                     }
-                  }} style={st.btnSuccess}>
-                    ✔ Confirmar y Despachar Medicamentos
+                  }} disabled={loading} style={{ ...st.btnSuccess, opacity: loading ? 0.6 : 1 }}>
+                    {loading ? 'Despachando...' : '✔ Confirmar y Despachar Medicamentos'}
                   </button>
                 </div>
               ) : (

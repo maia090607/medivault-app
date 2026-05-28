@@ -3,6 +3,8 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
+import { createStyles, fadeInKeyframes, COLORS } from '../theme';
+import MetricCard from '../components/MetricCard';
 
 function DashboardAdmin({
   user = {},
@@ -108,120 +110,11 @@ function DashboardAdmin({
   const totalPaginas = Math.ceil(filtroDirectorio.length / PACIENTES_POR_PAGINA) || 1;
   const pacientesDirectorio = filtroDirectorio.slice(0, paginaPacientes * PACIENTES_POR_PAGINA);
 
-  const st = {
-    container: {
-      padding: '24px 30px',
-      fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif',
-      background: darkMode ? '#0f172a' : '#f8fafc',
-      minHeight: '100vh',
-      width: '100%',
-      boxSizing: 'border-box',
-      color: darkMode ? '#f1f5f9' : '#1e293b'
-    },
-    topBar: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      background: darkMode ? '#1e293b' : '#1e3a8a',
-      padding: '16px 24px',
-      borderRadius: '12px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      marginBottom: '24px',
-      color: '#ffffff'
-    },
-    nav: {
-      display: 'flex',
-      gap: '10px',
-      marginBottom: '24px',
-      flexWrap: 'wrap',
-    },
-    btnNav: (act) => ({
-      padding: '12px 22px',
-      borderRadius: '8px',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      cursor: 'pointer',
-      border: act ? 'none' : (darkMode ? '1px solid #334155' : '1px solid #cbd5e1'),
-      background: act ? '#2563eb' : (darkMode ? '#1e293b' : '#ffffff'),
-      color: act ? '#ffffff' : (darkMode ? '#94a3b8' : '#4b5563'),
-      boxShadow: act ? '0 4px 6px rgba(37,99,235,0.15)' : 'none'
-    }),
-    card: {
-      background: darkMode ? '#1e293b' : '#ffffff',
-      padding: '30px',
-      borderRadius: '12px',
-      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-      marginBottom: '24px',
-      width: '100%',
-      boxSizing: 'border-box',
-    },
-    input: {
-      padding: '12px 14px',
-      width: '100%',
-      boxSizing: 'border-box',
-      border: darkMode ? '1px solid #475569' : '1px solid #cbd5e1',
-      borderRadius: '8px',
-      background: darkMode ? '#0f172a' : '#ffffff',
-      color: darkMode ? '#ffffff' : '#0f172a',
-      marginBottom: '16px',
-      outline: 'none',
-      fontSize: '0.95rem'
-    },
-    label: {
-      fontWeight: '700',
-      display: 'block',
-      marginBottom: '8px',
-      color: darkMode ? '#cbd5e1' : '#1e293b',
-      fontSize: '0.95rem'
-    },
-    btnAction: {
-      background: '#2563eb',
-      color: '#ffffff',
-      border: 'none',
-      padding: '12px 24px',
-      borderRadius: '8px',
-      fontWeight: '700',
-      fontSize: '0.95rem',
-      cursor: 'pointer'
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      fontSize: '0.9rem'
-    },
-    th: {
-      padding: '12px',
-      textAlign: 'left',
-      color: darkMode ? '#ffffff' : '#1f2937',
-      borderBottom: '1px solid #e5e7eb',
-      background: darkMode ? '#0f172a' : '#f9fafb',
-      fontWeight: '700',
-    },
-    td: {
-      padding: '12px',
-      borderBottom: '1px solid #f3f4f6',
-      color: darkMode ? '#ffffff' : '#1f2937',
-      fontSize: '0.9rem'
-    },
-    badge: (tipo) => {
-      let bg = '#fef3c7', col = '#92400e';
-      if (tipo === 'Entregado' || tipo === 'Dispensado') { bg = '#d1fae5'; col = '#065f46'; }
-      if (tipo === 'contactado') { bg = '#dbeafe'; col = '#1e40af'; }
-      return { padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600', background: bg, color: col, display: 'inline-block' };
-    }
-  };
-
-  const MetricCard = ({ label, value, color }) => (
-    <div style={{ ...st.card, textAlign: 'center', padding: '24px', marginBottom: 0 }}>
-      <div style={{ fontSize: '2rem', fontWeight: '800', color: color || '#2563eb' }}>{value}</div>
-      <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600', marginTop: '4px' }}>{label}</div>
-    </div>
-  );
+  const st = createStyles(darkMode);
 
   return (
     <div style={st.container}>
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{fadeInKeyframes}</style>
 
       <div style={st.topBar} className="no-print">
         <div>
@@ -259,12 +152,12 @@ function DashboardAdmin({
       {vista === 'resumen' && (
         <div key="resumen" style={{ animation: 'fadeIn 0.25s ease' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            <MetricCard label="Recetas Emitidas" value={recetasValidas.length} color="#2563eb" />
-            <MetricCard label="Pendientes" value={recetasPendientes.length} color="#f59e0b" />
-            <MetricCard label="Dispensadas" value={recetasDispensadas.length} color="#10b981" />
-            <MetricCard label="Pacientes" value={pacientesValidos.length} color="#8b5cf6" />
-            <MetricCard label="Usuarios" value={usuariosValidos.length} color="#06b6d4" />
-            <MetricCard label="Solicitudes Demo" value={solicitudesValidas.length} color="#ec4899" />
+            <MetricCard label="Recetas Emitidas" value={recetasValidas.length} color="#2563eb" darkMode={darkMode} />
+            <MetricCard label="Pendientes" value={recetasPendientes.length} color="#f59e0b" darkMode={darkMode} />
+            <MetricCard label="Dispensadas" value={recetasDispensadas.length} color="#10b981" darkMode={darkMode} />
+            <MetricCard label="Pacientes" value={pacientesValidos.length} color="#8b5cf6" darkMode={darkMode} />
+            <MetricCard label="Usuarios" value={usuariosValidos.length} color="#06b6d4" darkMode={darkMode} />
+            <MetricCard label="Solicitudes Demo" value={solicitudesValidas.length} color="#ec4899" darkMode={darkMode} />
           </div>
 
           <div style={st.card}>
