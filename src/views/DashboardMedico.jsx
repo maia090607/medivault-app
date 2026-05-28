@@ -49,6 +49,12 @@ function DashboardMedico({
   const [nuevasAlergiasPac, setNuevasAlergiasPac] = useState('');
   const [nuevaClinicaPac, setNuevaClinicaPac] = useState('');
 
+  // --- DATOS SEGUROS (safe arrays) ---
+  const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
+  const inventarioValido = Array.isArray(inventario) ? inventario : [];
+  const pacientesValidos = Array.isArray(pacientesDB) ? pacientesDB : [];
+  const historialesValidos = Array.isArray(historialesDB) ? historialesDB : [];
+
   // --- FILTRADOS ---
   const misRecetasFiltradas = (recetasEmitidas || []).filter(r => {
     if (!r) return false;
@@ -297,12 +303,6 @@ function DashboardMedico({
     }
 
   };
-
-  // --- DATOS PARA ESTADÍSTICAS Y DIRECTORIO ---
-  const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
-  const inventarioValido = Array.isArray(inventario) ? inventario : [];
-  const pacientesValidos = Array.isArray(pacientesDB) ? pacientesDB : [];
-  const historialesValidos = Array.isArray(historialesDB) ? historialesDB : [];
 
   const recetasDispensadas = misRecetasFiltradas.filter(r => r.estado && r.estado.toLowerCase() !== 'pendiente');
 
@@ -646,7 +646,7 @@ function DashboardMedico({
           style={{ animation: 'fadeIn 0.25s ease' }}
           renderActions={(p) => (
             <>
-              <button onClick={() => { setPacienteSel(p); setBusquedaPac(p.nombre); cambiarVista('nueva'); }} style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Recetar</button>
+              <button onClick={() => { cambiarVista('nueva'); setPacienteSel(p); setBusquedaPac(p.nombre); }} style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Recetar</button>
               <button onClick={() => { setBusquedaDNI(String(p.dni)); cambiarVista('clinico'); buscarHistorialCompleto(String(p.dni)); }} style={{ flex: 1, background: '#10b981', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Expediente</button>
             </>
           )}

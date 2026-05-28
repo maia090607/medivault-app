@@ -165,6 +165,7 @@ export function createStyles(dark) {
     sugBox,
     sugItem,
     badge: (tipo) => badge(tipo),
+    pagBtn: (disabled) => pagBtn(disabled, dark),
     table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
     th: { padding: '12px', textAlign: 'left', color: dark ? '#ffffff' : '#1f2937', borderBottom: '1px solid #e5e7eb', background: dark ? '#0f172a' : '#f9fafb', fontWeight: '700' },
     td: { padding: '12px', borderBottom: '1px solid #f3f4f6', color: dark ? '#ffffff' : '#1f2937', fontSize: '0.9rem' },
