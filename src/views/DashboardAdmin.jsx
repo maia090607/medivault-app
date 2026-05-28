@@ -61,7 +61,10 @@ function DashboardAdmin({
   });
 
   const inventarioFiltrado = inventarioValido.filter(item =>
-    item && item.nombre && item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase())
+    item && item.nombre && (
+      item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase()) ||
+      (item.codigo || '').toLowerCase().includes(busquedaInventario.toLowerCase())
+    )
   );
 
   const marcarContactado = async (id) => {
@@ -413,6 +416,7 @@ function DashboardAdmin({
             <table style={st.table}>
               <thead>
                 <tr>
+                  <th style={st.th}>Código</th>
                   <th style={st.th}>Medicamento</th>
                   <th style={st.th}>Concentración</th>
                   <th style={st.th}>Stock</th>
@@ -423,6 +427,7 @@ function DashboardAdmin({
                   const critico = (parseInt(item.stock, 10) || 0) <= 10;
                   return (
                     <tr key={item.id}>
+                      <td style={st.td}><strong style={{ color: '#2563eb' }}>{item.codigo || '—'}</strong></td>
                       <td style={st.td}><strong>{item.nombre}</strong></td>
                       <td style={st.td}>{item.concentracion || 'N/A'}</td>
                       <td style={{ ...st.td, color: critico ? '#ef4444' : 'inherit', fontWeight: critico ? '700' : '400' }}>
@@ -432,7 +437,7 @@ function DashboardAdmin({
                   );
                 })}
                 {inventarioFiltrado.length === 0 && (
-                  <tr><td colSpan="3" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay medicamentos en inventario.</td></tr>
+                  <tr><td colSpan="4" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay medicamentos en inventario.</td></tr>
                 )}
               </tbody>
             </table>

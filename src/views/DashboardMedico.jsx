@@ -99,7 +99,9 @@ function DashboardMedico({
     ? inventarioValido.filter(m => {
         if (!m) return false;
         const nombreMed = (m.nombre || '').toLowerCase();
-        return nombreMed.includes(busquedaMed.toLowerCase());
+        const codigoMed = (m.codigo || '').toLowerCase();
+        const termino = busquedaMed.toLowerCase();
+        return nombreMed.includes(termino) || codigoMed.includes(termino);
       })
     : [];
 
@@ -436,7 +438,7 @@ function DashboardMedico({
                       onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
                       onClick={() => agregarMedicamentoALista(m)}
                     >
-                      📦 <strong style={{color: '#1e3a8a'}}>{m.nombre}</strong> — Stock Disponible: {m.stock || 0}
+                      📦 <strong style={{color: '#1e3a8a'}}>{m.codigo || '—'} — {m.nombre}</strong> — Stock Disponible: {m.stock || 0}
                     </div>
                   ))}
                 </div>

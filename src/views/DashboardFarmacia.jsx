@@ -7,6 +7,7 @@ import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
 
+
 function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [], usuariosDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
@@ -48,7 +49,10 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const recetasEntregadas = recetasValidas.filter(r => r && (r.estado === 'Entregado' || r.estado === 'Dispensado'));
 
   const inventarioFiltrado = inventarioValido.filter(item => 
-    item && item.nombre && item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase())
+    item && item.nombre && (
+      item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase()) ||
+      (item.codigo || '').toLowerCase().includes(busquedaInventario.toLowerCase())
+    )
   );
 
   const recetasFiltradasAuditoria = recetasValidas.filter(r => {
@@ -74,6 +78,12 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const st = createStyles(darkMode);
   st.logoTitle = { margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '12px' };
   st.btnSecondary = { background: darkMode ? '#334155' : '#f1f5f9', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' };
+
+  const codigoGenerado = (() => {
+    const prefijo = (nuevoNombre || '').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').slice(0, 7).toUpperCase().replace(/\s+/g, '');
+    const digitos = (nuevaConcentracion || '').replace(/\D/g, '');
+    return prefijo ? `${prefijo}-${digitos || '000'}` : '';
+  })();
 
   const buscarRecetaPorToken = () => {
     const t = tokenBusqueda.trim();
@@ -126,6 +136,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
     try {
       await addDoc(collection(db, "inventario"), {
+        codigo: codigoGenerado,
         nombre: nuevoNombre.trim(),
         concentracion: nuevaConcentracion.trim() || "N/A",
         stock: parseInt(nuevoStock, 10) || 0
@@ -243,6 +254,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>
             {darkMode ? '☀️' : '🌙'}
           </button>
+
           <span style={{ fontWeight: '600' }}>Regente: {user?.nombre || 'Administrador'}</span>
           <button onClick={() => {
             if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
@@ -417,7 +429,11 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           {mostrarForm && (
             <form onSubmit={registrarNuevoMedicamento} style={{ background: darkMode ? '#0f172a' : '#f8fafc', padding: '30px', borderRadius: '16px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', marginBottom: '30px' }}>
               <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '16px', color: '#2563eb', fontWeight: '700' }}>Crear Registro en Inventario</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={st.label}>Código (auto)</label>
+                  <input style={{ ...st.input, marginBottom: 0, background: darkMode ? '#1e293b' : '#f1f5f9', color: '#2563eb', fontWeight: '700', fontFamily: 'monospace' }} value={codigoGenerado} readOnly />
+                </div>
                 <div>
                   <label style={st.label}>Nombre Comercial / Genérico</label>
                   <input style={st.input} placeholder="Ej. Acetaminofén" value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)} required />
@@ -452,6 +468,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           <table style={st.table}>
             <thead>
               <tr>
+                <th style={st.th}>Código</th>
                 <th style={st.th}>Descripción del Medicamento</th>
                 <th style={st.th}>Concentración</th>
                 <th style={st.th}>Existencias Disponibles</th>
@@ -464,6 +481,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                 const stockCritico = (parseInt(item.stock, 10) || 0) <= 10;
                 return (
                   <tr key={item.id || idx}>
+                    <td style={st.td}><strong style={{ color: '#2563eb' }}>{item.codigo || '—'}</strong></td>
                     <td style={st.td}><strong style={{color: darkMode ? '#ffffff' : '#0f172a'}}>{item.nombre}</strong></td>
                     <td style={st.td}>{item.concentracion || 'N/A'}</td>
                     <td style={{ ...st.td, color: stockCritico ? '#ef4444' : 'inherit', fontWeight: stockCritico ? '800' : '600' }}>
@@ -477,7 +495,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
                   </tr>
                 );
               }) : (
-                <tr><td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: '500' }}>No se encontraron medicamentos en el inventario.</td></tr>
+                <tr><td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: '500' }}>No se encontraron medicamentos en el inventario.</td></tr>
               )}
             </tbody>
           </table>
@@ -657,7 +675,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
               Entrada de Inventario
             </h3>
             <p style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '24px' }}>
-              Incrementar existencias para: <strong style={{ color: '#0f172a' }}>{medSeleccionado.nombre}</strong>
+              Incrementar existencias para: <strong style={{ color: '#0f172a' }}>{medSeleccionado.codigo || '—'} — {medSeleccionado.nombre}</strong>
             </p>
 
             <form onSubmit={procesarAbastecimientoModal}>
@@ -718,6 +736,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
           style={{ animation: 'fadeIn 0.25s ease' }}
         />
       )}
+
     </div>
   );
 }
