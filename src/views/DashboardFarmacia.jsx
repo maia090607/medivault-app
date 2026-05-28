@@ -4,10 +4,8 @@ import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
 import { createStyles, fadeInKeyframes } from '../theme';
-
-
-
-function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
+import PacientesDirectory from '../components/PacientesDirectory';
+import NotificacionesList from '../components/NotificacionesList';function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); setRecetaEncontrada(null); setTokenBusqueda(''); setPacienteHistorialSel(null); setBusquedaHistorialPac(''); };
@@ -31,13 +29,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
   const [medSeleccionado, setMedSeleccionado] = useState(null);
   const [cantidadAñadir, setCantidadAñadir] = useState('');
 
-  // ESTADO NUEVO: Doctor seleccionado para la gráfica cruzada de estadísticas
+  // Estado para la gráfica cruzada de estadísticas
   const [doctorSeleccionado, setDoctorSeleccionado] = useState('');
-
-  // Estados para directorio de pacientes
-  const [busquedaDirectorio, setBusquedaDirectorio] = useState('');
-  const [paginaPacientes, setPaginaPacientes] = useState(1);
-  const PACIENTES_POR_PAGINA = 8;
 
   // CONTROL SEGURO DE ARRAYS
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
@@ -47,202 +40,6 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
   // Filtrar recetas entregadas/dispensadas para la tabla de auditoría
   const recetasEntregadas = recetasValidas.filter(r => r && (r.estado === 'Entregado' || r.estado === 'Dispensado'));
-
-  // Datos para directorio de pacientes
-  const filtroDirectorio = (busquedaDirectorio || '').trim()
-    ? pacientesValidos.filter(p => {
-        if (!p) return false;
-        return (p.nombre || '').toLowerCase().includes(busquedaDirectorio.toLowerCase()) ||
-               String(p.dni || '').includes(busquedaDirectorio);
-      })
-    : pacientesValidos;
-  const totalPaginas = Math.ceil(filtroDirectorio.length / PACIENTES_POR_PAGINA) || 1;
-  const pacientesDirectorio = filtroDirectorio.slice(0, paginaPacientes * PACIENTES_POR_PAGINA);
-
-  // ==========================================
-  //     PROCESAMIENTO SEGURO DE ESTADÍSTICAS
-  // ==========================================
-  
-  // 1. Medicamentos más dispensados en general
-  const conteoMedicamentos = {};
-  recetasEntregadas.forEach(r => {
-    if (r && Array.isArray(r.medicamento)) {
-      r.medicamento.forEach(m => {
-        if (m && m.nombre) {
-          const cant = parseInt(m.cantidad || m.amount || 1, 10);
-          conteoMedicamentos[m.nombre] = (conteoMedicamentos[m.nombre] || 0) + cant;
-        }
-      });
-    }
-  });
-  
-  const rankingMedicamentos = Object.entries(conteoMedicamentos)
-    .map(([nombre, total]) => ({ nombre, total }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 4);
-
-  const maxMedValue = rankingMedicamentos[0]?.total || 1;
-
-  // 2. Doctores más activos (Total de fórmulas emitidas)
-  const conteoDoctores = {};
-  recetasValidas.forEach(r => {
-    if (r && r.medico) {
-      conteoDoctores[r.medico] = (conteoDoctores[r.medico] || 0) + 1;
-    }
-  });
-
-  const rankingDoctores = Object.entries(conteoDoctores)
-    .map(([nombre, total]) => ({ nombre, total }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 4);
-
-  const maxDocValue = rankingDoctores[0]?.total || 1;
-
-  // Lista única de doctores para el menú desplegable interactivo
-  const listaDoctoresUnicos = Object.keys(conteoDoctores).sort();
-
-  // 3. Medicamentos más recetados POR el doctor seleccionado
-  const conteoMedsPorDoctor = {};
-  
-  // Si no hay doctor inicial seleccionado, tomamos el primero disponible
-  const doctorFiltroEfectivo = doctorSeleccionado || listaDoctoresUnicos[0] || '';
-
-  recetasValidas.forEach(r => {
-    if (r && r.medico === doctorFiltroEfectivo && Array.isArray(r.medicamento)) {
-      r.medicamento.forEach(m => {
-        if (m && m.nombre) {
-          const cant = parseInt(m.cantidad || m.amount || 1, 10);
-          conteoMedsPorDoctor[m.nombre] = (conteoMedsPorDoctor[m.nombre] || 0) + cant;
-        }
-      });
-    }
-  });
-
-  const rankingMedsPorDoctor = Object.entries(conteoMedsPorDoctor)
-    .map(([nombre, total]) => ({ nombre, total }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 4);
-
-  const maxMedDocValue = rankingMedsPorDoctor[0]?.total || 1;
-
-
-  // --- ESTILOS ADAPTADOS DE DashboardMedico ---
-  const st = createStyles(darkMode);
-  st.logoTitle = { margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '12px' };
-  st.btnSecondary = { background: darkMode ? '#334155' : '#f1f5f9', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' };
-
-  // --- LÓGICA DE NEGOCIO ---
-  const buscarRecetaPorToken = () => {
-    const t = tokenBusqueda.trim();
-    if (!t) return toast.warning("Digite un token de receta válido.");
-
-    const encontrada = recetasValidas.find(r => r && String(r.token) === t);
-
-    if (encontrada) {
-      setRecetaEncontrada(encontrada);
-      setDespachoReciente(null);
-    } else {
-      toast.error("No se encontró prescripción con ese token.");
-      setRecetaEncontrada(null);
-    }
-  };
-
-  const dispensarMedicamentosReceta = async () => {
-    if (!recetaEncontrada) return;
-    setLoading(true);
-
-    try {
-      const medicamentosEnOrden = recetaEncontrada.medicamento || [];
-      
-      for (const med of medicamentosEnOrden) {
-        const itemInventario = inventarioValido.find(i => i && i.nombre?.toLowerCase() === med.nombre?.toLowerCase());
-        
-        if (itemInventario) {
-          const stockActual = parseInt(itemInventario.stock, 10) || 0;
-          const cantidadRequerida = parseInt(med.cantidad || med.amount, 10) || 0;
-          const nuevoStockCalculado = Math.max(0, stockActual - cantidadRequerida);
-
-          await updateDoc(doc(db, "inventario", itemInventario.id), {
-            stock: nuevoStockCalculado
-          });
-        }
-      }
-
-      await updateDoc(doc(db, "recetas", recetaEncontrada.id), {
-        estado: 'Entregado'
-      });
-
-      setDespachoReciente({
-        token: recetaEncontrada.token,
-        paciente: recetaEncontrada.paciente,
-        dniPaciente: recetaEncontrada.dniPaciente,
-        meds: medicamentosEnOrden,
-        fechaDespacho: new Date().toLocaleString()
-      });
-
-      toast.success("Medicamentos dispensados exitosamente.");
-      setRecetaEncontrada(null);
-      setTokenBusqueda('');
-    } catch (err) {
-      console.error(err);
-      toast.error("Error al actualizar el estado de dispensación.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const registrarNuevoMedicamento = async (e) => {
-    e.preventDefault();
-    if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
-
-    try {
-      await addDoc(collection(db, "inventario"), {
-        nombre: nuevoNombre.trim(),
-        concentracion: nuevaConcentracion.trim() || "N/A",
-        stock: parseInt(nuevoStock, 10) || 0
-      });
-
-      toast.success("Fármaco registrado en el inventario.");
-      setNuevoNombre('');
-      setNuevaConcentracion('');
-      setNuevoStock('');
-      setMostrarForm(false);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error al guardar el medicamento.");
-    }
-  };
-
-  const abrirModalAbastecer = (med) => {
-    setMedSeleccionado(med);
-    setCantidadAñadir('');
-    setMostrarModalAbastecer(true);
-  };
-
-  const procesarAbastecimientoModal = async (e) => {
-    e.preventDefault();
-    if (!medSeleccionado || !cantidadAñadir) return;
-    setLoading(true);
-
-    try {
-      const stockActual = parseInt(medSeleccionado.stock, 10) || 0;
-      const adicion = parseInt(cantidadAñadir, 10) || 0;
-
-      await updateDoc(doc(db, "inventario", medSeleccionado.id), {
-        stock: stockActual + adicion
-      });
-
-      toast.success(`Inventario actualizado: ${medSeleccionado.nombre}.`);
-      setMostrarModalAbastecer(false);
-      setMedSeleccionado(null);
-      setCantidadAñadir('');
-    } catch (err) {
-      console.error(err);
-      toast.error("Error al procesar el reabastecimiento.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const inventarioFiltrado = inventarioValido.filter(item => 
     item && item.nombre && item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase())
@@ -733,57 +530,29 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
 
       {/* PACIENTES */}
       {vista === 'pacientes' && (
-        <div key="pacientes" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Directorio de Pacientes</h2>
-          <input style={st.input} placeholder="Buscar por nombre o DNI..." value={busquedaDirectorio} onChange={e => { setBusquedaDirectorio(e.target.value); setPaginaPacientes(1); }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
-            {pacientesDirectorio.length > 0 ? pacientesDirectorio.map(p => (
-              <div key={p.id} style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontWeight: '700', fontSize: '1rem', color: '#2563eb' }}>{p.nombre}</div>
-                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>DNI: {p.dni} | {p.email || 'Sin correo'}</div>
-                <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>Alergias: {p.alergias || 'Ninguna'}</div>
-              </div>
-            )) : (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>
-                {busquedaDirectorio.trim() ? 'No se encontraron pacientes con ese criterio.' : 'No hay pacientes registrados.'}
-              </div>
-            )}
-          </div>
-          {totalPaginas > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
-              <button disabled={paginaPacientes <= 1} onClick={() => setPaginaPacientes(p => Math.max(1, p - 1))} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes <= 1 ? 'not-allowed' : 'pointer', opacity: paginaPacientes <= 1 ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Anterior</button>
-              <span style={{ display: 'flex', alignItems: 'center', fontWeight: '600', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.85rem' }}>Página {paginaPacientes}</span>
-              <button disabled={paginaPacientes >= totalPaginas} onClick={() => setPaginaPacientes(p => p + 1)} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', background: darkMode ? '#1e293b' : '#ffffff', color: darkMode ? '#ffffff' : '#1e293b', cursor: paginaPacientes >= totalPaginas ? 'not-allowed' : 'pointer', opacity: paginaPacientes >= totalPaginas ? 0.5 : 1, fontWeight: '600', fontSize: '0.85rem' }}>Siguiente</button>
-            </div>
-          )}
-        </div>
+        <PacientesDirectory
+          key="pacientes"
+          pacientes={pacientesValidos}
+          darkMode={darkMode}
+          st={st}
+          style={{ animation: 'fadeIn 0.25s ease' }}
+        />
       )}
 
       {/* NOTIFICACIONES */}
       {vista === 'notificaciones' && (
-        <div key="notificaciones" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Notificaciones de Recetas</h2>
-          {recetasEntregadas.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay recetas dispensadas recientemente.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {recetasEntregadas.slice().reverse().map(r => (
-                <div key={r.id} style={{ background: darkMode ? '#0f172a' : '#f0fdf4', borderRadius: '10px', padding: '16px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b', fontSize: '0.95rem' }}>✔️ {r.paciente}</div>
-                    <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
-                      Token: <strong style={{ color: '#2563eb' }}>{r.token}</strong> | Médico: {r.medico} | {formatearFecha(r.fecha)}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#065f46', marginTop: '4px' }}>
-                      {Array.isArray(r.medicamento) ? r.medicamento.map(m => m.nombre).join(', ') : 'Medicamentos no listados'}
-                    </div>
-                  </div>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', whiteSpace: 'nowrap' }}>Dispensado</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <NotificacionesList
+          key="notificaciones"
+          recetas={[...recetasEntregadas].sort((a, b) => {
+            const da = new Date(a.fecha || 0);
+            const db = new Date(b.fecha || 0);
+            return db - da;
+          })}
+          darkMode={darkMode}
+          st={st}
+          showMedico={true}
+          style={{ animation: 'fadeIn 0.25s ease' }}
+        />
       )}
     </div>
   );
