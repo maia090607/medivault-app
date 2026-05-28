@@ -5,7 +5,9 @@ import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
 import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
-import NotificacionesList from '../components/NotificacionesList';function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
+import NotificacionesList from '../components/NotificacionesList';
+
+function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); setRecetaEncontrada(null); setTokenBusqueda(''); setPacienteHistorialSel(null); setBusquedaHistorialPac(''); };
@@ -44,6 +46,162 @@ import NotificacionesList from '../components/NotificacionesList';function Dashb
   const inventarioFiltrado = inventarioValido.filter(item => 
     item && item.nombre && item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase())
   );
+
+  const st = createStyles(darkMode);
+  st.logoTitle = { margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '12px' };
+  st.btnSecondary = { background: darkMode ? '#334155' : '#f1f5f9', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' };
+
+  const buscarRecetaPorToken = () => {
+    const t = tokenBusqueda.trim();
+    if (!t) return toast.warning("Digite un token de receta válido.");
+    const encontrada = recetasValidas.find(r => r && String(r.token) === t);
+    if (encontrada) {
+      setRecetaEncontrada(encontrada);
+      setDespachoReciente(null);
+    } else {
+      toast.error("No se encontró prescripción con ese token.");
+      setRecetaEncontrada(null);
+    }
+  };
+
+  const dispensarMedicamentosReceta = async () => {
+    if (!recetaEncontrada) return;
+    setLoading(true);
+    try {
+      const medicamentosEnOrden = recetaEncontrada.medicamento || [];
+      for (const med of medicamentosEnOrden) {
+        const itemInventario = inventarioValido.find(i => i && i.nombre?.toLowerCase() === med.nombre?.toLowerCase());
+        if (itemInventario) {
+          const stockActual = parseInt(itemInventario.stock, 10) || 0;
+          const cantidadRequerida = parseInt(med.cantidad || med.amount, 10) || 0;
+          const nuevoStockCalculado = Math.max(0, stockActual - cantidadRequerida);
+          await updateDoc(doc(db, "inventario", itemInventario.id), { stock: nuevoStockCalculado });
+        }
+      }
+      await updateDoc(doc(db, "recetas", recetaEncontrada.id), { estado: 'Entregado' });
+      setDespachoReciente({
+        token: recetaEncontrada.token,
+        paciente: recetaEncontrada.paciente,
+        dniPaciente: recetaEncontrada.dniPaciente,
+        meds: medicamentosEnOrden,
+        fechaDespacho: new Date().toLocaleString()
+      });
+      toast.success("Medicamentos dispensados exitosamente.");
+      setRecetaEncontrada(null);
+      setTokenBusqueda('');
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al actualizar el estado de dispensación.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const registrarNuevoMedicamento = async (e) => {
+    e.preventDefault();
+    if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
+    try {
+      await addDoc(collection(db, "inventario"), {
+        nombre: nuevoNombre.trim(),
+        concentracion: nuevaConcentracion.trim() || "N/A",
+        stock: parseInt(nuevoStock, 10) || 0
+      });
+      toast.success("Fármaco registrado en el inventario.");
+      setNuevoNombre('');
+      setNuevaConcentracion('');
+      setNuevoStock('');
+      setMostrarForm(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al guardar el medicamento.");
+    }
+  };
+
+  const abrirModalAbastecer = (med) => {
+    setMedSeleccionado(med);
+    setCantidadAñadir('');
+    setMostrarModalAbastecer(true);
+  };
+
+  const procesarAbastecimientoModal = async (e) => {
+    e.preventDefault();
+    if (!medSeleccionado || !cantidadAñadir) return;
+    setLoading(true);
+    try {
+      const stockActual = parseInt(medSeleccionado.stock, 10) || 0;
+      const adicion = parseInt(cantidadAñadir, 10) || 0;
+      await updateDoc(doc(db, "inventario", medSeleccionado.id), { stock: stockActual + adicion });
+      toast.success(`Inventario actualizado: ${medSeleccionado.nombre}.`);
+      setMostrarModalAbastecer(false);
+      setMedSeleccionado(null);
+      setCantidadAñadir('');
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al procesar el reabastecimiento.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  //     PROCESAMIENTO SEGURO DE ESTADÍSTICAS
+  // ==========================================
+  
+  const conteoMedicamentos = {};
+  recetasEntregadas.forEach(r => {
+    if (r && Array.isArray(r.medicamento)) {
+      r.medicamento.forEach(m => {
+        if (m && m.nombre) {
+          const cant = parseInt(m.cantidad || m.amount || 1, 10);
+          conteoMedicamentos[m.nombre] = (conteoMedicamentos[m.nombre] || 0) + cant;
+        }
+      });
+    }
+  });
+  
+  const rankingMedicamentos = Object.entries(conteoMedicamentos)
+    .map(([nombre, total]) => ({ nombre, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 4);
+
+  const maxMedValue = rankingMedicamentos[0]?.total || 1;
+
+  const conteoDoctores = {};
+  recetasValidas.forEach(r => {
+    if (r && r.medico) {
+      conteoDoctores[r.medico] = (conteoDoctores[r.medico] || 0) + 1;
+    }
+  });
+
+  const rankingDoctores = Object.entries(conteoDoctores)
+    .map(([nombre, total]) => ({ nombre, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 4);
+
+  const maxDocValue = rankingDoctores[0]?.total || 1;
+
+  const listaDoctoresUnicos = Object.keys(conteoDoctores).sort();
+
+  const conteoMedsPorDoctor = {};
+  const doctorFiltroEfectivo = doctorSeleccionado || listaDoctoresUnicos[0] || '';
+
+  recetasValidas.forEach(r => {
+    if (r && r.medico === doctorFiltroEfectivo && Array.isArray(r.medicamento)) {
+      r.medicamento.forEach(m => {
+        if (m && m.nombre) {
+          const cant = parseInt(m.cantidad || m.amount || 1, 10);
+          conteoMedsPorDoctor[m.nombre] = (conteoMedsPorDoctor[m.nombre] || 0) + cant;
+        }
+      });
+    }
+  });
+
+  const rankingMedsPorDoctor = Object.entries(conteoMedsPorDoctor)
+    .map(([nombre, total]) => ({ nombre, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 4);
+
+  const maxMedDocValue = rankingMedsPorDoctor[0]?.total || 1;
 
   return (
     <div style={st.container}>

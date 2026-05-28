@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
-import { createStyles, fadeInKeyframes, COLORS } from '../theme';
+import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
 
@@ -153,8 +153,8 @@ function DashboardMedico({
   };
 
   // --- PROCESOS CLÍNICOS Y REGISTROS ---
-  const buscarHistorialCompleto = () => {
-    const d = busquedaDNI.trim();
+  const buscarHistorialCompleto = (dniParam) => {
+    const d = dniParam || busquedaDNI.trim();
     if (!d) return toast.warning("Ingrese un DNI válido.");
 
     const historial = historialesValidos.find(h => h && String(h.dniPaciente) === d);
@@ -647,7 +647,7 @@ function DashboardMedico({
           renderActions={(p) => (
             <>
               <button onClick={() => { setPacienteSel(p); setBusquedaPac(p.nombre); cambiarVista('nueva'); }} style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Recetar</button>
-              <button onClick={() => { setBusquedaDNI(String(p.dni)); cambiarVista('clinico'); setTimeout(() => buscarHistorialCompleto(), 100); }} style={{ flex: 1, background: '#10b981', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Expediente</button>
+              <button onClick={() => { setBusquedaDNI(String(p.dni)); cambiarVista('clinico'); buscarHistorialCompleto(String(p.dni)); }} style={{ flex: 1, background: '#10b981', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Expediente</button>
             </>
           )}
         />

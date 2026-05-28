@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
-import { createStyles, fadeInKeyframes, COLORS } from '../theme';
+import { createStyles, fadeInKeyframes } from '../theme';
 import MetricCard from '../components/MetricCard';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';

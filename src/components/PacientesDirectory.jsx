@@ -15,9 +15,9 @@ export default function PacientesDirectory({ pacientes = [], darkMode, st, rende
     : pacientes;
 
   const totalPaginas = Math.ceil(filtro.length / PACIENTES_POR_PAGINA) || 1;
-  const inicio = 0;
-  const fin = pagina * PACIENTES_POR_PAGINA;
-  const pacientesPagiandos = filtro.slice(inicio, fin);
+  const inicio = (pagina - 1) * PACIENTES_POR_PAGINA;
+  const fin = inicio + PACIENTES_POR_PAGINA;
+  const pacientesPaginados = filtro.slice(inicio, fin);
 
   return (
     <div style={{ ...st.card, ...style }}>
@@ -31,7 +31,7 @@ export default function PacientesDirectory({ pacientes = [], darkMode, st, rende
         onChange={e => { setBusqueda(e.target.value); setPagina(1); }}
       />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
-        {pacientesPagiandos.length > 0 ? pacientesPagiandos.map(p => (
+        {pacientesPaginados.length > 0 ? pacientesPaginados.map(p => (
           <div key={p.id} style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ fontWeight: '700', fontSize: '1rem', color: '#2563eb' }}>{p.nombre}</div>
             <div style={{ fontSize: '0.85rem', color: darkMode ? '#94a3b8' : '#64748b' }}>DNI: {p.dni} | {p.email || 'Sin correo'}</div>
