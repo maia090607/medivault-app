@@ -184,6 +184,7 @@ function App() {
           recetasEmitidas={recetas} 
           inventario={inventario} 
           pacientesDB={pacientes} 
+          usuariosDB={usuariosDB} 
         />
       )}
     </div>

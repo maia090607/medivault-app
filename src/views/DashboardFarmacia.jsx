@@ -7,7 +7,7 @@ import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
 
-function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [] }) {
+function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [], usuariosDB = [] }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); setRecetaEncontrada(null); setTokenBusqueda(''); setPacienteHistorialSel(null); setBusquedaHistorialPac(''); };
@@ -188,12 +188,16 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     .sort((a, b) => b.total - a.total)
     .slice(0, 4);
 
-  const maxMedValue = rankingMedicamentos[0]?.total || 1;
+  const medicosActivos = (usuariosDB || [])
+    .filter(u => u && u.role === 'medico')
+    .map(u => (u.nombre || '').trim().toLowerCase())
+    .filter(Boolean);
 
   const conteoDoctores = {};
   recetasValidas.forEach(r => {
-    if (r && r.medico) {
-      conteoDoctores[r.medico] = (conteoDoctores[r.medico] || 0) + 1;
+    const medico = (r.medico || '').trim();
+    if (medico && medicosActivos.includes(medico.toLowerCase())) {
+      conteoDoctores[medico] = (conteoDoctores[medico] || 0) + 1;
     }
   });
 
@@ -201,8 +205,6 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
     .map(([nombre, total]) => ({ nombre, total }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 4);
-
-  const maxDocValue = rankingDoctores[0]?.total || 1;
 
   const listaDoctoresUnicos = Object.keys(conteoDoctores).sort();
 
@@ -534,8 +536,8 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       {vista === 'estadisticas' && (
         <div key="estadisticas" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
           <h2 style={{ margin: '0 0 20px 0', fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Estadísticas de Dispensación</h2>
-          {recetasEntregadas.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay datos de dispensaciones para mostrar estadísticas.</div>
+          {recetasValidas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay recetas registradas en el sistema.</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
