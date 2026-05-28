@@ -18,7 +18,7 @@ function DashboardAdmin({
   solicitudes = [],
 }) {
   const toast = useToast();
-  const [vista, setVista] = useState('resumen');
+  const [vista, setVista] = useState('dashboard');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); };
   const [darkMode, setDarkMode] = useState(false);
   const [busquedaReceta, setBusquedaReceta] = useState('');
@@ -34,7 +34,6 @@ function DashboardAdmin({
 
   const recetasPendientes = recetasValidas.filter(r => r && r.estado === 'Pendiente');
   const recetasDispensadas = recetasValidas.filter(r => r && (r.estado === 'Entregado' || r.estado === 'Dispensado'));
-  const solicitudesPendientes = solicitudesValidas;
 
   const recetasFiltradas = recetasValidas.filter(r => {
     if (!r) return false;
@@ -98,6 +97,30 @@ function DashboardAdmin({
     return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
   })();
 
+  const medicosActivos = (usuariosDB || [])
+    .filter(u => u && u.role === 'medico')
+    .map(u => (u.nombre || '').trim().toLowerCase())
+    .filter(Boolean);
+
+  const conteoDoctores = {};
+  recetasValidas.forEach(r => {
+    const medico = (r.medico || '').trim();
+    if (medico && medicosActivos.includes(medico.toLowerCase())) {
+      conteoDoctores[medico] = (conteoDoctores[medico] || 0) + 1;
+    }
+  });
+
+  const rankingDoctores = Object.entries(conteoDoctores)
+    .map(([nombre, total]) => ({ nombre, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 8);
+
+  const recetasDispensadasOrdenadas = [...recetasDispensadas].sort((a, b) => {
+    const da = new Date(a.fecha || 0);
+    const db = new Date(b.fecha || 0);
+    return db - da;
+  });
+
   const st = createStyles(darkMode);
 
   return (
@@ -122,31 +145,88 @@ function DashboardAdmin({
       </div>
 
       <div style={st.nav} className="no-print">
-        <button style={st.btnNav(vista === 'resumen')} onClick={() => cambiarVista('resumen')}>📊 Resumen</button>
-        <button style={st.btnNav(vista === 'recetas')} onClick={() => cambiarVista('recetas')}>📋 Recetas</button>
-        <button style={st.btnNav(vista === 'solicitudes')} onClick={() => cambiarVista('solicitudes')}>📩 Solicitudes Demo</button>
-        <button style={st.btnNav(vista === 'usuarios')} onClick={() => cambiarVista('usuarios')}>👥 Usuarios</button>
-        <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>📦 Inventario</button>
-        <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>👤 Pacientes</button>
-        <button style={st.btnNav(vista === 'estadisticas')} onClick={() => cambiarVista('estadisticas')}>📊 Estadísticas</button>
-        <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>🔔 Notificaciones</button>
+        <button style={st.btnNav(vista === 'dashboard')} onClick={() => cambiarVista('dashboard')}>Dashboard</button>
+        <button style={st.btnNav(vista === 'recetas')} onClick={() => cambiarVista('recetas')}>Recetas</button>
+        <button style={st.btnNav(vista === 'solicitudes')} onClick={() => cambiarVista('solicitudes')}>Solicitudes</button>
+        <button style={st.btnNav(vista === 'usuarios')} onClick={() => cambiarVista('usuarios')}>Usuarios</button>
+        <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>Inventario</button>
+        <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>Pacientes</button>
+        <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>Notificaciones</button>
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Admin {vista === 'resumen' ? '> Resumen' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes Demo' : vista === 'usuarios' ? '> Usuarios' : vista === 'inventario' ? '> Inventario' : vista === 'pacientes' ? '> Pacientes' : vista === 'estadisticas' ? '> Estadísticas' : '> Notificaciones'}
+        Admin {vista === 'dashboard' ? '> Dashboard' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes' : vista === 'usuarios' ? '> Usuarios' : vista === 'inventario' ? '> Inventario' : vista === 'pacientes' ? '> Pacientes' : '> Notificaciones'}
       </div>
 
-      {/* RESUMEN */}
-      {vista === 'resumen' && (
-        <div key="resumen" style={{ animation: 'fadeIn 0.25s ease' }}>
+      {/* DASHBOARD */}
+      {vista === 'dashboard' && (
+        <div key="dashboard" style={{ animation: 'fadeIn 0.25s ease' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             <MetricCard label="Recetas Emitidas" value={recetasValidas.length} color="#2563eb" darkMode={darkMode} />
             <MetricCard label="Pendientes" value={recetasPendientes.length} color="#f59e0b" darkMode={darkMode} />
             <MetricCard label="Dispensadas" value={recetasDispensadas.length} color="#10b981" darkMode={darkMode} />
             <MetricCard label="Pacientes" value={pacientesValidos.length} color="#8b5cf6" darkMode={darkMode} />
             <MetricCard label="Usuarios" value={usuariosValidos.length} color="#06b6d4" darkMode={darkMode} />
-            <MetricCard label="Solicitudes Demo" value={solicitudesValidas.length} color="#ec4899" darkMode={darkMode} />
+            <MetricCard label="Solicitudes" value={solicitudesValidas.length} color="#ec4899" darkMode={darkMode} />
           </div>
+
+          {recetasValidas.length > 0 && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                  <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Top Medicamentos Recetados</h3>
+                  {conteoMedicamentos.length > 0 ? conteoMedicamentos.map(([nom, cant], idx) => {
+                    const maxCant = conteoMedicamentos[0][1] || 1;
+                    const pct = (cant / maxCant) * 100;
+                    return (
+                      <div key={nom} style={{ marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                          <span>{idx + 1}. {nom}</span>
+                          <span>{cant} uds</span>
+                        </div>
+                        <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: '6px', transition: 'width 0.5s ease' }} />
+                        </div>
+                      </div>
+                    );
+                  }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de medicamentos.</div>}
+                </div>
+                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                  <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Médicos con Mayor Actividad</h3>
+                  {rankingDoctores.length > 0 ? rankingDoctores.map((item, idx) => {
+                    const maxCant = rankingDoctores[0].total || 1;
+                    const pct = (item.total / maxCant) * 100;
+                    return (
+                      <div key={item.nombre} style={{ marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
+                          <span>{idx + 1}. Dr(a). {item.nombre}</span>
+                          <span>{item.total} recetas</span>
+                        </div>
+                        <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: '#10b981', borderRadius: '6px', transition: 'width 0.5s ease' }} />
+                        </div>
+                      </div>
+                    );
+                  }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de médicos.</div>}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#2563eb' }}>{recetasValidas.length}</div>
+                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Totales</div>
+                </div>
+                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#f59e0b' }}>{recetasPendientes.length}</div>
+                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Pendientes</div>
+                </div>
+                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
+                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#10b981' }}>{recetasDispensadas.length}</div>
+                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Dispensadas</div>
+                </div>
+              </div>
+            </>
+          )}
 
           <div style={st.card}>
             <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
@@ -371,78 +451,11 @@ function DashboardAdmin({
         />
       )}
 
-      {/* ESTADÍSTICAS */}
-      {vista === 'estadisticas' && (
-        <div key="estadisticas" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Estadísticas del Sistema</h2>
-          {recetasValidas.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: '500' }}>No hay datos de recetas para mostrar estadísticas.</div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Top Medicamentos Recetados</h3>
-                {conteoMedicamentos.length > 0 ? conteoMedicamentos.map(([nom, cant], idx) => {
-                  const maxCant = conteoMedicamentos[0][1] || 1;
-                  const pct = (cant / maxCant) * 100;
-                  return (
-                    <div key={nom} style={{ marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
-                        <span>{idx + 1}. {nom}</span>
-                        <span>{cant} uds</span>
-                      </div>
-                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: '6px', transition: 'width 0.5s ease' }} />
-                      </div>
-                    </div>
-                  );
-                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de medicamentos.</div>}
-              </div>
-              <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Pacientes Más Atendidos</h3>
-                {conteoPacientes.length > 0 ? conteoPacientes.map(([nom, cant], idx) => {
-                  const maxCant = conteoPacientes[0][1] || 1;
-                  const pct = (cant / maxCant) * 100;
-                  return (
-                    <div key={nom} style={{ marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
-                        <span>{idx + 1}. {nom}</span>
-                        <span>{cant} recetas</span>
-                      </div>
-                      <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#10b981', borderRadius: '6px', transition: 'width 0.5s ease' }} />
-                      </div>
-                    </div>
-                  );
-                }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de pacientes.</div>}
-              </div>
-            </div>
-          )}
-          <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#2563eb' }}>{recetasValidas.length}</div>
-              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Totales</div>
-            </div>
-            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#f59e0b' }}>{recetasPendientes.length}</div>
-              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Pendientes</div>
-            </div>
-            <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#10b981' }}>{recetasDispensadas.length}</div>
-              <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Dispensadas</div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* NOTIFICACIONES */}
       {vista === 'notificaciones' && (
         <NotificacionesList
           key="notificaciones"
-          recetas={[...recetasDispensadas].sort((a, b) => {
-            const da = new Date(a.fecha || 0);
-            const db = new Date(b.fecha || 0);
-            return db - da;
-          })}
+          recetas={recetasDispensadasOrdenadas}
           darkMode={darkMode}
           st={st}
           showMedico={true}
