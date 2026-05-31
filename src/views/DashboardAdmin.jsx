@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { formatearFecha } from '../utils';
 import { createStyles, fadeInKeyframes } from '../theme';
@@ -25,6 +25,14 @@ function DashboardAdmin({
   const [busquedaSolicitud, setBusquedaSolicitud] = useState('');
   const [busquedaUsuario, setBusquedaUsuario] = useState('');
   const [busquedaInventario, setBusquedaInventario] = useState('');
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [nuevoNombre, setNuevoNombre] = useState('');
+  const [nuevaConcentracion, setNuevaConcentracion] = useState('');
+  const [nuevoStock, setNuevoStock] = useState('');
+  const [mostrarModalAbastecer, setMostrarModalAbastecer] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [medSeleccionado, setMedSeleccionado] = useState(null);
+  const [cantidadAñadir, setCantidadAñadir] = useState('');
 
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
   const inventarioValido = Array.isArray(inventario) ? inventario : [];
@@ -77,6 +85,54 @@ function DashboardAdmin({
     }
   };
 
+  const registrarNuevoMedicamento = async (e) => {
+    e.preventDefault();
+    if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
+    try {
+      await addDoc(collection(db, "inventario"), {
+        codigo: codigoGenerado,
+        nombre: nuevoNombre.trim(),
+        concentracion: nuevaConcentracion.trim() || "N/A",
+        stock: parseInt(nuevoStock, 10) || 0
+      });
+      toast.success("Fármaco registrado en el inventario.");
+      setNuevoNombre('');
+      setNuevaConcentracion('');
+      setNuevoStock('');
+      setMostrarForm(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al guardar el medicamento.");
+    }
+  };
+
+  const abrirModalAbastecer = (med) => {
+    setMedSeleccionado(med);
+    setCantidadAñadir('');
+    setMostrarModalAbastecer(true);
+  };
+
+  const procesarAbastecimientoModal = async (e) => {
+    e.preventDefault();
+    if (!medSeleccionado || !cantidadAñadir) return;
+    const cantidad = parseInt(cantidadAñadir, 10);
+    if (!cantidad || cantidad <= 0) return toast.warning("Ingrese una cantidad válida.");
+    try {
+      setLoading(true);
+      const stockActual = parseInt(medSeleccionado.stock, 10) || 0;
+      await updateDoc(doc(db, "inventario", medSeleccionado.id), { stock: stockActual + cantidad });
+      toast.success(`Stock actualizado: ${stockActual} → ${stockActual + cantidad}`);
+      setMostrarModalAbastecer(false);
+      setMedSeleccionado(null);
+      setCantidadAñadir('');
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al abastecer.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // --- DATOS PARA NUEVAS PESTAÑAS ---
   const conteoMedicamentos = (() => {
     const map = {};
@@ -125,6 +181,12 @@ function DashboardAdmin({
   });
 
   const st = createStyles(darkMode);
+
+  const codigoGenerado = (() => {
+    const prefijo = (nuevoNombre || '').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').slice(0, 7).toUpperCase().replace(/\s+/g, '');
+    const digitos = (nuevaConcentracion || '').replace(/\D/g, '');
+    return prefijo ? `${prefijo}-${digitos || '000'}` : '';
+  })();
 
   return (
     <div style={st.container}>
@@ -403,9 +465,41 @@ function DashboardAdmin({
       {/* INVENTARIO */}
       {vista === 'inventario' && (
         <div key="inventario" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-            Inventario Global
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Inventario Global</h2>
+            <button onClick={() => setMostrarForm(!mostrarForm)} style={st.btnAction}>
+              {mostrarForm ? '✖ Cancelar' : '➕ Registrar Nuevo Fármaco'}
+            </button>
+          </div>
+
+          {/* FORMULARIO AGREGAR MEDICAMENTO */}
+          {mostrarForm && (
+            <form onSubmit={registrarNuevoMedicamento} style={{ background: darkMode ? '#0f172a' : '#f8fafc', padding: '30px', borderRadius: '16px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', marginBottom: '30px' }}>
+              <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '16px', color: '#2563eb', fontWeight: '700' }}>Crear Registro en Inventario</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={st.label}>Código (auto)</label>
+                  <input style={{ ...st.input, marginBottom: 0, background: darkMode ? '#1e293b' : '#f1f5f9', color: '#2563eb', fontWeight: '700', fontFamily: 'monospace' }} value={codigoGenerado} readOnly />
+                </div>
+                <div>
+                  <label style={st.label}>Nombre Comercial / Genérico</label>
+                  <input style={st.input} placeholder="Ej. Acetaminofén" value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)} required />
+                </div>
+                <div>
+                  <label style={st.label}>Concentración</label>
+                  <input style={st.input} placeholder="Ej. 500 mg" value={nuevaConcentracion} onChange={e => setNuevaConcentracion(e.target.value)} />
+                </div>
+                <div>
+                  <label style={st.label}>Stock Inicial</label>
+                  <input type="number" min="0" style={st.input} placeholder="Ej. 100" value={nuevoStock} onChange={e => setNuevoStock(e.target.value)} required />
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', marginTop: '10px' }}>
+                <button type="submit" style={st.btnSuccess}>Guardar en Sistema</button>
+              </div>
+            </form>
+          )}
+
           <input
             style={st.input}
             placeholder="Buscar medicamento..."
@@ -420,6 +514,7 @@ function DashboardAdmin({
                   <th style={st.th}>Medicamento</th>
                   <th style={st.th}>Concentración</th>
                   <th style={st.th}>Stock</th>
+                  <th style={st.th}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -433,11 +528,14 @@ function DashboardAdmin({
                       <td style={{ ...st.td, color: critico ? '#ef4444' : 'inherit', fontWeight: critico ? '700' : '400' }}>
                         {item.stock} Uds {critico && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: '700' }}>⚠️</span>}
                       </td>
+                      <td style={st.td}>
+                        <button onClick={() => abrirModalAbastecer(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>📥 Reabastecer</button>
+                      </td>
                     </tr>
                   );
                 })}
                 {inventarioFiltrado.length === 0 && (
-                  <tr><td colSpan="4" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay medicamentos en inventario.</td></tr>
+                  <tr><td colSpan="5" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay medicamentos en inventario.</td></tr>
                 )}
               </tbody>
             </table>
@@ -466,6 +564,47 @@ function DashboardAdmin({
           showMedico={true}
           style={{ animation: 'fadeIn 0.25s ease' }}
         />
+      )}
+
+      {/* MODAL ABASTECER */}
+      {mostrarModalAbastecer && medSeleccionado && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 1000
+        }} onClick={() => setMostrarModalAbastecer(false)}>
+          <div style={{
+            background: darkMode ? '#1e293b' : '#ffffff', padding: '30px',
+            borderRadius: '16px', width: '420px', maxWidth: '90%',
+            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+          }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 8px 0', color: darkMode ? '#ffffff' : '#1e293b', fontSize: '1.2rem' }}>
+              Reabastecer Medicamento
+            </h3>
+            <p style={{ color: '#64748b', margin: '0 0 14px 0', fontSize: '0.9rem' }}>
+              <strong>{medSeleccionado.nombre}</strong> — Stock actual: <strong>{medSeleccionado.stock}</strong> Uds
+            </p>
+            <form onSubmit={procesarAbastecimientoModal}>
+              <input
+                type="number" min="1" required autoFocus
+                style={{ ...st.input, marginBottom: '14px' }}
+                placeholder="Cantidad a agregar"
+                value={cantidadAñadir}
+                onChange={e => setCantidadAñadir(e.target.value)}
+              />
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setMostrarModalAbastecer(false)}
+                  style={{ background: darkMode ? '#334155' : '#e2e8f0', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                  Cancelar
+                </button>
+                <button type="submit" disabled={loading}
+                  style={{ background: loading ? '#94a3b8' : '#2563eb', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer' }}>
+                  {loading ? 'Procesando...' : 'Confirmar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
