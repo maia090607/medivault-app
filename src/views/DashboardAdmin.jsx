@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
-import { formatearFecha } from '../utils';
 import { createStyles, fadeInKeyframes } from '../theme';
-import MetricCard from '../components/MetricCard';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
+import DashboardView from './admin/DashboardView';
+import RecetasView from './admin/RecetasView';
+import SolicitudesView from './admin/SolicitudesView';
+import UsuariosView from './admin/UsuariosView';
+import InventarioView from './admin/InventarioView';
 
 function DashboardAdmin({
   user = {},
@@ -21,18 +23,6 @@ function DashboardAdmin({
   const [vista, setVista] = useState('dashboard');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); };
   const [darkMode, setDarkMode] = useState(false);
-  const [busquedaReceta, setBusquedaReceta] = useState('');
-  const [busquedaSolicitud, setBusquedaSolicitud] = useState('');
-  const [busquedaUsuario, setBusquedaUsuario] = useState('');
-  const [busquedaInventario, setBusquedaInventario] = useState('');
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [nuevoNombre, setNuevoNombre] = useState('');
-  const [nuevaConcentracion, setNuevaConcentracion] = useState('');
-  const [nuevoStock, setNuevoStock] = useState('');
-  const [mostrarModalAbastecer, setMostrarModalAbastecer] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [medSeleccionado, setMedSeleccionado] = useState(null);
-  const [cantidadAñadir, setCantidadAñadir] = useState('');
 
   const recetasValidas = Array.isArray(recetasEmitidas) ? recetasEmitidas : [];
   const inventarioValido = Array.isArray(inventario) ? inventario : [];
@@ -43,150 +33,21 @@ function DashboardAdmin({
   const recetasPendientes = recetasValidas.filter(r => r && r.estado === 'Pendiente');
   const recetasDispensadas = recetasValidas.filter(r => r && (r.estado === 'Entregado' || r.estado === 'Dispensado'));
 
-  const recetasFiltradas = recetasValidas.filter(r => {
-    if (!r) return false;
-    const q = busquedaReceta.toLowerCase();
-    return (r.paciente || '').toLowerCase().includes(q)
-      || (r.medico || '').toLowerCase().includes(q)
-      || String(r.token || '').includes(q)
-      || (r.dniPaciente || '').includes(q);
-  });
-
-  const solicitudesFiltradas = solicitudesValidas.filter(s => {
-    if (!s) return false;
-    const q = busquedaSolicitud.toLowerCase();
-    return (s.nombre || '').toLowerCase().includes(q)
-      || (s.email || '').toLowerCase().includes(q)
-      || (s.mensaje || '').toLowerCase().includes(q);
-  });
-
-  const usuariosFiltrados = usuariosValidos.filter(u => {
-    if (!u) return false;
-    const q = busquedaUsuario.toLowerCase();
-    return (u.nombre || '').toLowerCase().includes(q)
-      || (u.correo || u.email || '').toLowerCase().includes(q)
-      || (u.role || '').toLowerCase().includes(q);
-  });
-
-  const inventarioFiltrado = inventarioValido.filter(item =>
-    item && item.nombre && (
-      item.nombre.toLowerCase().includes(busquedaInventario.toLowerCase()) ||
-      (item.codigo || '').toLowerCase().includes(busquedaInventario.toLowerCase())
-    )
-  );
-
-  const marcarContactado = async (id) => {
-    try {
-      await updateDoc(doc(db, "solicitudes", id), { estado: 'contactado' });
-      toast.success('Solicitud marcada como contactada.');
-    } catch (err) {
-      console.error(err);
-      toast.error('Error al actualizar la solicitud.');
-    }
-  };
-
-  const registrarNuevoMedicamento = async (e) => {
-    e.preventDefault();
-    if (!nuevoNombre || !nuevoStock) return toast.warning("Nombre y stock inicial son obligatorios.");
-    try {
-      await addDoc(collection(db, "inventario"), {
-        codigo: codigoGenerado,
-        nombre: nuevoNombre.trim(),
-        concentracion: nuevaConcentracion.trim() || "N/A",
-        stock: parseInt(nuevoStock, 10) || 0
-      });
-      toast.success("Fármaco registrado en el inventario.");
-      setNuevoNombre('');
-      setNuevaConcentracion('');
-      setNuevoStock('');
-      setMostrarForm(false);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error al guardar el medicamento.");
-    }
-  };
-
-  const abrirModalAbastecer = (med) => {
-    setMedSeleccionado(med);
-    setCantidadAñadir('');
-    setMostrarModalAbastecer(true);
-  };
-
-  const procesarAbastecimientoModal = async (e) => {
-    e.preventDefault();
-    if (!medSeleccionado || !cantidadAñadir) return;
-    const cantidad = parseInt(cantidadAñadir, 10);
-    if (!cantidad || cantidad <= 0) return toast.warning("Ingrese una cantidad válida.");
-    try {
-      setLoading(true);
-      const stockActual = parseInt(medSeleccionado.stock, 10) || 0;
-      await updateDoc(doc(db, "inventario", medSeleccionado.id), { stock: stockActual + cantidad });
-      toast.success(`Stock actualizado: ${stockActual} → ${stockActual + cantidad}`);
-      setMostrarModalAbastecer(false);
-      setMedSeleccionado(null);
-      setCantidadAñadir('');
-    } catch (err) {
-      console.error(err);
-      toast.error("Error al abastecer.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // --- DATOS PARA NUEVAS PESTAÑAS ---
-  const conteoMedicamentos = (() => {
-    const map = {};
-    recetasValidas.forEach(r => {
-      if (Array.isArray(r.medicamento)) {
-        r.medicamento.forEach(m => {
-          const nom = m.nombre || 'Desconocido';
-          map[nom] = (map[nom] || 0) + (m.amount || m.cantidad || 1);
-        });
-      }
-    });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  })();
-
-  const conteoPacientes = (() => {
-    const map = {};
-    recetasValidas.forEach(r => {
-      const nom = r.paciente || 'Desconocido';
-      map[nom] = (map[nom] || 0) + 1;
-    });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  })();
-
-  const medicosActivos = (usuariosDB || [])
-    .filter(u => u && u.role === 'medico')
-    .map(u => (u.nombre || '').trim().toLowerCase())
-    .filter(Boolean);
-
-  const conteoDoctores = {};
-  recetasValidas.forEach(r => {
-    const medico = (r.medico || '').trim();
-    if (medico && medicosActivos.includes(medico.toLowerCase())) {
-      conteoDoctores[medico] = (conteoDoctores[medico] || 0) + 1;
-    }
-  });
-
-  const rankingDoctores = Object.entries(conteoDoctores)
-    .map(([nombre, total]) => ({ nombre, total }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 8);
-
   const recetasDispensadasOrdenadas = [...recetasDispensadas].sort((a, b) => {
     const da = new Date(a.fecha || 0);
-    const db = new Date(b.fecha || 0);
-    return db - da;
+    const db2 = new Date(b.fecha || 0);
+    return db2 - da;
   });
 
   const st = createStyles(darkMode);
 
-  const codigoGenerado = (() => {
-    const prefijo = (nuevoNombre || '').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').slice(0, 7).toUpperCase().replace(/\s+/g, '');
-    const digitos = (nuevaConcentracion || '').replace(/\D/g, '');
-    return prefijo ? `${prefijo}-${digitos || '000'}` : '';
-  })();
+  const breadcrumb = vista === 'dashboard' ? 'Dashboard'
+    : vista === 'recetas' ? 'Recetas'
+    : vista === 'solicitudes' ? 'Solicitudes'
+    : vista === 'usuarios' ? 'Usuarios'
+    : vista === 'inventario' ? 'Inventario'
+    : vista === 'pacientes' ? 'Pacientes'
+    : 'Notificaciones';
 
   return (
     <div style={st.container}>
@@ -220,330 +81,58 @@ function DashboardAdmin({
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Admin {vista === 'dashboard' ? '> Dashboard' : vista === 'recetas' ? '> Recetas' : vista === 'solicitudes' ? '> Solicitudes' : vista === 'usuarios' ? '> Usuarios' : vista === 'inventario' ? '> Inventario' : vista === 'pacientes' ? '> Pacientes' : '> Notificaciones'}
+        Admin &gt; {breadcrumb}
       </div>
 
-      {/* DASHBOARD */}
       {vista === 'dashboard' && (
-        <div key="dashboard" style={{ animation: 'fadeIn 0.25s ease' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            <MetricCard label="Recetas Emitidas" value={recetasValidas.length} color="#2563eb" darkMode={darkMode} />
-            <MetricCard label="Pendientes" value={recetasPendientes.length} color="#f59e0b" darkMode={darkMode} />
-            <MetricCard label="Dispensadas" value={recetasDispensadas.length} color="#10b981" darkMode={darkMode} />
-            <MetricCard label="Pacientes" value={pacientesValidos.length} color="#8b5cf6" darkMode={darkMode} />
-            <MetricCard label="Usuarios" value={usuariosValidos.length} color="#06b6d4" darkMode={darkMode} />
-            <MetricCard label="Solicitudes" value={solicitudesValidas.length} color="#ec4899" darkMode={darkMode} />
-          </div>
-
-          {recetasValidas.length > 0 && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                  <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Top Medicamentos Recetados</h3>
-                  {conteoMedicamentos.length > 0 ? conteoMedicamentos.map(([nom, cant], idx) => {
-                    const maxCant = conteoMedicamentos[0][1] || 1;
-                    const pct = (cant / maxCant) * 100;
-                    return (
-                      <div key={nom} style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
-                          <span>{idx + 1}. {nom}</span>
-                          <span>{cant} uds</span>
-                        </div>
-                        <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: '6px', transition: 'width 0.5s ease' }} />
-                        </div>
-                      </div>
-                    );
-                  }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de medicamentos.</div>}
-                </div>
-                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '20px', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                  <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem', fontWeight: '700', color: '#2563eb' }}>Médicos con Mayor Actividad</h3>
-                  {rankingDoctores.length > 0 ? rankingDoctores.map((item, idx) => {
-                    const maxCant = rankingDoctores[0].total || 1;
-                    const pct = (item.total / maxCant) * 100;
-                    return (
-                      <div key={item.nombre} style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: darkMode ? '#ffffff' : '#1e293b', marginBottom: '4px' }}>
-                          <span>{idx + 1}. Dr(a). {item.nombre}</span>
-                          <span>{item.total} recetas</span>
-                        </div>
-                        <div style={{ height: '10px', background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: '#10b981', borderRadius: '6px', transition: 'width 0.5s ease' }} />
-                        </div>
-                      </div>
-                    );
-                  }) : <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>Sin datos de médicos.</div>}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#2563eb' }}>{recetasValidas.length}</div>
-                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Totales</div>
-                </div>
-                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#f59e0b' }}>{recetasPendientes.length}</div>
-                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Pendientes</div>
-                </div>
-                <div style={{ background: darkMode ? '#0f172a' : '#f9fafb', borderRadius: '10px', padding: '18px', textAlign: 'center', border: darkMode ? '1px solid #334155' : '1px solid #e5e7eb' }}>
-                  <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#10b981' }}>{recetasDispensadas.length}</div>
-                  <div style={{ fontSize: '0.8rem', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600' }}>Dispensadas</div>
-                </div>
-              </div>
-            </>
-          )}
-
-          <div style={st.card}>
-            <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-              Últimas Recetas Emitidas
-            </h2>
-            <table style={st.table}>
-              <thead>
-                <tr>
-                  <th style={st.th}>Paciente</th>
-                  <th style={st.th}>Médico</th>
-                  <th style={st.th}>Token</th>
-                  <th style={st.th}>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recetasValidas.slice(-5).reverse().map(r => (
-                  <tr key={r.id}>
-                    <td style={st.td}><strong>{r.paciente}</strong></td>
-                    <td style={st.td}>{r.medico}</td>
-                    <td style={st.td}><strong style={{ color: '#2563eb' }}>{r.token}</strong></td>
-                    <td style={st.td}><span style={st.badge(r.estado)}>{r.estado}</span></td>
-                  </tr>
-                ))}
-                {recetasValidas.length === 0 && (
-                  <tr><td colSpan="4" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay recetas registradas.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DashboardView
+          recetasValidas={recetasValidas}
+          recetasPendientes={recetasPendientes}
+          recetasDispensadas={recetasDispensadas}
+          pacientesValidos={pacientesValidos}
+          usuariosValidos={usuariosValidos}
+          solicitudesValidas={solicitudesValidas}
+          darkMode={darkMode}
+          st={st}
+        />
       )}
 
-      {/* RECETAS */}
       {vista === 'recetas' && (
-        <div key="recetas" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-            Todas las Recetas del Sistema
-          </h2>
-          <input
-            style={st.input}
-            placeholder="Buscar por paciente, médico, token o DNI..."
-            value={busquedaReceta}
-            onChange={e => setBusquedaReceta(e.target.value)}
-          />
-          <div style={{ overflowX: 'auto' }}>
-            <table style={st.table}>
-              <thead>
-                <tr>
-                  <th style={st.th}>Paciente</th>
-                  <th style={st.th}>DNI</th>
-                  <th style={st.th}>Médico</th>
-                  <th style={st.th}>Token</th>
-                  <th style={st.th}>Estado</th>
-                  <th style={st.th}>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recetasFiltradas.map(r => (
-                  <tr key={r.id}>
-                    <td style={st.td}><strong>{r.paciente}</strong></td>
-                    <td style={st.td}>{r.dniPaciente}</td>
-                    <td style={st.td}>{r.medico}</td>
-                    <td style={st.td}><strong style={{ color: '#2563eb' }}>{r.token}</strong></td>
-                    <td style={st.td}><span style={st.badge(r.estado)}>{r.estado}</span></td>
-                    <td style={st.td}>{formatearFecha(r.fecha)}</td>
-                  </tr>
-                ))}
-                {recetasFiltradas.length === 0 && (
-                  <tr><td colSpan="6" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron recetas.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <RecetasView
+          recetasValidas={recetasValidas}
+          darkMode={darkMode}
+          st={st}
+        />
       )}
 
-      {/* SOLICITUDES DEMO */}
       {vista === 'solicitudes' && (
-        <div key="solicitudes" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-            Solicitudes de Demo
-          </h2>
-          <input
-            style={st.input}
-            placeholder="Buscar por nombre, email o mensaje..."
-            value={busquedaSolicitud}
-            onChange={e => setBusquedaSolicitud(e.target.value)}
-          />
-          <div style={{ overflowX: 'auto' }}>
-            <table style={st.table}>
-              <thead>
-                <tr>
-                  <th style={st.th}>Nombre</th>
-                  <th style={st.th}>Email</th>
-                  <th style={st.th}>Teléfono</th>
-                  <th style={st.th}>Mensaje</th>
-                  <th style={st.th}>Fecha</th>
-                  <th style={st.th}>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {solicitudesFiltradas.map(s => (
-                  <tr key={s.id}>
-                    <td style={st.td}><strong>{s.nombre}</strong></td>
-                    <td style={st.td}>{s.email}</td>
-                    <td style={st.td}>{s.telefono || '—'}</td>
-                    <td style={{ ...st.td, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.mensaje || '—'}</td>
-                    <td style={st.td}>{formatearFecha(s.fecha)}</td>
-                    <td style={st.td}>
-                      {s.estado === 'contactado' ? (
-                        <span style={st.badge('contactado')}>Contactado</span>
-                      ) : (
-                        <button onClick={() => marcarContactado(s.id)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>
-                          Marcar Contactado
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {solicitudesFiltradas.length === 0 && (
-                  <tr><td colSpan="6" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay solicitudes de demo.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <SolicitudesView
+          solicitudesValidas={solicitudesValidas}
+          darkMode={darkMode}
+          st={st}
+          db={db}
+          toast={toast}
+        />
       )}
 
-      {/* USUARIOS */}
       {vista === 'usuarios' && (
-        <div key="usuarios" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
-            Usuarios del Sistema
-          </h2>
-          <input
-            style={st.input}
-            placeholder="Buscar por nombre, email o rol..."
-            value={busquedaUsuario}
-            onChange={e => setBusquedaUsuario(e.target.value)}
-          />
-          <div style={{ overflowX: 'auto' }}>
-            <table style={st.table}>
-              <thead>
-                <tr>
-                  <th style={st.th}>Nombre</th>
-                  <th style={st.th}>Email</th>
-                  <th style={st.th}>Rol</th>
-                  <th style={st.th}>Especialidad / Sucursal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuariosFiltrados.map(u => (
-                  <tr key={u.id}>
-                    <td style={st.td}><strong>{u.nombre}</strong></td>
-                    <td style={st.td}>{u.correo || u.email}</td>
-                    <td style={st.td}>
-                      <span style={{ ...st.badge(u.role), textTransform: 'capitalize' }}>{u.role}</span>
-                    </td>
-                    <td style={st.td}>{u.especialidad || u.sucursal || '—'}</td>
-                  </tr>
-                ))}
-                {usuariosFiltrados.length === 0 && (
-                  <tr><td colSpan="4" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron usuarios.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <UsuariosView
+          usuariosValidos={usuariosValidos}
+          darkMode={darkMode}
+          st={st}
+        />
       )}
 
-      {/* INVENTARIO */}
       {vista === 'inventario' && (
-        <div key="inventario" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>Inventario Global</h2>
-            <button onClick={() => setMostrarForm(!mostrarForm)} style={st.btnAction}>
-              {mostrarForm ? '✖ Cancelar' : '➕ Registrar Nuevo Fármaco'}
-            </button>
-          </div>
-
-          {/* FORMULARIO AGREGAR MEDICAMENTO */}
-          {mostrarForm && (
-            <form onSubmit={registrarNuevoMedicamento} style={{ background: darkMode ? '#0f172a' : '#f8fafc', padding: '30px', borderRadius: '16px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', marginBottom: '30px' }}>
-              <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '16px', color: '#2563eb', fontWeight: '700' }}>Crear Registro en Inventario</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr', gap: '20px' }}>
-                <div>
-                  <label style={st.label}>Código (auto)</label>
-                  <input style={{ ...st.input, marginBottom: 0, background: darkMode ? '#1e293b' : '#f1f5f9', color: '#2563eb', fontWeight: '700', fontFamily: 'monospace' }} value={codigoGenerado} readOnly />
-                </div>
-                <div>
-                  <label style={st.label}>Nombre Comercial / Genérico</label>
-                  <input style={st.input} placeholder="Ej. Acetaminofén" value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)} required />
-                </div>
-                <div>
-                  <label style={st.label}>Concentración</label>
-                  <input style={st.input} placeholder="Ej. 500 mg" value={nuevaConcentracion} onChange={e => setNuevaConcentracion(e.target.value)} />
-                </div>
-                <div>
-                  <label style={st.label}>Stock Inicial</label>
-                  <input type="number" min="0" style={st.input} placeholder="Ej. 100" value={nuevoStock} onChange={e => setNuevoStock(e.target.value)} required />
-                </div>
-              </div>
-              <div style={{ textAlign: 'right', marginTop: '10px' }}>
-                <button type="submit" style={st.btnSuccess}>Guardar en Sistema</button>
-              </div>
-            </form>
-          )}
-
-          <input
-            style={st.input}
-            placeholder="Buscar medicamento..."
-            value={busquedaInventario}
-            onChange={e => setBusquedaInventario(e.target.value)}
-          />
-          <div style={{ overflowX: 'auto' }}>
-            <table style={st.table}>
-              <thead>
-                <tr>
-                  <th style={st.th}>Código</th>
-                  <th style={st.th}>Medicamento</th>
-                  <th style={st.th}>Concentración</th>
-                  <th style={st.th}>Stock</th>
-                  <th style={st.th}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventarioFiltrado.map(item => {
-                  const critico = (parseInt(item.stock, 10) || 0) <= 10;
-                  return (
-                    <tr key={item.id}>
-                      <td style={st.td}><strong style={{ color: '#2563eb' }}>{item.codigo || '—'}</strong></td>
-                      <td style={st.td}><strong>{item.nombre}</strong></td>
-                      <td style={st.td}>{item.concentracion || 'N/A'}</td>
-                      <td style={{ ...st.td, color: critico ? '#ef4444' : 'inherit', fontWeight: critico ? '700' : '400' }}>
-                        {item.stock} Uds {critico && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: '700' }}>⚠️</span>}
-                      </td>
-                      <td style={st.td}>
-                        <button onClick={() => abrirModalAbastecer(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>📥 Reabastecer</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {inventarioFiltrado.length === 0 && (
-                  <tr><td colSpan="5" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay medicamentos en inventario.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <InventarioView
+          inventarioValido={inventarioValido}
+          darkMode={darkMode}
+          st={st}
+          db={db}
+          toast={toast}
+        />
       )}
 
-      {/* PACIENTES */}
       {vista === 'pacientes' && (
         <PacientesDirectory
           key="pacientes"
@@ -554,7 +143,6 @@ function DashboardAdmin({
         />
       )}
 
-      {/* NOTIFICACIONES */}
       {vista === 'notificaciones' && (
         <NotificacionesList
           key="notificaciones"
@@ -564,47 +152,6 @@ function DashboardAdmin({
           showMedico={true}
           style={{ animation: 'fadeIn 0.25s ease' }}
         />
-      )}
-
-      {/* MODAL ABASTECER */}
-      {mostrarModalAbastecer && medSeleccionado && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 1000
-        }} onClick={() => setMostrarModalAbastecer(false)}>
-          <div style={{
-            background: darkMode ? '#1e293b' : '#ffffff', padding: '30px',
-            borderRadius: '16px', width: '420px', maxWidth: '90%',
-            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-          }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 8px 0', color: darkMode ? '#ffffff' : '#1e293b', fontSize: '1.2rem' }}>
-              Reabastecer Medicamento
-            </h3>
-            <p style={{ color: '#64748b', margin: '0 0 14px 0', fontSize: '0.9rem' }}>
-              <strong>{medSeleccionado.nombre}</strong> — Stock actual: <strong>{medSeleccionado.stock}</strong> Uds
-            </p>
-            <form onSubmit={procesarAbastecimientoModal}>
-              <input
-                type="number" min="1" required autoFocus
-                style={{ ...st.input, marginBottom: '14px' }}
-                placeholder="Cantidad a agregar"
-                value={cantidadAñadir}
-                onChange={e => setCantidadAñadir(e.target.value)}
-              />
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setMostrarModalAbastecer(false)}
-                  style={{ background: darkMode ? '#334155' : '#e2e8f0', color: darkMode ? '#f1f5f9' : '#334155', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
-                  Cancelar
-                </button>
-                <button type="submit" disabled={loading}
-                  style={{ background: loading ? '#94a3b8' : '#2563eb', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer' }}>
-                  {loading ? 'Procesando...' : 'Confirmar'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
     </div>
   );
