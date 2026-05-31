@@ -50,10 +50,10 @@ function DashboardAdmin({
     : 'Notificaciones';
 
   return (
-    <div style={st.container}>
+    <div style={st.container} className="admin-container">
       <style>{fadeInKeyframes}</style>
 
-      <div style={st.topBar} className="no-print">
+      <div style={st.topBar} className="admin-topbar no-print">
         <div>
           <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>
             Panel de Administración
@@ -70,7 +70,7 @@ function DashboardAdmin({
         </div>
       </div>
 
-      <div style={st.nav} className="no-print">
+      <div style={st.nav} className="admin-nav no-print">
         <button style={st.btnNav(vista === 'dashboard')} onClick={() => cambiarVista('dashboard')}>Dashboard</button>
         <button style={st.btnNav(vista === 'recetas')} onClick={() => cambiarVista('recetas')}>Recetas</button>
         <button style={st.btnNav(vista === 'solicitudes')} onClick={() => cambiarVista('solicitudes')}>Solicitudes</button>
@@ -80,7 +80,7 @@ function DashboardAdmin({
         <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>Notificaciones</button>
       </div>
 
-      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
+      <div className="admin-breadcrumb" style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
         Admin &gt; {breadcrumb}
       </div>
 

@@ -252,7 +252,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
   };
 
   return (
-    <div style={st.container}>
+    <div style={st.container} className="login-container">
       <style>{`
         html, body, #root {
           margin: 0 !important;
@@ -271,7 +271,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
       `}</style>
 
       {/* SECCIÓN IZQUIERDA: FORMULARIO */}
-      <div style={st.formSide}>
+      <div style={st.formSide} className="login-form">
         <div style={{ maxWidth: '360px', width: '100%', margin: '0 auto' }}>
           
           <button onClick={onVolver} style={st.btnVolver} className="btn-volver-action">
@@ -420,7 +420,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
       </div>
 
       {/* SECCIÓN DERECHA: PANEL DE MARCA PREMIUM */}
-      <div style={st.brandSide}>
+      <div style={st.brandSide} className="login-brand">
         <div style={st.bgPattern}>
           <CloudNetworkIllustration />
 

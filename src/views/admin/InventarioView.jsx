@@ -101,7 +101,7 @@ function InventarioView({ inventarioValido, darkMode, st, db, toast }) {
         {mostrarForm && (
           <form onSubmit={registrarNuevoMedicamento} style={{ background: darkMode ? '#0f172a' : '#f8fafc', padding: '30px', borderRadius: '16px', border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0', marginBottom: '30px' }}>
             <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '16px', color: '#2563eb', fontWeight: '700' }}>Crear Registro en Inventario</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr', gap: '20px' }}>
+            <div className="inventario-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr', gap: '20px' }}>
               <div>
                 <label style={st.label}>Código (auto)</label>
                 <input style={{ ...st.input, marginBottom: 0, background: darkMode ? '#1e293b' : '#f1f5f9', color: '#2563eb', fontWeight: '700', fontFamily: 'monospace' }} value={codigoGenerado} readOnly />
@@ -182,12 +182,12 @@ function InventarioView({ inventarioValido, darkMode, st, db, toast }) {
 
       {/* MODAL REABASTECER */}
       {mostrarModal && medSeleccionado && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
           background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 1000
         }} onClick={() => setMostrarModal(false)}>
-          <div style={{
+          <div className="modal-content" style={{
             background: darkMode ? '#1e293b' : '#ffffff', padding: '30px',
             borderRadius: '16px', width: '420px', maxWidth: '90%',
             border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'

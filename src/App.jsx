@@ -158,6 +158,39 @@ function App() {
 
   return (
     <div>
+      <style>{`
+        /* 📱 RESPONSIVE GLOBAL */
+        @media (max-width: 767px) {
+          .login-container { flex-direction: column !important; height: 100dvh !important; }
+          .login-form { flex: 0 0 100% !important; padding: 24px 16px !important; height: 100dvh !important; overflow-y: auto !important; }
+          .login-brand { display: none !important; }
+
+          .admin-container { padding: 12px !important; }
+          .admin-topbar { flex-direction: column !important; gap: 8px !important; text-align: center !important; }
+          .admin-topbar h1 { font-size: 1.1rem !important; }
+          .admin-nav { gap: 6px !important; justify-content: center !important; }
+          .admin-nav button { font-size: 0.7rem !important; padding: 6px 10px !important; }
+          .admin-breadcrumb { font-size: 0.7rem !important; }
+
+          .metrics-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          .dashboard-charts-grid { grid-template-columns: 1fr !important; }
+          .summary-boxes { grid-template-columns: 1fr !important; }
+
+          .inventario-form-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+          .modal-content { width: 95% !important; padding: 20px !important; }
+
+          table { font-size: 0.72rem !important; }
+          th, td { padding: 6px 4px !important; }
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .login-form { padding: 0 5% !important; }
+          .metrics-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .inventario-form-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+          .modal-content { width: 85% !important; }
+        }
+      `}</style>
       {user?.role === 'medico' ? (
         <DashboardMedico 
           user={user} 
