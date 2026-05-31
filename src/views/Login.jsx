@@ -446,6 +446,29 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
                 <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Recetas electrónicas trazables</li>
               </ul>
             </>
+          ) : rol === 'admin' ? (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                <span style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '5px 12px', borderRadius: '30px', fontSize: '0.68rem', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                  Administración del Sistema
+                </span>
+              </div>
+
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '800', lineHeight: '1.3', margin: '0 0 10px 0', color: '#ffffff', letterSpacing: '-0.5px' }}>
+                Gobierno Central de la Plataforma
+              </h3>
+
+              <p style={{ fontSize: '0.85rem', color: '#93c5fd', lineHeight: '1.5', margin: '0 0 20px 0', fontWeight: '500', maxWidth: '300px' }}>
+                Supervisa el ecosistema completo: gestiona usuarios y roles, monitorea el inventario global, visualiza métricas clave y administra las solicitudes de demo en un solo panel de control.
+              </p>
+
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0', textAlign: 'left', fontSize: '0.78rem', color: '#bfdbfe', lineHeight: '1.8' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Gestión de usuarios y roles</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Inventario global con alertas de stock</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Monitoreo de recetas en tiempo real</li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✓ Solicitudes de demo y prospección</li>
+              </ul>
+            </>
           ) : (
             <>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
