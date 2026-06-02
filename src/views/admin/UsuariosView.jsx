@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 const POR_PAGINA = 10;
 
-function UsuariosView({ usuariosValidos, darkMode, st }) {
+function UsuariosView({ usuariosValidos, darkMode, st, db, toast }) {
   const [pagina, setPagina] = useState(1);
   const [busqueda, setBusqueda] = useState('');
 
@@ -25,6 +26,17 @@ function UsuariosView({ usuariosValidos, darkMode, st }) {
     }
   };
 
+  const eliminar = async (usuario) => {
+    if (!window.confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"?`)) return;
+    try {
+      await deleteDoc(doc(db, "usuarios", usuario.id));
+      toast.success('Usuario eliminado correctamente.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar el usuario.');
+    }
+  };
+
   return (
     <div key="usuarios" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
       <h2 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
@@ -44,6 +56,7 @@ function UsuariosView({ usuariosValidos, darkMode, st }) {
               <th style={st.th}>Email</th>
               <th style={st.th}>Rol</th>
               <th style={st.th}>Especialidad / Sucursal</th>
+              <th style={st.th}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -55,10 +68,15 @@ function UsuariosView({ usuariosValidos, darkMode, st }) {
                   <span style={{ ...st.badge(u.role), textTransform: 'capitalize' }}>{u.role}</span>
                 </td>
                 <td style={st.td}>{u.especialidad || u.sucursal || '—'}</td>
+                <td style={st.td}>
+                  <button onClick={() => eliminar(u)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}>
+                    🗑️
+                  </button>
+                </td>
               </tr>
             ))}
             {datosPagina.length === 0 && (
-              <tr><td colSpan="4" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron usuarios.</td></tr>
+              <tr><td colSpan="5" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron usuarios.</td></tr>
             )}
           </tbody>
         </table>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { formatearFecha } from '../../utils';
 
 const POR_PAGINA = 10;
@@ -40,6 +40,17 @@ function SolicitudesView({ solicitudesValidas, darkMode, st, db, toast }) {
     }
   };
 
+  const eliminarSolicitud = async (solicitud) => {
+    if (!window.confirm(`¿Está seguro de eliminar la solicitud de "${solicitud.nombre}"?`)) return;
+    try {
+      await deleteDoc(doc(db, "solicitudes", solicitud.id));
+      toast.success('Solicitud eliminada correctamente.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar la solicitud.');
+    }
+  };
+
   return (
     <>
       <div key="solicitudes" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
@@ -60,32 +71,38 @@ function SolicitudesView({ solicitudesValidas, darkMode, st, db, toast }) {
                 <th style={st.th}>Email</th>
                 <th style={st.th}>Teléfono</th>
                 <th style={st.th}>Mensaje</th>
-                <th style={st.th}>Fecha</th>
-                <th style={st.th}>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datosPagina.map(s => (
-                <tr key={s.id}>
-                  <td style={st.td}><strong>{s.nombre}</strong></td>
-                  <td style={st.td}>{s.email}</td>
-                  <td style={st.td}>{s.telefono || '—'}</td>
-                  <td style={{ ...st.td, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.mensaje || '—'}</td>
-                  <td style={st.td}>{formatearFecha(s.fecha)}</td>
-                  <td style={st.td}>
-                    {s.estado === 'contactado' ? (
-                      <span style={st.badge('contactado')}>Contactado</span>
-                    ) : (
-                      <button onClick={() => setSeleccionada(s)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>
-                        Marcar Contactado
-                      </button>
-                    )}
-                  </td>
+                  <th style={st.th}>Fecha</th>
+                  <th style={st.th}>Estado</th>
+                  <th style={st.th}>Acciones</th>
                 </tr>
-              ))}
-              {datosPagina.length === 0 && (
-                <tr><td colSpan="6" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay solicitudes de demo.</td></tr>
-              )}
+              </thead>
+              <tbody>
+                {datosPagina.map(s => (
+                  <tr key={s.id}>
+                    <td style={st.td}><strong>{s.nombre}</strong></td>
+                    <td style={st.td}>{s.email}</td>
+                    <td style={st.td}>{s.telefono || '—'}</td>
+                    <td style={{ ...st.td, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.mensaje || '—'}</td>
+                    <td style={st.td}>{formatearFecha(s.fecha)}</td>
+                    <td style={st.td}>
+                      {s.estado === 'contactado' ? (
+                        <span style={st.badge('contactado')}>Contactado</span>
+                      ) : (
+                        <button onClick={() => setSeleccionada(s)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>
+                          Marcar Contactado
+                        </button>
+                      )}
+                    </td>
+                    <td style={st.td}>
+                      <button onClick={() => eliminarSolicitud(s)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}>
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {datosPagina.length === 0 && (
+                  <tr><td colSpan="7" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No hay solicitudes de demo.</td></tr>
+                )}
             </tbody>
           </table>
         </div>

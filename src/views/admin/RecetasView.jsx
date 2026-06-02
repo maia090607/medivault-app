@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { formatearFecha } from '../../utils';
 
 const POR_PAGINA = 10;
 
-function RecetasView({ recetasValidas, darkMode, st }) {
+function RecetasView({ recetasValidas, darkMode, st, db, toast }) {
   const [pagina, setPagina] = useState(1);
   const [busqueda, setBusqueda] = useState('');
 
@@ -24,6 +25,17 @@ function RecetasView({ recetasValidas, darkMode, st }) {
     if (nueva >= 1 && nueva <= totalPaginas) {
       setPagina(nueva);
       window.scrollTo(0, 0);
+    }
+  };
+
+  const eliminar = async (receta) => {
+    if (!window.confirm(`¿Está seguro de eliminar la receta de "${receta.paciente}"?`)) return;
+    try {
+      await deleteDoc(doc(db, "recetas", receta.id));
+      toast.success('Receta eliminada correctamente.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar la receta.');
     }
   };
 
@@ -48,6 +60,7 @@ function RecetasView({ recetasValidas, darkMode, st }) {
               <th style={st.th}>Token</th>
               <th style={st.th}>Estado</th>
               <th style={st.th}>Fecha</th>
+              <th style={st.th}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -59,10 +72,15 @@ function RecetasView({ recetasValidas, darkMode, st }) {
                 <td style={st.td}><strong style={{ color: '#2563eb' }}>{r.token}</strong></td>
                 <td style={st.td}><span style={st.badge(r.estado)}>{r.estado}</span></td>
                 <td style={st.td}>{formatearFecha(r.fecha)}</td>
+                <td style={st.td}>
+                  <button onClick={() => eliminar(r)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}>
+                    🗑️
+                  </button>
+                </td>
               </tr>
             ))}
             {datosPagina.length === 0 && (
-              <tr><td colSpan="6" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron recetas.</td></tr>
+              <tr><td colSpan="7" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron recetas.</td></tr>
             )}
           </tbody>
         </table>

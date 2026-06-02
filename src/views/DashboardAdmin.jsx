@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
 import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
@@ -102,6 +103,8 @@ function DashboardAdmin({
           recetasValidas={recetasValidas}
           darkMode={darkMode}
           st={st}
+          db={db}
+          toast={toast}
         />
       )}
 
@@ -120,6 +123,8 @@ function DashboardAdmin({
           usuariosValidos={usuariosValidos}
           darkMode={darkMode}
           st={st}
+          db={db}
+          toast={toast}
         />
       )}
 
@@ -140,6 +145,23 @@ function DashboardAdmin({
           darkMode={darkMode}
           st={st}
           style={{ animation: 'fadeIn 0.25s ease' }}
+          renderActions={(p) => (
+            <button
+              onClick={async () => {
+                if (!window.confirm(`¿Está seguro de eliminar al paciente "${p.nombre}"?`)) return;
+                try {
+                  await deleteDoc(doc(db, "pacientes", p.id));
+                  toast.success('Paciente eliminado correctamente.');
+                } catch (err) {
+                  console.error(err);
+                  toast.error('Error al eliminar el paciente.');
+                }
+              }}
+              style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}
+            >
+              🗑️ Eliminar
+            </button>
+          )}
         />
       )}
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { doc, addDoc, updateDoc, collection } from 'firebase/firestore';
+import { doc, addDoc, updateDoc, deleteDoc, collection } from 'firebase/firestore';
 
 const POR_PAGINA = 10;
 
@@ -88,6 +88,17 @@ function InventarioView({ inventarioValido, darkMode, st, db, toast }) {
     }
   };
 
+  const eliminarMedicamento = async (item) => {
+    if (!window.confirm(`¿Está seguro de eliminar "${item.nombre}" del inventario?`)) return;
+    try {
+      await deleteDoc(doc(db, "inventario", item.id));
+      toast.success('Medicamento eliminado del inventario.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar el medicamento.');
+    }
+  };
+
   return (
     <>
       <div key="inventario" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
@@ -154,7 +165,8 @@ function InventarioView({ inventarioValido, darkMode, st, db, toast }) {
                       {item.stock} Uds {critico && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: '700' }}>⚠️</span>}
                     </td>
                     <td style={st.td}>
-                      <button onClick={() => abrirModal(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>📥 Reabastecer</button>
+                      <button onClick={() => abrirModal(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem', marginRight: '6px' }}>📥 Reabastecer</button>
+                      <button onClick={() => eliminarMedicamento(item)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}>🗑️</button>
                     </td>
                   </tr>
                 );
