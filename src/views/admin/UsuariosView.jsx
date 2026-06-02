@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 
 const POR_PAGINA = 10;
 
@@ -26,14 +26,16 @@ function UsuariosView({ usuariosValidos, darkMode, st, db, toast }) {
     }
   };
 
-  const eliminar = async (usuario) => {
-    if (!window.confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"?`)) return;
+  const toggleActivo = async (usuario) => {
+    const nuevoEstado = usuario.activo !== false ? false : true;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+    if (!window.confirm(`¿Está seguro de ${accion} al usuario "${usuario.nombre}"?`)) return;
     try {
-      await deleteDoc(doc(db, "usuarios", usuario.id));
-      toast.success('Usuario eliminado correctamente.');
+      await updateDoc(doc(db, "usuarios", usuario.id), { activo: nuevoEstado });
+      toast.success(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`);
     } catch (err) {
       console.error(err);
-      toast.error('Error al eliminar el usuario.');
+      toast.error('Error al actualizar el usuario.');
     }
   };
 
@@ -60,21 +62,28 @@ function UsuariosView({ usuariosValidos, darkMode, st, db, toast }) {
             </tr>
           </thead>
           <tbody>
-            {datosPagina.map(u => (
-              <tr key={u.id}>
-                <td style={st.td}><strong>{u.nombre}</strong></td>
-                <td style={st.td}>{u.correo || u.email}</td>
-                <td style={st.td}>
-                  <span style={{ ...st.badge(u.role), textTransform: 'capitalize' }}>{u.role}</span>
-                </td>
-                <td style={st.td}>{u.especialidad || u.sucursal || '—'}</td>
-                <td style={st.td}>
-                  <button onClick={() => eliminar(u)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem' }}>
-                    🗑️
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {datosPagina.map(u => {
+              const inactivo = u.activo === false;
+              return (
+                <tr key={u.id} style={{ opacity: inactivo ? 0.5 : 1 }}>
+                  <td style={st.td}><strong>{u.nombre}</strong></td>
+                  <td style={st.td}>{u.correo || u.email}</td>
+                  <td style={st.td}>
+                    <span style={{ ...st.badge(u.role), textTransform: 'capitalize' }}>{u.role}</span>
+                    {inactivo && <span style={{ marginLeft: '6px', ...st.badge('contactado') }}>Inactivo</span>}
+                  </td>
+                  <td style={st.td}>{u.especialidad || u.sucursal || '—'}</td>
+                  <td style={st.td}>
+                    <button onClick={() => toggleActivo(u)} style={{
+                      background: inactivo ? '#10b981' : '#f59e0b',
+                      color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.75rem'
+                    }}>
+                      {inactivo ? '🟢 Activar' : '🔴 Desactivar'}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
             {datosPagina.length === 0 && (
               <tr><td colSpan="5" style={{ ...st.td, textAlign: 'center', color: '#94a3b8' }}>No se encontraron usuarios.</td></tr>
             )}

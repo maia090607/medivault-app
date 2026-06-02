@@ -67,8 +67,9 @@ function App() {
       const emailMatch = correoFirestore.toLowerCase().trim() === email.toLowerCase().trim();
       const passwordMatch = u.password && String(u.password).trim() === String(password).trim();
       const roleMatch = u.role && u.role.toLowerCase().trim() === rol.toLowerCase().trim();
+      const activoMatch = u.activo !== false; // existe y es true, o no tiene el campo
       
-      return emailMatch && passwordMatch && roleMatch;
+      return emailMatch && passwordMatch && roleMatch && activoMatch;
     });
 
     if (usuarioEncontrado) {
@@ -105,6 +106,7 @@ function App() {
         correo: emailLimpio,
         password: String(nuevoUsuario.password || "").trim(),
         role: rolFiltrado,
+        activo: true,
         uid: "uid_" + Math.random().toString(36).substr(2, 9)
       };
 
