@@ -268,6 +268,11 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
         .btn-submit-login:active { transform: translateY(0); }
         .btn-volver-action:hover { background: #e2e8f0 !important; color: #0f172a !important; }
         .toggle-link-action:hover { text-decoration: underline !important; }
+        @media (max-width: 767px) {
+          .login-container { flex-direction: column !important; height: 100dvh !important; }
+          .login-form { flex: 0 0 100% !important; padding: 24px 16px !important; height: 100dvh !important; overflow-y: auto !important; }
+          .login-brand { display: none !important; }
+        }
       `}</style>
 
       {/* SECCIÓN IZQUIERDA: FORMULARIO */}

@@ -769,7 +769,7 @@ function Landing({ onNavigateToLogin }) {
   
 
   return (
-    <div style={st.wrapper}>
+    <div style={st.wrapper} className="landing-wrapper">
       <style>{`
         .siigo-link:hover { color: #2563eb !important; }
         .btn-nav-login:hover { background: #2563eb !important; color: #ffffff !important; }
@@ -782,6 +782,37 @@ function Landing({ onNavigateToLogin }) {
         .faq-item-box:hover { border-color: #bfdbfe !important; }
         .client-card-box:hover { border-color: #2563eb !important; transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0, 82, 204, 0.08); }
         .close-modal-btn:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+        @media (max-width: 767px) {
+          .landing-wrapper { padding: 0 16px !important; }
+          .landing-hero { padding: 40px 0 !important; }
+          .landing-hero h1 { font-size: 1.8rem !important; line-height: 1.2 !important; letter-spacing: -1px !important; }
+          .landing-hero p { font-size: 0.95rem !important; }
+          .landing-grid-2 { grid-template-columns: 1fr !important; }
+          .landing-grid-3 { grid-template-columns: 1fr !important; }
+          .landing-grid-4 { grid-template-columns: 1fr 1fr !important; }
+          .landing-section { padding: 40px 0 !important; }
+          .landing-hide-mobile { display: none !important; }
+          .landing-section h2 { font-size: 1.6rem !important; }
+          .landing-section .landing-subtitle { font-size: 0.95rem !important; margin-bottom: 30px !important; }
+
+          .landing-nav-links { display: none !important; }
+          .landing-cta-group { flex-direction: column !important; gap: 12px !important; }
+          .landing-cta-group button { width: 100% !important; text-align: center !important; }
+
+          .landing-tabs-header { flex-direction: column !important; gap: 8px !important; padding-bottom: 12px !important; }
+          .landing-tabs-header button { width: 100% !important; text-align: center !important; }
+          .landing-tab-content { padding: 24px !important; }
+
+          .landing-modal-inner { width: 100% !important; max-width: 100% !important; padding: 20px !important; border-radius: 12px !important; max-height: 85dvh !important; margin: 10px !important; }
+
+          .landing-footer-inner { flex-direction: column !important; gap: 16px !important; text-align: center !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .landing-grid-2 { grid-template-columns: 1fr 1fr !important; }
+          .landing-grid-3 { grid-template-columns: 1fr 1fr !important; }
+          .landing-grid-4 { grid-template-columns: 1fr 1fr !important; }
+          .landing-tab-content { padding: 30px !important; }
+        }
         
         /* ANIMACIÓN LIVE DE PULSO */
         @keyframes livePing {
@@ -816,7 +847,7 @@ function Landing({ onNavigateToLogin }) {
           <div style={st.logo}>
             <MediVaultLogo /> MediVault
           </div>
-          <div style={st.navLinks}>
+          <div style={st.navLinks} className="landing-nav-links">
             <a href="#soluciones" className="siigo-link" style={st.navLink}>Soluciones</a>
             <a href="#clientes" className="siigo-link" style={st.navLink}>Nuestros Clientes</a>
             <a href="#faqs" className="siigo-link" style={st.navLink}>Preguntas Frecuentes</a>
@@ -828,15 +859,15 @@ function Landing({ onNavigateToLogin }) {
       </nav>
 
       {/* HERO SECTION */}
-      <header style={st.heroOuter}>
-        <div style={st.heroContainer}>
+      <header style={st.heroOuter} className="landing-hero">
+        <div style={st.heroContainer} className="landing-grid-2">
           <div>
             <div style={st.badgeSiigo}>Software Administrativo y Clínico Cloud</div>
             <h1 style={st.heroTitle}>Controla tu farmacia y consultas médicas en un solo lugar</h1>
             <p style={st.heroSubtitle}>
               La plataforma en la nube diseñada para Pymes de salud. Automatiza recetas digitales, asegura despachos con tokens únicos y gestiona inventarios en tiempo real.
             </p>
-            <div style={st.ctaGroup}>
+            <div style={st.ctaGroup} className="landing-cta-group">
               <button className="btn-primary" style={st.btnPrimary} onClick={onNavigateToLogin}>
                 Ingresar al Sistema
               </button>
@@ -854,8 +885,8 @@ function Landing({ onNavigateToLogin }) {
       </header>
 
       {/* BARRA DE MÉTRICAS */}
-      <section style={st.metricsBar}>
-        <div style={st.metricsContainer}>
+      <section style={st.metricsBar} className="landing-section">
+        <div style={st.metricsContainer} className="landing-grid-4">
           <div style={st.metricItem}>
             <span style={st.metricNumber}>+10,000</span>
             <span style={st.metricLabel}>Recetas Procesadas</span>
@@ -876,10 +907,10 @@ function Landing({ onNavigateToLogin }) {
       </section>
 
       {/* SECCIÓN SOLUCIONES */}
-      <section id="soluciones" style={st.sectionTabs}>
+      <section id="soluciones" style={st.sectionTabs} className="landing-section">
         <h2 style={st.sectionTitle}>Ecosistema modular integrado</h2>
-        <p style={st.sectionSubtitle}>Simplifica la administración de tu práctica médica y farmacéutica con herramientas nativas cloud.</p>
-        <div style={st.tabsHeader}>
+        <p style={st.sectionSubtitle} className="landing-subtitle">Simplifica la administración de tu práctica médica y farmacéutica con herramientas nativas cloud.</p>
+        <div style={st.tabsHeader} className="landing-tabs-header">
           <button style={st.tabBtn(tabActiva === 'medico')} onClick={() => setTabActiva('medico')}>
             📋 Módulo de Prescripción Médica
           </button>
@@ -889,7 +920,7 @@ function Landing({ onNavigateToLogin }) {
         </div>
 
         {tabActiva === 'medico' ? (
-          <div style={st.tabContentCard}>
+          <div style={st.tabContentCard} className="landing-grid-2 landing-tab-content">
             <div>
               <span style={{ ...st.badgeSiigo, background: '#dcfce7', color: '#16a34a' }}>Seguridad y Agilidad</span>
               <h3 style={{ fontSize: '1.8rem', fontWeight: '800', margin: '12px 0', color: '#0f172a' }}>Emisión inteligente de fórmulas</h3>
@@ -911,7 +942,7 @@ function Landing({ onNavigateToLogin }) {
             </div>
           </div>
         ) : (
-          <div style={st.tabContentCard}>
+          <div style={st.tabContentCard} className="landing-grid-2 landing-tab-content">
             <div>
               <span style={{ ...st.badgeSiigo, background: '#fef3c7', color: '#d97706' }}>Control de Almacén</span>
               <h3 style={{ fontSize: '1.8rem', fontWeight: '800', margin: '12px 0', color: '#0f172a' }}>Inventario sincronizado y auditable</h3>
@@ -936,11 +967,11 @@ function Landing({ onNavigateToLogin }) {
       </section>
 
       {/* SECCIÓN NUESTROS CLIENTES */}
-      <section id="clientes" style={st.sectionClients}>
+      <section id="clientes" style={st.sectionClients} className="landing-section">
         <h2 style={st.sectionTitle}>Nuestros clientes</h2>
-        <p style={st.sectionSubtitle}>Haz clic en cualquier tarjeta para auditar métricas de rendimiento y estado de conexión en vivo.</p>
+        <p style={st.sectionSubtitle} className="landing-subtitle">Haz clic en cualquier tarjeta para auditar métricas de rendimiento y estado de conexión en vivo.</p>
         
-        <div style={st.gridClients}>
+        <div style={st.gridClients} className="landing-grid-3">
           {clientsData.map((client) => (
             <div key={client.id} className="client-card-box" style={st.cardClient} onClick={() => setSelectedClient(client)}>
               <div style={st.brandHeader}>
@@ -978,7 +1009,7 @@ function Landing({ onNavigateToLogin }) {
       {/* MODAL INTERACTIVO AVANZADO */}
       {selectedClient && (
         <div style={st.modalOverlay} onClick={() => setSelectedClient(null)}>
-          <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div style={st.modalContent} className="landing-modal-inner" onClick={(e) => e.stopPropagation()}>
             <button className="close-modal-btn" style={st.modalCloseBtn} onClick={() => setSelectedClient(null)}>✕</button>
             
             {/* Cabecera del modal */}
@@ -1101,10 +1132,10 @@ function Landing({ onNavigateToLogin }) {
       )}
 
       {/* BLOQUE DE PREGUNTAS FRECUENTES */}
-      <section id="faqs" style={st.sectionFaq}>
+      <section id="faqs" style={st.sectionFaq} className="landing-section">
         <div style={st.faqContainer}>
           <h2 style={st.sectionTitle}>Preguntas frecuentes</h2>
-          <p style={st.sectionSubtitle}>Resuelve tus dudas operacionales y técnicas sobre el ecosistema cloud de MediVault.</p>
+          <p style={st.sectionSubtitle} className="landing-subtitle">Resuelve tus dudas operacionales y técnicas sobre el ecosistema cloud de MediVault.</p>
           <div style={st.faqList}>
             {faqsData.map((faq) => {
               const abierto = faqActiva === faq.id;
@@ -1126,7 +1157,7 @@ function Landing({ onNavigateToLogin }) {
 
       {/* FOOTER */}
       <footer style={st.footer}>
-        <div style={st.footerContainer}>
+        <div style={st.footerContainer} className="landing-footer-inner">
           <div>© 2026 MediVault Cloud Solutions. Todos los derechos reservados. Estándar UI SaaS Corporativo.</div>
           <div style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
             <span style={{ fontWeight: '600' }}>Security Cloud</span>
@@ -1145,7 +1176,7 @@ function Landing({ onNavigateToLogin }) {
           background: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 5000, backdropFilter: 'blur(4px)',
         }}>
-          <div style={{
+          <div className="landing-modal-inner" style={{
             background: '#ffffff', borderRadius: '16px', padding: '40px',
             maxWidth: '440px', width: '90%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
             position: 'relative', animation: 'fadeIn 0.25s ease',
