@@ -10,6 +10,7 @@ import RecetasView from './admin/RecetasView';
 import SolicitudesView from './admin/SolicitudesView';
 import UsuariosView from './admin/UsuariosView';
 import InventarioView from './admin/InventarioView';
+import AiChat from '../components/AiChat';
 
 function DashboardAdmin({
   user = {},
@@ -175,6 +176,21 @@ function DashboardAdmin({
           style={{ animation: 'fadeIn 0.25s ease' }}
         />
       )}
+
+      <AiChat
+        datos={{
+          recetasValidas,
+          recetasPendientes,
+          recetasDispensadas,
+          inventarioValido,
+          pacientesValidos,
+          usuariosValidos,
+          solicitudesValidas,
+          vistaActual: vista,
+        }}
+        darkMode={darkMode}
+        cambiarVista={cambiarVista}
+      />
     </div>
   );
 }

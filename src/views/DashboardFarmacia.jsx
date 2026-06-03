@@ -6,6 +6,7 @@ import { formatearFecha } from '../utils';
 import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
+import AiChat from '../components/AiChat';
 
 
 function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [], usuariosDB = [] }) {
@@ -737,6 +738,17 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         />
       )}
 
+      <AiChat
+        datos={{
+          recetasValidas: recetasEmitidas,
+          inventarioValido: inventario,
+          pacientesValidos: pacientesDB,
+          usuariosValidos: usuariosDB,
+          vistaActual: vista,
+        }}
+        darkMode={darkMode}
+        cambiarVista={cambiarVista}
+      />
     </div>
   );
 }

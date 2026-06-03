@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useToast } from '../components/Toast';
+import AiChat from '../components/AiChat';
 
 // =========================================================
 // COMPONENTES GRÁFICOS INTEGRADOS (LOGOS CORPORATIVOS REALES)
@@ -1222,8 +1223,14 @@ function Landing({ onNavigateToLogin }) {
           </div>
         </div>
       )}
+
+      <AiChat
+        datos={{
+          vistaActual: 'landing',
+        }}
+        darkMode={false}
+      />
     </div>
-    
   );
 }
 
