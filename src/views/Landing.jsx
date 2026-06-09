@@ -508,7 +508,7 @@ function Landing({ onNavigateToLogin }) {
       borderRadius: '16px',
       padding: '50px',
       display: 'grid',
-      gridTemplateColumns: '1.2fr 0.8fr',
+      gridTemplateColumns: '1fr 1fr',
       gap: '50px',
       alignItems: 'center',
       boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
