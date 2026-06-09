@@ -196,7 +196,7 @@ function DashboardMedico({
   const guardarCambiosExpediente = async () => {
     if (!fichaPaciente) return;
     setLoading(true);
-    const fechaHoy = new Date().toLocaleDateString();
+    const fechaHoy = new Date().toISOString();
     const listaNuevos = nuevosDiagnosticos.split(',').map(d => d.trim()).filter(d => d.length > 0);
     const listaDiagnosticosActualizada = [...(fichaPaciente.diagnosticosLista || []), ...listaNuevos];
 
@@ -265,7 +265,7 @@ function DashboardMedico({
 
     setLoading(true);
     const token = Math.floor(100000 + Math.random() * 900000).toString();
-    const fechaHoy = new Date().toLocaleDateString();
+    const fechaHoy = new Date().toISOString();
 
     try {
       await addDoc(collection(db, "recetas"), {
@@ -492,7 +492,7 @@ function DashboardMedico({
             <h2 style={{ margin: 0, color: '#2563eb', fontSize: '1.3rem', fontWeight: '700' }}>ORDEN RECETA MÉDICA</h2>
             <div style={{ textAlign: 'right' }}>
               <span style={{ fontWeight: 'bold', color: '#dc2626' }}>TOKEN: {recetaReciente.token}</span>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>Fecha: {recetaReciente.fecha}</p>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>Fecha: {formatearFecha(recetaReciente.fecha)}</p>
             </div>
           </div>
 

@@ -119,7 +119,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
         paciente: recetaEncontrada.paciente,
         dniPaciente: recetaEncontrada.dniPaciente,
         meds: medicamentosEnOrden,
-        fechaDespacho: new Date().toLocaleString()
+        fechaDespacho: new Date().toISOString()
       });
       toast.success("Medicamentos dispensados exitosamente.");
       setRecetaEncontrada(null);
@@ -381,7 +381,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             <h2 style={{ margin: 0, color: '#2563eb', fontSize: '1.3rem', fontWeight: '700' }}>COMPROBANTE DE DISPENSACIÓN</h2>
             <div style={{ textAlign: 'right' }}>
               <span style={{ fontWeight: 'bold', color: '#10b981' }}>Token: {despachoReciente.token}</span>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>Fecha: {despachoReciente.fechaDespacho}</p>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>Fecha: {formatearFecha(despachoReciente.fechaDespacho)}</p>
             </div>
           </div>
 

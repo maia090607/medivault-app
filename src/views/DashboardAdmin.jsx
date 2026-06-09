@@ -11,6 +11,7 @@ import SolicitudesView from './admin/SolicitudesView';
 import UsuariosView from './admin/UsuariosView';
 import InventarioView from './admin/InventarioView';
 import AiChat from '../components/AiChat';
+import MigrarFechasView from './admin/MigrarFechasView';
 
 function DashboardAdmin({
   user = {},
@@ -80,6 +81,7 @@ function DashboardAdmin({
         <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>Inventario</button>
         <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>Pacientes</button>
         <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>Notificaciones</button>
+        <button style={{ ...st.btnNav(vista === 'migrar'), background: vista === 'migrar' ? '#d97706' : 'transparent', color: vista === 'migrar' ? '#fff' : undefined }} onClick={() => cambiarVista('migrar')}>🔄 Migrar</button>
       </div>
 
       <div className="admin-breadcrumb" style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
@@ -176,6 +178,8 @@ function DashboardAdmin({
           style={{ animation: 'fadeIn 0.25s ease' }}
         />
       )}
+
+      {vista === 'migrar' && <MigrarFechasView darkMode={darkMode} />}
 
       <AiChat
         datos={{

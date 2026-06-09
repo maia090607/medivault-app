@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migrar Fechas - MediVault</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f1f5f9; display: flex; justify-content: center; padding: 40px 20px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 640px; width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1 { font-size: 1.4rem; margin-bottom: 8px; color: #1e293b; }
+    p { color: #64748b; margin-bottom: 16px; line-height: 1.5; }
+    .log { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.85rem; max-height: 400px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 16px; }
+    .log .ok { color: #22c55e; }
+    .log .err { color: #ef4444; }
+    .log .info { color: #60a5fa; }
+    button { background: #2563eb; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:not(:disabled):hover { background: #1d4ed8; }
+    .progress { margin-bottom: 16px; }
+    .bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .bar-inner { height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat { background: #f8fafc; padding: 12px; border-radius: 8px; text-align: center; }
+    .stat .num { font-size: 1.5rem; font-weight: 700; color: #2563eb; }
+    .stat .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔄 Migrar Fechas a ISO</h1>
+    <p>Convierte las fechas almacenadas con formato local (ej: <code>6/8/2026</code>) a formato ISO (<code>2026-06-08T...</code>) en las colecciones <strong>recetas</strong> y <strong>historiales</strong>.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="numRecetas">0</div><div class="label">Recetas</div></div>
+      <div class="stat"><div class="num" id="numHistoriales">0</div><div class="label">Historiales</div></div>
+    </div>
+
+    <div class="progress">
+      <div class="bar"><div class="bar-inner" id="progressBar"></div></div>
+    </div>
+
+    <div class="log" id="log">Presiona "Iniciar migración" para comenzar.</div>
+
+    <button id="btnMigrar" onclick="iniciarMigracion()" disabled>Cargando Firebase...</button>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { getFirestore, collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCM8c7resQW_6nSgONO1jsII_TdLqw1eQQ",
+      authDomain: "medivault-4b962.firebaseapp.com",
+      databaseURL: "https://medivault-4b962-default-rtdb.firebaseio.com",
+      projectId: "medivault-4b962",
+      storageBucket: "medivault-4b962.firebasestorage.app",
+      messagingSenderId: "844047616261",
+      appId: "1:844047616261:web:5b94bbeb2ef43d14180f6c",
+      measurementId: "G-L2RM2DMXLM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.__db = db;
+    document.getElementById('btnMigrar').disabled = false;
+    document.getElementById('btnMigrar').textContent = '▶ Iniciar migración';
+  </script>
+
+  <script>
+    function log(msg, type = 'info') {
+      const el = document.getElementById('log');
+      el.innerHTML += `<span class="${type}">${msg}</span>\n`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setProgress(pct) {
+      document.getElementById('progressBar').style.width = pct + '%';
+    }
+
+    async function iniciarMigracion() {
+      const btn = document.getElementById('btnMigrar');
+      btn.disabled = true;
+      btn.textContent = 'Migrando...';
+      document.getElementById('log').innerHTML = '';
+
+      const db = window.__db;
+
+      async function migrarColeccion(nombre, campoFecha) {
+        log(`📂 Leyendo ${nombre}...`, 'info');
+        const snap = await getDocs(collection(db, nombre));
+        const docs = snap.docs;
+        log(`   → ${docs.length} documentos encontrados`, 'info');
+
+        let migrados = 0;
+        for (let i = 0; i < docs.length; i++) {
+          const d = docs[i];
+          const data = d.data();
+          const valor = data[campoFecha];
+
+          if (valor && typeof valor === 'string' && !valor.includes('T')) {
+            const iso = new Date(valor).toISOString();
+            await updateDoc(doc(db, nombre, d.id), { [campoFecha]: iso });
+            migrados++;
+            log(`   ✅ ${nombre} #${d.id}: "${valor}" → "${iso}"`, 'ok');
+          } else if (valor && typeof valor === 'string' && valor.includes('T')) {
+            // Already ISO, skip
+          } else {
+            log(`   ⏭️ ${nombre} #${d.id}: sin fecha o inválido (${valor})`, 'info');
+          }
+
+          setProgress(((i + 1) / docs.length) * 100);
+        }
+
+        return { total: docs.length, migrados };
+      }
+
+      try {
+        log('🚀 Iniciando migración...', 'info');
+        log('');
+
+        const r = await migrarColeccion('recetas', 'fecha');
+        document.getElementById('numRecetas').textContent = r.migrados;
+
+        log('');
+
+        const h = await migrarColeccion('historiales', 'ultimaVisita');
+        document.getElementById('numHistoriales').textContent = h.migrados;
+
+        log('');
+        log(`✅ Migración completada. ${r.migrados + h.migrados} fechas actualizadas.`, 'ok');
+        btn.textContent = '✅ Completado';
+      } catch (err) {
+        log(`❌ Error: ${err.message}`, 'err');
+        console.error(err);
+        btn.textContent = '❌ Error - Reintentar';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
