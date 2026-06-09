@@ -42,29 +42,27 @@ const PharmacyModuleIllo = () => (
   </svg>
 );
 
-const HeroMockupUI = () => (
-  <svg width="100%" height="100%" viewBox="0 0 350 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="350" height="250" rx="12" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1"/>
-    <rect x="15" y="15" width="80" height="15" rx="4" fill="#eff6ff"/>
-    <circle cx="325" cy="22.5" r="7.5" fill="#2563eb"/>
-    <rect x="15" y="45" width="320" height="1" fill="#e2e8f0"/>
-    
-    <rect x="15" y="60" width="100" height="60" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
-    <rect x="25" y="70" width="30" height="8" rx="2" fill="#bfdbfe"/>
-    <rect x="25" y="85" width="80" height="25" rx="2" fill="white" stroke="#e2e8f0"/>
-    
-    <rect x="125" y="60" width="210" height="175" rx="6" fill="white" stroke="#e2e8f0"/>
-    <rect x="135" y="70" width="100" height="10" rx="2" fill="#eff6ff"/>
-    <rect x="135" y="90" width="190" height="135" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
-    <rect x="145" y="100" width="100" height="8" rx="2" fill="#e2e8f0"/>
-    <rect x="145" y="115" width="170" height="8" rx="2" fill="#e2e8f0"/>
-
-    <rect x="15" y="130" width="100" height="105" rx="6" fill="#10b981" fillOpacity="0.1" stroke="#10b981" strokeDasharray="4 4"/>
-    <circle cx="65" cy="182.5" r="30" fill="white" stroke="#10b981" strokeWidth="2"/>
-    <path d="M65 170V195" stroke="#10b981" strokeWidth="4" strokeLinecap="round"/>
-    <path d="M52.5 182.5H77.5" stroke="#10b981" strokeWidth="4" strokeLinecap="round"/>
-  </svg>
-);
+const HeroMockupUI = () => {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', cursor: 'pointer' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <img
+        src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=85&w=800&fm=jpg&crop=entropy&cs=srgb"
+        alt="Médico profesional"
+        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '14px', transition: 'opacity 0.35s ease', opacity: hovered ? 0 : 1 }}
+      />
+      <img
+        src="https://pulseclinicalresearch.com/wp-content/uploads/2023/02/End-to-End-Pharma.jpg"
+        alt="Farmacéutico buscando medicamentos"
+        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '14px', transition: 'opacity 0.35s ease', opacity: hovered ? 1 : 0 }}
+      />
+    </div>
+  );
+};
 
 // LOGO REAL CRUZ VERDE
 const PharmacyLogoA = () => (
@@ -441,20 +439,13 @@ function Landing({ onNavigateToLogin }) {
     heroMockupContainer: {
       position: 'relative',
       width: '100%',
-      height: '300px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
+      height: '350px'
     },
     heroMockupBox: {
       width: '100%',
       height: '100%',
-      background: '#ffffff',
-      border: '1px solid #e2e8f0',
-      borderRadius: '16px',
-      padding: '10px',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)',
-      transform: 'perspective(1000px) rotateY(-5deg) rotateX(2deg)',
+      borderRadius: '14px',
+      boxShadow: '0 25px 30px -8px rgba(0, 0, 0, 0.12), 0 8px 15px -6px rgba(0, 0, 0, 0.05)',
       overflow: 'hidden'
     },
     metricsBar: {
