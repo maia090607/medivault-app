@@ -17,30 +17,10 @@ const MediVaultLogo = () => (
   </svg>
 );
 
-const MedicalModuleIllo = () => (
-  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="60" cy="60" r="50" fill="#eff6ff"/>
-    <rect x="35" y="30" width="50" height="65" rx="4" fill="white" stroke="#2563eb" strokeWidth="2"/>
-    <path d="M42 42H55" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M42 50H70" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="16" cy="16" r="16" transform="translate(75 60)" fill="#10b981"/>
-    <path d="M86 71V81" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M81 76H91" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <circle cx="60" cy="100" r="15" fill="white" stroke="#bfdbfe" strokeWidth="2"/>
-  </svg>
-);
-
-const PharmacyModuleIllo = () => (
-  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="60" cy="60" r="50" fill="#fef3c7"/>
-    <path d="M40 40L60 30L80 40V70L60 80L40 70V40Z" fill="white" stroke="#d97706" strokeWidth="2"/>
-    <path d="M40 40L60 50L80 40" stroke="#d97706" strokeWidth="2"/>
-    <path d="M60 50V80" stroke="#d97706" strokeWidth="2"/>
-    <circle cx="20" cy="20" r="20" transform="translate(10 70)" fill="#d97706"/>
-    <path d="M25 85L29 89L35 81" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <rect x="75" y="70" width="30" height="20" rx="4" fill="white" stroke="#f59e0b" strokeWidth="2"/>
-  </svg>
-);
+const MOD_IMG = {
+  medico: 'https://tse2.mm.bing.net/th/id/OIP.kNXHAuSYyk6ORQ_KfA-j5QHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
+  farmacia: 'https://tse2.mm.bing.net/th/id/OIP.ZxBf86QMK2XdtzomGLHsHwHaEE?rs=1&pid=ImgDetMain&o=7&rm=3'
+};
 
 const HeroMockupUI = () => {
   const [hovered, setHovered] = useState(false);
@@ -534,12 +514,12 @@ function Landing({ onNavigateToLogin }) {
       boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
     },
     tabIlloContainer: {
-      textAlign: 'center',
+      borderRadius: '12px',
+      overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '15px'
+      alignItems: 'stretch',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+      lineHeight: 0
     },
     sectionClients: {
       width: '100%',
@@ -926,10 +906,7 @@ function Landing({ onNavigateToLogin }) {
               </ul>
             </div>
             <div style={st.tabIlloContainer}>
-              <MedicalModuleIllo />
-              <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#64748b', background: '#f1f5f9', padding: '8px 16px', borderRadius: '6px' }}>
-                Interfaz Médica MediVault Pro
-              </div>
+              <img src={MOD_IMG.medico} alt="Médico escribiendo receta" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           </div>
         ) : (
@@ -948,10 +925,7 @@ function Landing({ onNavigateToLogin }) {
               </ul>
             </div>
             <div style={st.tabIlloContainer}>
-              <PharmacyModuleIllo />
-              <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#64748b', background: '#f1f5f9', padding: '8px 16px', borderRadius: '6px' }}>
-                Control de Farmacia Sincronizado
-              </div>
+              <img src={MOD_IMG.farmacia} alt="Estantes de farmacia con medicamentos" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           </div>
         )}
