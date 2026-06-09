@@ -552,7 +552,7 @@ function DashboardMedico({
                 </tr>
               </thead>
               <tbody>
-                {recetasHistorialFiltradas.length > 0 ? recetasHistorialFiltradas.map(r => (
+                {recetasHistorialOrdenadas.length > 0 ? recetasHistorialOrdenadas.map(r => (
                   <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}><strong>{r.paciente}</strong></td>
                     <td style={{ padding: '12px', color: darkMode ? '#ffffff' : '#1f2937' }}>{formatearFecha(r.fecha)}</td>
