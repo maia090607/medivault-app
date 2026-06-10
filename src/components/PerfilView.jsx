@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from './Toast';
 
 function PerfilView({ user, darkMode, onUserUpdate }) {
@@ -22,9 +21,8 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
   const [form, setForm] = useState(datosIniciales);
   const [guardando, setGuardando] = useState(false);
   const [subiendoImg, setSubiendoImg] = useState(false);
-  const [nuevoArchivo, setNuevoArchivo] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(true);
+  const [verTarjeta, setVerTarjeta] = useState(false);
 
   useEffect(() => {
     if (!user?.id) { setCargandoDatos(false); return; }
@@ -60,15 +58,44 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
     setForm(prev => ({ ...prev, [campo]: valor }));
   };
 
-  const handleArchivo = (e) => {
+  const comprimirImagen = (dataUrl, maxAncho = 800, calidad = 0.7) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let ancho = img.width, alto = img.height;
+        if (ancho > maxAncho) { alto = alto * maxAncho / ancho; ancho = maxAncho; }
+        canvas.width = ancho; canvas.height = alto;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, ancho, alto);
+        resolve(canvas.toDataURL('image/jpeg', calidad));
+      };
+      img.src = dataUrl;
+    });
+  };
+
+  const handleArchivo = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       toast.warning('Solo se permiten imágenes.');
       return;
     }
-    setNuevoArchivo(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setSubiendoImg(true);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const comprimida = await comprimirImagen(dataUrl);
+      setForm(prev => ({ ...prev, tarjetaProfesional: comprimida }));
+    } catch {
+      toast.error('Error al leer la imagen.');
+    } finally {
+      setSubiendoImg(false);
+    }
   };
 
   const handleGuardar = async () => {
@@ -87,16 +114,6 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
 
     setGuardando(true);
     try {
-      let tarjetaUrl = form.tarjetaProfesional;
-
-      if (nuevoArchivo) {
-        setSubiendoImg(true);
-        const imgRef = ref(storage, `usuarios/${user.id}/tarjetaProfesional`);
-        await uploadBytes(imgRef, nuevoArchivo);
-        tarjetaUrl = await getDownloadURL(imgRef);
-        setSubiendoImg(false);
-      }
-
       const updates = {
         nombre: form.nombre.trim(),
         correo: form.email.trim().toLowerCase(),
@@ -106,15 +123,11 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
       };
       if (user?.role === 'medico') updates.especialidad = form.especialidad.trim();
       if (user?.role === 'farmacia') updates.sucursal = form.sucursal.trim();
-      if (user?.role === 'medico') updates.tarjetaProfesional = tarjetaUrl;
+      if (user?.role === 'medico') updates.tarjetaProfesional = form.tarjetaProfesional;
 
       if (user?.id) {
         await updateDoc(doc(db, 'usuarios', user.id), updates);
       }
-
-      setForm(prev => ({ ...prev, tarjetaProfesional: tarjetaUrl }));
-      setNuevoArchivo(null);
-      setPreviewUrl(null);
 
       if (onUserUpdate) {
         onUserUpdate({
@@ -125,7 +138,7 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
           pin: form.pin,
           cedula: form.cedula.trim(),
           telefono: form.telefono.trim(),
-          tarjetaProfesional: tarjetaUrl
+          tarjetaProfesional: form.tarjetaProfesional
         });
       }
 
@@ -133,18 +146,19 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
       setEditando(false);
     } catch (error) {
       console.error('Error al guardar perfil:', error);
-      toast.error('Error al guardar. Intente de nuevo.');
+      const msg = error?.message || '';
+      if (msg.includes('exceed') || msg.includes('too large')) {
+        toast.error('La imagen es demasiado grande. Seleccione una más pequeña.');
+      } else {
+        toast.error('Error al guardar. Intente de nuevo.');
+      }
     } finally {
       setGuardando(false);
-      setSubiendoImg(false);
     }
   };
 
   const handleCancelar = () => {
     setForm(datosIniciales);
-    setNuevoArchivo(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
     setEditando(false);
   };
 
@@ -350,7 +364,7 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
                     src={form.tarjetaProfesional}
                     alt="Tarjeta Profesional"
                     style={{ maxWidth: '200px', maxHeight: '120px', borderRadius: '6px', objectFit: 'contain', cursor: 'pointer' }}
-                    onClick={() => window.open(form.tarjetaProfesional, '_blank')}
+                    onClick={() => setVerTarjeta(true)}
                   />
                 ) : (
                   form.tarjetaProfesional || '—'
@@ -408,20 +422,11 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
           {user?.role === 'medico' && (
             <>
               <label style={{ ...c.fieldLabel, display: 'block', marginTop: '14px', marginBottom: '2px' }}>Tarjeta Profesional (imagen)</label>
-              {esImagenTarjeta && !nuevoArchivo && (
+              {esImagenTarjeta && (
                 <div style={{ marginTop: '6px', marginBottom: '6px' }}>
                   <img
                     src={form.tarjetaProfesional}
-                    alt="Tarjeta Profesional actual"
-                    style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }}
-                  />
-                </div>
-              )}
-              {previewUrl && (
-                <div style={{ marginTop: '6px', marginBottom: '6px' }}>
-                  <img
-                    src={previewUrl}
-                    alt="Nueva imagen"
+                    alt="Tarjeta Profesional"
                     style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }}
                   />
                 </div>
@@ -432,17 +437,40 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
                 onChange={handleArchivo}
                 style={{ ...c.input, padding: '8px' }}
               />
-              {subiendoImg && <span style={{ fontSize: '0.8rem', color: '#2563eb', marginTop: '4px', display: 'block' }}>Subiendo imagen...</span>}
+              {subiendoImg && <span style={{ fontSize: '0.8rem', color: '#2563eb', marginTop: '4px', display: 'block' }}>Leyendo imagen...</span>}
             </>
           )}
 
           <div style={c.btnGroup}>
             <button style={c.btnCancel} onClick={handleCancelar}>Cancelar</button>
-            <button style={c.btnSave} onClick={handleGuardar} disabled={guardando || subiendoImg}>
-              {guardando || subiendoImg ? 'Guardando...' : '💾 Guardar Cambios'}
+            <button style={c.btnSave} onClick={handleGuardar} disabled={guardando}>
+              {guardando ? 'Guardando...' : '💾 Guardar Cambios'}
             </button>
           </div>
         </>
+      )}
+
+      {verTarjeta && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.75)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer'
+          }}
+          onClick={() => setVerTarjeta(false)}
+        >
+          <img
+            src={form.tarjetaProfesional}
+            alt="Tarjeta Profesional"
+            style={{
+              maxWidth: '90vw', maxHeight: '90vh',
+              borderRadius: '12px', objectFit: 'contain',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+            }}
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
       )}
     </div>
   );
