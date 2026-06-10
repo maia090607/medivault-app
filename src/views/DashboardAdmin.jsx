@@ -10,7 +10,7 @@ import RecetasView from './admin/RecetasView';
 import SolicitudesView from './admin/SolicitudesView';
 import UsuariosView from './admin/UsuariosView';
 import InventarioView from './admin/InventarioView';
-import DevToolsView from './admin/DevToolsView';
+
 import AiChat from '../components/AiChat';
 import PerfilView from '../components/PerfilView';
 
@@ -54,7 +54,6 @@ function DashboardAdmin({
     : vista === 'inventario' ? 'Inventario'
     : vista === 'pacientes' ? 'Pacientes'
     : vista === 'perfil' ? 'Mi Perfil'
-    : vista === 'devtools' ? 'Dev Tools'
     : 'Notificaciones';
 
   return (
@@ -86,7 +85,6 @@ function DashboardAdmin({
         <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>Inventario</button>
         <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>Pacientes</button>
         <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>Notificaciones</button>
-        <button style={st.btnNav(vista === 'devtools')} onClick={() => cambiarVista('devtools')}>🔧 Dev Tools</button>
       </div>
 
       <div className="admin-breadcrumb" style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
@@ -175,17 +173,6 @@ function DashboardAdmin({
 
       {vista === 'perfil' && (
         <PerfilView user={user} darkMode={darkMode} onUserUpdate={onUserUpdate} />
-      )}
-
-      {vista === 'devtools' && (
-        <DevToolsView
-          inventarioValido={inventarioValido}
-          usuariosValidos={usuariosValidos}
-          darkMode={darkMode}
-          st={st}
-          db={db}
-          toast={toast}
-        />
       )}
 
       {vista === 'notificaciones' && (
