@@ -76,7 +76,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
         pinFirma,
         cedula,
         telefono,
-        tarjetaProfesional: rol === 'medico' ? tarjetaProfesional : ''
+        tarjetaProfesional
       });
       if (exito) {
         setEsRegistro(false); 
@@ -393,7 +393,7 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
                   />
                 </div>
 
-                {rol === 'medico' && (
+                {rol !== 'admin' && (
                   <div style={st.inputGroup}>
                     <label style={st.label}>🎓 Tarjeta Profesional</label>
                     <input 

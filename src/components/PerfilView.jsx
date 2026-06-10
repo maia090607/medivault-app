@@ -127,7 +127,7 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
       };
       if (user?.role === 'medico') updates.especialidad = form.especialidad.trim();
       if (user?.role === 'farmacia') updates.sucursal = form.sucursal.trim();
-      if (user?.role === 'medico') updates.tarjetaProfesional = form.tarjetaProfesional;
+      if (user?.role !== 'admin') updates.tarjetaProfesional = form.tarjetaProfesional;
 
       if (user?.id) {
         await updateDoc(doc(db, 'usuarios', user.id), updates);
@@ -395,7 +395,7 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
             <span style={c.fieldValue}>{form.telefono || '—'}</span>
           </div>
 
-          {user?.role === 'medico' && (
+          {user?.role !== 'admin' && (
             <div style={c.fieldRow}>
               <span style={c.fieldLabel}>Tarjeta Profesional</span>
               <span style={c.fieldValue}>
@@ -473,7 +473,7 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
           <label style={{ ...c.fieldLabel, display: 'block', marginTop: '14px', marginBottom: '2px' }}>Teléfono</label>
           <input style={c.input} value={form.telefono} onChange={e => handleChange('telefono', e.target.value)} />
 
-          {user?.role === 'medico' && (
+          {user?.role !== 'admin' && (
             <>
               <label style={{ ...c.fieldLabel, display: 'block', marginTop: '14px', marginBottom: '2px' }}>Tarjeta Profesional (imagen)</label>
               {esImagenTarjeta && (

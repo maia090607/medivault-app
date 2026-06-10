@@ -352,7 +352,7 @@ function ActualizarUsuarios({ usuariosValidos, darkMode, st, db, toast }) {
     else if (!u.correo && u.email) updates.correo = u.email;
     if (!u.cedula) updates.cedula = 'UID' + id.slice(-8).toUpperCase();
     if (!u.telefono) updates.telefono = '3000000000';
-    if (u.role === 'medico' && !u.tarjetaProfesional) updates.tarjetaProfesional = 'TP' + id.slice(-6).toUpperCase();
+    if ((u.role === 'medico' || u.role === 'farmacia') && !u.tarjetaProfesional) updates.tarjetaProfesional = 'TP' + id.slice(-6).toUpperCase();
     return updates;
   };
 
