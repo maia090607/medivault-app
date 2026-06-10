@@ -75,15 +75,26 @@ function App() {
     if (usuarioEncontrado) {
       toast.success(`Bienvenido ${usuarioEncontrado.nombre || ''}`);
       setUser({
+        id: usuarioEncontrado.id,
+        uid: usuarioEncontrado.uid || '',
         email: usuarioEncontrado.correo || usuarioEncontrado.email,
         nombre: usuarioEncontrado.nombre || (rol === 'medico' ? "Dr. Especialista" : rol === 'farmacia' ? "Operador Farmacia" : "Administrador"),
         role: usuarioEncontrado.role,
-        pin: usuarioEncontrado.pin || "1234"
+        pin: usuarioEncontrado.pin || "1234",
+        especialidad: usuarioEncontrado.especialidad || '',
+        sucursal: usuarioEncontrado.sucursal || '',
+        cedula: usuarioEncontrado.cedula || '',
+        telefono: usuarioEncontrado.telefono || '',
+        tarjetaProfesional: usuarioEncontrado.tarjetaProfesional || ''
       });
       setPaso('app'); 
     } else {
       toast.error("Credenciales incorrectas. Verifique sus datos e intente nuevamente.");
     }
+  };
+
+  const actualizarUsuario = (datos) => {
+    setUser(prev => ({ ...prev, ...datos }));
   };
 
   const manejarRegistroDirecto = async (nuevoUsuario) => {
@@ -107,7 +118,10 @@ function App() {
         password: String(nuevoUsuario.password || "").trim(),
         role: rolFiltrado,
         activo: true,
-        uid: "uid_" + Math.random().toString(36).substr(2, 9)
+        uid: "uid_" + Math.random().toString(36).substr(2, 9),
+        cedula: nuevoUsuario.cedula?.trim() || '',
+        telefono: nuevoUsuario.telefono?.trim() || '',
+        tarjetaProfesional: nuevoUsuario.tarjetaProfesional?.trim() || ''
       };
 
       if (rolFiltrado === 'medico') {
@@ -227,6 +241,7 @@ function App() {
           recetasEmitidas={recetas} 
           pacientesDB={pacientes} 
           historialesDB={historiales} 
+          onUserUpdate={actualizarUsuario}
         />
       ) : user?.role === 'admin' ? (
         <DashboardAdmin
@@ -237,6 +252,7 @@ function App() {
           pacientesDB={pacientes}
           usuariosDB={usuariosDB}
           solicitudes={solicitudes}
+          onUserUpdate={actualizarUsuario}
         />
       ) : (
         <DashboardFarmacia 
@@ -246,6 +262,7 @@ function App() {
           inventario={inventario} 
           pacientesDB={pacientes} 
           usuariosDB={usuariosDB} 
+          onUserUpdate={actualizarUsuario}
         />
       )}
     </div>

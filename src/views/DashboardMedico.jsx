@@ -7,6 +7,7 @@ import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
 import AiChat from '../components/AiChat';
+import PerfilView from '../components/PerfilView';
 
 function DashboardMedico({ 
   user = {}, 
@@ -14,7 +15,8 @@ function DashboardMedico({
   inventario = [], 
   recetasEmitidas = [], 
   pacientesDB = [], 
-  historialesDB = [] 
+  historialesDB = [],
+  onUserUpdate
 }) {
   const toast = useToast();
   const [vista, setVista] = useState('nueva');
@@ -360,7 +362,7 @@ function DashboardMedico({
           <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>
             {darkMode ? '☀️' : '🌙'}
           </button>
-          <span style={{ fontWeight: '600' }}>Dr(a). {user?.nombre || 'Especialista'}</span>
+          <span style={{ fontWeight: '600', cursor: 'pointer' }} onClick={() => cambiarVista('perfil')}>Dr(a). {user?.nombre || 'Especialista'}</span>
           <button onClick={() => {
             if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
           }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
@@ -378,7 +380,7 @@ function DashboardMedico({
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Médico {vista === 'nueva' ? '> Nueva Receta' : vista === 'historial' ? '> Historial Recetas' : vista === 'clinico' ? '> Expediente Clínico' : vista === 'pacientes' ? '> Pacientes' : vista === 'estadisticas' ? '> Estadísticas' : '> Notificaciones'}
+        Médico {vista === 'nueva' ? '> Nueva Receta' : vista === 'historial' ? '> Historial Recetas' : vista === 'clinico' ? '> Expediente Clínico' : vista === 'pacientes' ? '> Pacientes' : vista === 'estadisticas' ? '> Estadísticas' : vista === 'perfil' ? '> Mi Perfil' : '> Notificaciones'}
       </div>
 
       {/* PESTAÑA: NUEVA RECETA */}
@@ -717,6 +719,11 @@ function DashboardMedico({
             </div>
           </div>
         </div>
+      )}
+
+      {/* PERFIL */}
+      {vista === 'perfil' && (
+        <PerfilView user={user} darkMode={darkMode} onUserUpdate={onUserUpdate} />
       )}
 
       {/* NOTIFICACIONES */}

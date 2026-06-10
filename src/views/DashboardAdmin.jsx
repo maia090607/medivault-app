@@ -10,7 +10,9 @@ import RecetasView from './admin/RecetasView';
 import SolicitudesView from './admin/SolicitudesView';
 import UsuariosView from './admin/UsuariosView';
 import InventarioView from './admin/InventarioView';
+import DevToolsView from './admin/DevToolsView';
 import AiChat from '../components/AiChat';
+import PerfilView from '../components/PerfilView';
 
 
 function DashboardAdmin({
@@ -21,6 +23,7 @@ function DashboardAdmin({
   pacientesDB = [],
   usuariosDB = [],
   solicitudes = [],
+  onUserUpdate
 }) {
   const toast = useToast();
   const [vista, setVista] = useState('dashboard');
@@ -50,6 +53,8 @@ function DashboardAdmin({
     : vista === 'usuarios' ? 'Usuarios'
     : vista === 'inventario' ? 'Inventario'
     : vista === 'pacientes' ? 'Pacientes'
+    : vista === 'perfil' ? 'Mi Perfil'
+    : vista === 'devtools' ? 'Dev Tools'
     : 'Notificaciones';
 
   return (
@@ -66,7 +71,7 @@ function DashboardAdmin({
           <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>
             {darkMode ? '☀️' : '🌙'}
           </button>
-          <span style={{ fontWeight: '600' }}>{user?.nombre || 'Admin'}</span>
+          <span style={{ fontWeight: '600', cursor: 'pointer' }} onClick={() => cambiarVista('perfil')}>{user?.nombre || 'Admin'}</span>
           <button onClick={() => {
             if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
           }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
@@ -81,6 +86,7 @@ function DashboardAdmin({
         <button style={st.btnNav(vista === 'inventario')} onClick={() => cambiarVista('inventario')}>Inventario</button>
         <button style={st.btnNav(vista === 'pacientes')} onClick={() => cambiarVista('pacientes')}>Pacientes</button>
         <button style={st.btnNav(vista === 'notificaciones')} onClick={() => cambiarVista('notificaciones')}>Notificaciones</button>
+        <button style={st.btnNav(vista === 'devtools')} onClick={() => cambiarVista('devtools')}>🔧 Dev Tools</button>
       </div>
 
       <div className="admin-breadcrumb" style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
@@ -164,6 +170,21 @@ function DashboardAdmin({
               🗑️ Eliminar
             </button>
           )}
+        />
+      )}
+
+      {vista === 'perfil' && (
+        <PerfilView user={user} darkMode={darkMode} onUserUpdate={onUserUpdate} />
+      )}
+
+      {vista === 'devtools' && (
+        <DevToolsView
+          inventarioValido={inventarioValido}
+          usuariosValidos={usuariosValidos}
+          darkMode={darkMode}
+          st={st}
+          db={db}
+          toast={toast}
         />
       )}
 

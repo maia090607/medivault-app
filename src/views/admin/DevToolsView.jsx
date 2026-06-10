@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 
 const MEDICAMENTOS = [
   { nombre: 'Acetaminofén', concentracion: '500mg' },
@@ -191,7 +191,17 @@ function generarCodigo(nombre, concentracion) {
   return prefijo ? `${prefijo}-${digitos || '000'}` : '';
 }
 
-function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
+function DevToolsView({ inventarioValido, usuariosValidos, darkMode, st, db, toast }) {
+  return (
+    <div key="devtools" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+      <InventarioPopulator inventarioValido={inventarioValido} darkMode={darkMode} st={st} db={db} toast={toast} />
+      <div style={{ height: '40px' }} />
+      <ActualizarUsuarios usuariosValidos={usuariosValidos} darkMode={darkMode} st={st} db={db} toast={toast} />
+    </div>
+  );
+}
+
+function InventarioPopulator({ inventarioValido, darkMode, st, db, toast }) {
   const [estados, setEstados] = useState({});
   const [poblando, setPoblando] = useState(false);
 
@@ -209,9 +219,7 @@ function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
       codigo: generarCodigo(m.nombre, m.concentracion),
     }));
 
-    let insertados = 0;
-    let existentes = 0;
-    let errores = 0;
+    let insertados = 0, existentes = 0, errores = 0;
 
     for (const item of batch) {
       const yaExiste = codigosExistentes.has(item.codigo);
@@ -242,11 +250,10 @@ function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
     setPoblando(false);
   };
 
-  const todosOk = Object.values(estados).every(v => v === 'ok' || v === 'existe');
-  const hayAlgunoOk = Object.keys(estados).length > 0 && todosOk;
+  const todosOk = Object.values(estados).length > 0 && Object.values(estados).every(v => v === 'ok' || v === 'existe');
 
   return (
-    <div key="devtools" style={{ ...st.card, animation: 'fadeIn 0.25s ease' }}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
@@ -273,7 +280,7 @@ function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
               <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
               Poblando...
             </>
-          ) : hayAlgunoOk ? (
+          ) : todosOk ? (
             '🔄 Repoblar'
           ) : (
             '🚀 Poblar Inventario'
@@ -303,39 +310,16 @@ function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
 
           return (
             <div key={codigo} style={{
-              padding: '12px 14px',
-              borderRadius: '8px',
-              background: bg,
+              padding: '12px 14px', borderRadius: '8px', background: bg,
               border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              transition: 'all 0.2s ease',
+              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s ease',
             }}>
               <span style={{ fontSize: '1.1rem' }}>{icono}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontWeight: '600',
-                  fontSize: '0.88rem',
-                  color: textColor,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>{m.nombre}</div>
-                <div style={{
-                  fontSize: '0.75rem',
-                  color: textColor,
-                  opacity: 0.7,
-                  fontFamily: 'monospace',
-                }}>{codigo}</div>
+                <div style={{ fontWeight: '600', fontSize: '0.88rem', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.nombre}</div>
+                <div style={{ fontSize: '0.75rem', color: textColor, opacity: 0.7, fontFamily: 'monospace' }}>{codigo}</div>
               </div>
-              <span style={{
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                color: textColor,
-                opacity: estado ? 1 : 0.5,
-                whiteSpace: 'nowrap',
-              }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: '600', color: textColor, opacity: estado ? 1 : 0.5, whiteSpace: 'nowrap' }}>
                 {estado === 'ok' ? 'Insertado' : estado === 'existe' ? 'Ya existe' : estado === 'error' ? 'Error' : existePrevio ? 'Existente' : `${m.concentracion}`}
               </span>
             </div>
@@ -344,21 +328,172 @@ function DevToolsView({ inventarioValido, darkMode, st, db, toast }) {
       </div>
 
       {Object.keys(estados).length > 0 && (
-        <div style={{
-          marginTop: '20px',
-          padding: '14px 18px',
-          borderRadius: '8px',
-          background: darkMode ? '#0f172a' : '#f1f5f9',
-          display: 'flex',
-          gap: '24px',
-          flexWrap: 'wrap',
-          fontSize: '0.85rem',
-          fontWeight: '600',
-        }}>
+        <div style={{ marginTop: '20px', padding: '14px 18px', borderRadius: '8px', background: darkMode ? '#0f172a' : '#f1f5f9', display: 'flex', gap: '24px', flexWrap: 'wrap', fontSize: '0.85rem', fontWeight: '600' }}>
           <span style={{ color: '#10b981' }}>✅ Insertados: {Object.values(estados).filter(v => v === 'ok').length}</span>
           <span style={{ color: '#2563eb' }}>📦 Ya existían: {Object.values(estados).filter(v => v === 'existe').length}</span>
           <span style={{ color: '#ef4444' }}>❌ Errores: {Object.values(estados).filter(v => v === 'error').length}</span>
           <span style={{ color: darkMode ? '#ffffff' : '#1e293b' }}>Total: {Object.keys(estados).length} / {MEDICAMENTOS.length}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActualizarUsuarios({ usuariosValidos, darkMode, st, db, toast }) {
+  const [estados, setEstados] = useState({});
+  const [actualizando, setActualizando] = useState(false);
+
+  const usuarios = Array.isArray(usuariosValidos) ? usuariosValidos : [];
+
+  const generarUpdates = (u) => {
+    const updates = {};
+    const id = u.id || u.uid || '';
+    if (!u.correo && !u.email) updates.correo = 'sin-correo@pendiente.com';
+    else if (!u.correo && u.email) updates.correo = u.email;
+    if (!u.cedula) updates.cedula = 'UID' + id.slice(-8).toUpperCase();
+    if (!u.telefono) updates.telefono = '3000000000';
+    if (u.role === 'medico' && !u.tarjetaProfesional) updates.tarjetaProfesional = 'TP' + id.slice(-6).toUpperCase();
+    return updates;
+  };
+
+  const necesitaActualizacion = (u) => {
+    return Object.keys(generarUpdates(u)).length > 0;
+  };
+
+  const nombresCampo = { correo: 'correo', cedula: 'cédula', telefono: 'teléfono', tarjetaProfesional: 'TP' };
+
+  const actualizarUsuarios = async () => {
+    if (actualizando) return;
+    setActualizando(true);
+    setEstados({});
+
+    let actualizados = 0, sinCambios = 0, errores = 0;
+
+    for (const u of usuarios) {
+      const key = u.id || u.uid;
+      const updates = generarUpdates(u);
+
+      if (Object.keys(updates).length === 0) {
+        setEstados(prev => ({ ...prev, [key]: 'ok' }));
+        sinCambios++;
+        continue;
+      }
+
+      try {
+        await updateDoc(doc(db, 'usuarios', u.id), updates);
+        setEstados(prev => ({ ...prev, [key]: 'updated' }));
+        actualizados++;
+      } catch (err) {
+        console.error(err);
+        setEstados(prev => ({ ...prev, [key]: 'error' }));
+        errores++;
+      }
+    }
+
+    toast.success(`Actualizados: ${actualizados} | Sin cambios: ${sinCambios} | Errores: ${errores}`);
+    setActualizando(false);
+  };
+
+  const completados = Object.keys(estados).length;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: darkMode ? '#ffffff' : '#1e293b' }}>
+            👥 Dev Tools — Actualizar Usuarios
+          </h2>
+          <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.85rem' }}>
+            Asigna cédula, teléfono, tarjeta profesional y correo a usuarios existentes.
+          </p>
+        </div>
+        <button
+          onClick={actualizarUsuarios}
+          disabled={actualizando}
+          style={{
+            background: actualizando ? '#94a3b8' : '#0ea5e9',
+            color: '#fff', border: 'none', padding: '14px 28px',
+            borderRadius: '10px', fontWeight: '700', fontSize: '1rem',
+            cursor: actualizando ? 'not-allowed' : 'pointer',
+            opacity: actualizando ? 0.7 : 1,
+            display: 'flex', alignItems: 'center', gap: '8px',
+          }}
+        >
+          {actualizando ? (
+            <>
+              <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin2 0.6s linear infinite' }} />
+              Actualizando...
+            </>
+          ) : completados > 0 ? (
+            '🔄 Re-ejecutar'
+          ) : (
+            '🚀 Actualizar Usuarios'
+          )}
+        </button>
+      </div>
+
+      <style>{`@keyframes spin2 { to { transform: rotate(360deg); } }`}</style>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: '8px',
+      }}>
+        {usuarios.map(u => {
+          const key = u.id || u.uid;
+          const estado = estados[key];
+          const updates = generarUpdates(u);
+          const camposFaltan = Object.keys(updates);
+          const falta = camposFaltan.length > 0;
+
+          let bg = darkMode ? '#0f172a' : '#f8fafc';
+          let icono = falta ? '⬜' : '✅';
+          let textColor = darkMode ? '#94a3b8' : '#64748b';
+
+          if (estado === 'updated') { bg = darkMode ? '#064e3b' : '#d1fae5'; icono = '✅'; textColor = darkMode ? '#ffffff' : '#065f46'; }
+          else if (estado === 'ok') { bg = darkMode ? '#1e3a5f' : '#dbeafe'; icono = '✅'; textColor = darkMode ? '#ffffff' : '#1e40af'; }
+          else if (estado === 'error') { bg = darkMode ? '#7f1d1d' : '#fee2e2'; icono = '❌'; textColor = darkMode ? '#ffffff' : '#991b1b'; }
+
+          return (
+            <div key={key} style={{
+              padding: '12px 14px', borderRadius: '8px', background: bg,
+              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s ease',
+            }}>
+              <span style={{ fontSize: '1.1rem' }}>{icono}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: '600', fontSize: '0.88rem', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.nombre || 'Sin nombre'}</div>
+                <div style={{ fontSize: '0.75rem', color: textColor, opacity: 0.7 }}>{u.role} — {u.correo || u.email}</div>
+                {falta && estado !== 'updated' && estado !== 'ok' && (
+                  <div style={{ fontSize: '0.7rem', color: textColor, opacity: 0.6, marginTop: '2px' }}>
+                    falta: {camposFaltan.map(c => nombresCampo[c] || c).join(', ')}
+                  </div>
+                )}
+                {estado === 'updated' && (
+                  <div style={{ fontSize: '0.7rem', color: '#10b981', marginTop: '2px', fontWeight: '600' }}>
+                    {camposFaltan.map(c => nombresCampo[c] || c).join(' ✓ ')} ✓
+                  </div>
+                )}
+              </div>
+              <span style={{ fontSize: '0.7rem', fontWeight: '600', color: textColor, opacity: estado ? 1 : 0.5, whiteSpace: 'nowrap' }}>
+                {estado === 'updated' ? 'Actualizado' : estado === 'ok' ? 'Completo' : estado === 'error' ? 'Error' : falta ? 'Faltan datos' : 'Completo'}
+              </span>
+            </div>
+          );
+        })}
+        {usuarios.length === 0 && (
+          <div style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '20px', textAlign: 'center' }}>
+            No hay usuarios para actualizar.
+          </div>
+        )}
+      </div>
+
+      {completados > 0 && (
+        <div style={{ marginTop: '20px', padding: '14px 18px', borderRadius: '8px', background: darkMode ? '#0f172a' : '#f1f5f9', display: 'flex', gap: '24px', flexWrap: 'wrap', fontSize: '0.85rem', fontWeight: '600' }}>
+          <span style={{ color: '#10b981' }}>✅ Actualizados: {Object.values(estados).filter(v => v === 'updated').length}</span>
+          <span style={{ color: '#2563eb' }}>✅ Ya completos: {Object.values(estados).filter(v => v === 'ok').length}</span>
+          <span style={{ color: '#ef4444' }}>❌ Errores: {Object.values(estados).filter(v => v === 'error').length}</span>
+          <span style={{ color: darkMode ? '#ffffff' : '#1e293b' }}>Total: {completados} / {usuarios.length}</span>
         </div>
       )}
     </div>

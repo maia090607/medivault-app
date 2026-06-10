@@ -7,9 +7,10 @@ import { createStyles, fadeInKeyframes } from '../theme';
 import PacientesDirectory from '../components/PacientesDirectory';
 import NotificacionesList from '../components/NotificacionesList';
 import AiChat from '../components/AiChat';
+import PerfilView from '../components/PerfilView';
 
 
-function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [], usuariosDB = [] }) {
+function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventario = [], pacientesDB = [], usuariosDB = [], onUserUpdate }) {
   const toast = useToast();
   const [vista, setVista] = useState('dispensar');
   const cambiarVista = (v) => { window.scrollTo(0, 0); setVista(v); setDespachoReciente(null); setRecetaEncontrada(null); setTokenBusqueda(''); setPacienteHistorialSel(null); setBusquedaHistorialPac(''); };
@@ -256,7 +257,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             {darkMode ? '☀️' : '🌙'}
           </button>
 
-          <span style={{ fontWeight: '600' }}>Regente: {user?.nombre || 'Administrador'}</span>
+          <span style={{ fontWeight: '600', cursor: 'pointer' }} onClick={() => cambiarVista('perfil')}>Regente: {user?.nombre || 'Administrador'}</span>
           <button onClick={() => {
             if (window.confirm('¿Está seguro de cerrar sesión?')) onLogout();
           }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Salir</button>
@@ -286,7 +287,7 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
       </div>
 
       <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px', fontWeight: '600' }}>
-        Farmacia {vista === 'dispensar' ? '> Panel de Dispensación' : vista === 'inventario' ? '> Catálogo e Inventario' : vista === 'auditoria' ? '> Historial e Informes' : vista === 'estadisticas' ? '> Estadísticas' : vista === 'pacientes' ? '> Pacientes' : '> Notificaciones'}
+        Farmacia {vista === 'dispensar' ? '> Panel de Dispensación' : vista === 'inventario' ? '> Catálogo e Inventario' : vista === 'auditoria' ? '> Historial e Informes' : vista === 'estadisticas' ? '> Estadísticas' : vista === 'pacientes' ? '> Pacientes' : vista === 'perfil' ? '> Mi Perfil' : '> Notificaciones'}
       </div>
 
       {/* VISTA 1: DISPENSAR MEDICAMENTOS */}
@@ -724,6 +725,11 @@ function DashboardFarmacia({ user = {}, onLogout, recetasEmitidas = [], inventar
             <button onClick={() => { setBusquedaAuditoria(p.nombre); cambiarVista('auditoria'); }} style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '8px 0', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}>Ver Recetas</button>
           )}
         />
+      )}
+
+      {/* PERFIL */}
+      {vista === 'perfil' && (
+        <PerfilView user={user} darkMode={darkMode} onUserUpdate={onUserUpdate} />
       )}
 
       {/* NOTIFICACIONES */}

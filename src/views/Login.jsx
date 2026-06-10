@@ -45,7 +45,10 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
   const [password, setPassword] = useState('');
   const [extraInfo, setExtraInfo] = useState(''); 
   const [pinFirma, setPinFirma] = useState(''); 
-  const [mostrarPassword, setMostrarPassword] = useState(false); 
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [cedula, setCedula] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [tarjetaProfesional, setTarjetaProfesional] = useState(''); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,7 +73,10 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
         password, 
         rol, 
         extraInfo: extraInfo || (rol === 'medico' ? "General" : "Sede Central"),
-        pinFirma 
+        pinFirma,
+        cedula,
+        telefono,
+        tarjetaProfesional: rol === 'medico' ? tarjetaProfesional : ''
       });
       if (exito) {
         setEsRegistro(false); 
@@ -359,6 +365,44 @@ function Login({ alIniciar, alRegistrar, onVolver }) {
                       value={pinFirma} 
                       onChange={(e) => setPinFirma(e.target.value.replace(/\D/g, ''))} 
                       maxLength="4" 
+                    />
+                  </div>
+                )}
+
+                <div style={st.inputGroup}>
+                  <label style={st.label}>🆔 Cédula / Documento</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej. 123456789" 
+                    style={st.input} 
+                    className="input-modern" 
+                    value={cedula} 
+                    onChange={(e) => setCedula(e.target.value)} 
+                  />
+                </div>
+
+                <div style={st.inputGroup}>
+                  <label style={st.label}>📞 Teléfono</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej. +57 300 123 4567" 
+                    style={st.input} 
+                    className="input-modern" 
+                    value={telefono} 
+                    onChange={(e) => setTelefono(e.target.value)} 
+                  />
+                </div>
+
+                {rol === 'medico' && (
+                  <div style={st.inputGroup}>
+                    <label style={st.label}>🎓 Tarjeta Profesional</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ej. T.P. 12345" 
+                      style={st.input} 
+                      className="input-modern" 
+                      value={tarjetaProfesional} 
+                      onChange={(e) => setTarjetaProfesional(e.target.value)} 
                     />
                   </div>
                 )}
