@@ -15,12 +15,14 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
     pin: user?.pin || '1234',
     cedula: user?.cedula || '',
     telefono: user?.telefono || '',
-    tarjetaProfesional: user?.tarjetaProfesional || ''
+    tarjetaProfesional: user?.tarjetaProfesional || '',
+    fotoPerfil: user?.fotoPerfil || ''
   };
 
   const [form, setForm] = useState(datosIniciales);
   const [guardando, setGuardando] = useState(false);
   const [subiendoImg, setSubiendoImg] = useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [verTarjeta, setVerTarjeta] = useState(false);
 
@@ -39,7 +41,8 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
             pin: data.pin || '1234',
             cedula: data.cedula || '',
             telefono: data.telefono || '',
-            tarjetaProfesional: data.tarjetaProfesional || ''
+            tarjetaProfesional: data.tarjetaProfesional || '',
+            fotoPerfil: data.fotoPerfil || ''
           };
           setForm(fresco);
         }
@@ -119,7 +122,8 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
         correo: form.email.trim().toLowerCase(),
         pin: form.pin,
         cedula: form.cedula.trim(),
-        telefono: form.telefono.trim()
+        telefono: form.telefono.trim(),
+        fotoPerfil: form.fotoPerfil
       };
       if (user?.role === 'medico') updates.especialidad = form.especialidad.trim();
       if (user?.role === 'farmacia') updates.sucursal = form.sucursal.trim();
@@ -138,7 +142,8 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
           pin: form.pin,
           cedula: form.cedula.trim(),
           telefono: form.telefono.trim(),
-          tarjetaProfesional: form.tarjetaProfesional
+          tarjetaProfesional: form.tarjetaProfesional,
+          fotoPerfil: form.fotoPerfil
         });
       }
 
@@ -166,6 +171,35 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
     form.tarjetaProfesional.startsWith('http') ||
     form.tarjetaProfesional.startsWith('data:image')
   );
+
+  const esImagenFoto = form.fotoPerfil && (
+    form.fotoPerfil.startsWith('http') ||
+    form.fotoPerfil.startsWith('data:image')
+  );
+
+  const handleArchivoFoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.warning('Solo se permiten imágenes.');
+      return;
+    }
+    setSubiendoFoto(true);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const comprimida = await comprimirImagen(dataUrl, 400, 0.7);
+      setForm(prev => ({ ...prev, fotoPerfil: comprimida }));
+    } catch {
+      toast.error('Error al leer la imagen.');
+    } finally {
+      setSubiendoFoto(false);
+    }
+  };
 
   const labelRole = {
     medico: 'Médico',
@@ -310,7 +344,13 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
 
   return (
     <div style={c.card}>
-      <div style={c.avatar}>{inicial}</div>
+      <div style={{ ...c.avatar, overflow: 'hidden', background: esImagenFoto ? 'transparent' : '#2563eb' }}>
+        {esImagenFoto ? (
+          <img src={form.fotoPerfil} alt="Foto de perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          inicial
+        )}
+      </div>
       {!editando ? (
         <>
           <h2 style={c.nombre}>{form.nombre || 'Sin nombre'}</h2>
@@ -385,6 +425,20 @@ function PerfilView({ user, darkMode, onUserUpdate }) {
       ) : (
         <>
           <h2 style={{ ...c.nombre, fontSize: '1.2rem', marginBottom: '20px' }}>Editar Perfil</h2>
+
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ ...c.avatar, overflow: 'hidden', background: esImagenFoto ? 'transparent' : '#2563eb', margin: '0 auto 8px auto' }}>
+              {esImagenFoto ? (
+                <img src={form.fotoPerfil} alt="Foto de perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                inicial
+              )}
+            </div>
+            <label style={{ fontSize: '0.8rem', color: '#2563eb', fontWeight: '600', cursor: 'pointer', display: 'inline-block' }}>
+              {subiendoFoto ? 'Cargando...' : '📷 Cambiar foto'}
+              <input type="file" accept="image/*" onChange={handleArchivoFoto} style={{ display: 'none' }} />
+            </label>
+          </div>
 
           <label style={{ ...c.fieldLabel, display: 'block', marginBottom: '2px' }}>Nombre</label>
           <input style={c.input} value={form.nombre} onChange={e => handleChange('nombre', e.target.value)} />

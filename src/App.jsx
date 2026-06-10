@@ -85,7 +85,8 @@ function App() {
         sucursal: usuarioEncontrado.sucursal || '',
         cedula: usuarioEncontrado.cedula || '',
         telefono: usuarioEncontrado.telefono || '',
-        tarjetaProfesional: usuarioEncontrado.tarjetaProfesional || ''
+        tarjetaProfesional: usuarioEncontrado.tarjetaProfesional || '',
+        fotoPerfil: usuarioEncontrado.fotoPerfil || ''
       });
       setPaso('app'); 
     } else {
